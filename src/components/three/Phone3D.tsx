@@ -4,13 +4,17 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
-import type { CameraLayout } from "@/lib/products";
+import type { CameraLayout, DeviceType } from "@/lib/products";
 
-const W = 2.04;
-const H = 4.16;
-const D = 0.24;
-const BACK = -D / 2;
-const FRONT = D / 2;
+interface Dims {
+  W: number;
+  H: number;
+  D: number;
+  radius: number;
+}
+
+const PHONE: Dims = { W: 2.04, H: 4.16, D: 0.24, radius: 0.22 };
+const TABLET: Dims = { W: 3.18, H: 4.28, D: 0.17, radius: 0.13 };
 
 /** Procedural gradient "wallpaper" drawn to a canvas, used as the screen map. */
 function useWallpaper(colorHex: string, accentHex: string) {
@@ -31,7 +35,6 @@ function useWallpaper(colorHex: string, accentHex: string) {
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, c.width, c.height);
 
-    // soft glow blobs
     const blob = (x: number, y: number, r: number, col: string, a: number) => {
       const rg = ctx.createRadialGradient(x, y, 0, x, y, r);
       rg.addColorStop(0, col);
@@ -65,12 +68,10 @@ function Lens({
 }) {
   return (
     <group position={position} rotation={[Math.PI / 2, 0, 0]}>
-      {/* metal ring */}
       <mesh>
         <cylinderGeometry args={[size, size, 0.05, 40]} />
         <meshStandardMaterial color={accent} metalness={0.95} roughness={0.25} />
       </mesh>
-      {/* glass */}
       <mesh position={[0, 0.03, 0]}>
         <cylinderGeometry args={[size * 0.72, size * 0.72, 0.04, 40]} />
         <meshPhysicalMaterial
@@ -87,24 +88,11 @@ function Lens({
   );
 }
 
-function CameraModule({ layout, accent }: { layout: CameraLayout; accent: string }) {
-  const z = BACK - 0.015;
-  const bumpZ = BACK - 0.05;
+function PhoneCameras({ layout, accent, back }: { layout: CameraLayout; accent: string; back: number }) {
+  const z = back - 0.015;
+  const bumpZ = back - 0.05;
 
-  // raised bump plate behind lenses
-  const Bump = ({
-    w,
-    h,
-    x,
-    y,
-    radius = 0.16,
-  }: {
-    w: number;
-    h: number;
-    x: number;
-    y: number;
-    radius?: number;
-  }) => (
+  const Bump = ({ w, h, x, y, radius = 0.16 }: { w: number; h: number; x: number; y: number; radius?: number }) => (
     <RoundedBox args={[w, h, 0.12]} radius={radius} smoothness={6} position={[x, y, bumpZ]}>
       <meshPhysicalMaterial color="#0c0d12" metalness={0.6} roughness={0.35} clearcoat={0.6} />
     </RoundedBox>
@@ -117,7 +105,6 @@ function CameraModule({ layout, accent }: { layout: CameraLayout; accent: string
         <Lens position={[-0.64, 1.4, z]} size={0.2} accent={accent} />
         <Lens position={[-0.2, 1.4, z]} size={0.2} accent={accent} />
         <Lens position={[-0.42, 0.96, z]} size={0.2} accent={accent} />
-        {/* flash + lidar */}
         <mesh position={[-0.2, 0.96, z]}>
           <circleGeometry args={[0.07, 24]} />
           <meshStandardMaterial color="#f5f3e6" emissive="#fff7d6" emissiveIntensity={0.4} />
@@ -125,7 +112,6 @@ function CameraModule({ layout, accent }: { layout: CameraLayout; accent: string
       </group>
     );
   }
-
   if (layout === "dual") {
     return (
       <group>
@@ -139,7 +125,6 @@ function CameraModule({ layout, accent }: { layout: CameraLayout; accent: string
       </group>
     );
   }
-
   if (layout === "single") {
     return (
       <group>
@@ -148,9 +133,7 @@ function CameraModule({ layout, accent }: { layout: CameraLayout; accent: string
       </group>
     );
   }
-
   if (layout === "vertical") {
-    // Galaxy S — individual floating lenses, no bump
     return (
       <group>
         <Lens position={[-0.6, 1.5, z + 0.02]} size={0.18} accent={accent} />
@@ -163,7 +146,6 @@ function CameraModule({ layout, accent }: { layout: CameraLayout; accent: string
       </group>
     );
   }
-
   if (layout === "grid") {
     return (
       <group>
@@ -175,12 +157,10 @@ function CameraModule({ layout, accent }: { layout: CameraLayout; accent: string
       </group>
     );
   }
-
   if (layout === "bar") {
-    // Pixel visor — horizontal bar across the back
     return (
       <group>
-        <RoundedBox args={[W - 0.16, 0.62, 0.14]} radius={0.18} smoothness={6} position={[0, 1.18, bumpZ]}>
+        <RoundedBox args={[PHONE.W - 0.16, 0.62, 0.14]} radius={0.18} smoothness={6} position={[0, 1.18, bumpZ]}>
           <meshPhysicalMaterial color="#0a0b10" metalness={0.7} roughness={0.3} clearcoat={0.7} />
         </RoundedBox>
         <Lens position={[-0.42, 1.18, z]} size={0.18} accent={accent} />
@@ -189,8 +169,7 @@ function CameraModule({ layout, accent }: { layout: CameraLayout; accent: string
       </group>
     );
   }
-
-  // circular (OnePlus)
+  // circular
   return (
     <group>
       <mesh position={[-0.42, 1.18, bumpZ]} rotation={[Math.PI / 2, 0, 0]}>
@@ -204,14 +183,25 @@ function CameraModule({ layout, accent }: { layout: CameraLayout; accent: string
   );
 }
 
+function TabletCameras({ accent, back }: { accent: string; back: number }) {
+  const z = back - 0.012;
+  return (
+    <group>
+      <RoundedBox args={[0.42, 0.42, 0.08]} radius={0.1} smoothness={6} position={[-1.18, 1.74, back - 0.04]}>
+        <meshPhysicalMaterial color="#0c0d12" metalness={0.6} roughness={0.35} clearcoat={0.6} />
+      </RoundedBox>
+      <Lens position={[-1.18, 1.74, z]} size={0.12} accent={accent} />
+    </group>
+  );
+}
+
 export interface Phone3DProps {
   colorHex: string;
   accentHex: string;
   cameraLayout: CameraLayout;
   brand: string;
-  /** continuous spin speed (rad/sec). 0 disables auto spin */
+  formFactor?: DeviceType;
   spin?: number;
-  /** follow the pointer (hero) */
   reactive?: boolean;
 }
 
@@ -220,28 +210,32 @@ export function Phone3D({
   accentHex,
   cameraLayout,
   brand,
+  formFactor = "phone",
   spin = 0,
   reactive = false,
 }: Phone3DProps) {
   const group = useRef<THREE.Group>(null);
   const wallpaper = useWallpaper(colorHex, accentHex);
   const isApple = brand === "Apple";
+  const isTablet = formFactor === "tablet";
+  const { W, H, D, radius } = isTablet ? TABLET : PHONE;
+  const FRONT = D / 2;
+  const BACK = -D / 2;
+  const bezel = isTablet ? 0.3 : 0.15;
 
   useFrame((state, delta) => {
     if (!group.current) return;
     if (spin) group.current.rotation.y += delta * spin;
     if (reactive) {
-      const tx = state.pointer.x * 0.5;
       const ty = -state.pointer.y * 0.35;
-      group.current.rotation.y += (tx - (group.current.rotation.y % (Math.PI * 2))) * 0.04 * (spin ? 0 : 1);
       group.current.rotation.x += (ty - group.current.rotation.x) * 0.06;
     }
   });
 
   return (
-    <group ref={group} rotation={[0, -0.5, 0]}>
+    <group ref={group} rotation={[0, -0.5, 0]} scale={isTablet ? 0.92 : 1}>
       {/* Body */}
-      <RoundedBox args={[W, H, D]} radius={0.22} smoothness={10}>
+      <RoundedBox args={[W, H, D]} radius={radius} smoothness={10}>
         <meshPhysicalMaterial
           color={colorHex}
           metalness={0.65}
@@ -252,13 +246,18 @@ export function Phone3D({
         />
       </RoundedBox>
 
-      {/* Metallic side frame highlight */}
-      <RoundedBox args={[W + 0.012, H + 0.012, D - 0.06]} radius={0.22} smoothness={10}>
+      {/* Metallic frame */}
+      <RoundedBox args={[W + 0.012, H + 0.012, D - 0.06]} radius={radius} smoothness={10}>
         <meshStandardMaterial color={accentHex} metalness={0.95} roughness={0.22} />
       </RoundedBox>
 
-      {/* Screen glass */}
-      <RoundedBox args={[W - 0.14, H - 0.16, 0.02]} radius={0.18} smoothness={8} position={[0, 0, FRONT + 0.005]}>
+      {/* Screen */}
+      <RoundedBox
+        args={[W - bezel, H - bezel, 0.02]}
+        radius={isTablet ? 0.09 : 0.18}
+        smoothness={8}
+        position={[0, 0, FRONT + 0.005]}
+      >
         {wallpaper ? (
           <meshPhysicalMaterial
             map={wallpaper}
@@ -275,8 +274,13 @@ export function Phone3D({
         )}
       </RoundedBox>
 
-      {/* Dynamic Island (Apple) or punch-hole (others) */}
-      {isApple ? (
+      {/* front camera / island */}
+      {isTablet ? (
+        <mesh position={[0, H / 2 - 0.24, FRONT + 0.02]}>
+          <circleGeometry args={[0.05, 24]} />
+          <meshStandardMaterial color="#000000" roughness={0.4} />
+        </mesh>
+      ) : isApple ? (
         <RoundedBox args={[0.52, 0.16, 0.02]} radius={0.08} smoothness={6} position={[0, H / 2 - 0.42, FRONT + 0.02]}>
           <meshStandardMaterial color="#000000" roughness={0.4} />
         </RoundedBox>
@@ -287,21 +291,29 @@ export function Phone3D({
         </mesh>
       )}
 
-      {/* Side buttons */}
-      <mesh position={[W / 2 + 0.005, 0.5, 0]}>
-        <boxGeometry args={[0.03, 0.6, 0.12]} />
-        <meshStandardMaterial color={accentHex} metalness={0.9} roughness={0.3} />
-      </mesh>
-      <mesh position={[-W / 2 - 0.005, 0.9, 0]}>
-        <boxGeometry args={[0.03, 0.34, 0.12]} />
-        <meshStandardMaterial color={accentHex} metalness={0.9} roughness={0.3} />
-      </mesh>
-      <mesh position={[-W / 2 - 0.005, 0.45, 0]}>
-        <boxGeometry args={[0.03, 0.34, 0.12]} />
-        <meshStandardMaterial color={accentHex} metalness={0.9} roughness={0.3} />
-      </mesh>
+      {/* side buttons (phones) */}
+      {!isTablet && (
+        <>
+          <mesh position={[W / 2 + 0.005, 0.5, 0]}>
+            <boxGeometry args={[0.03, 0.6, 0.12]} />
+            <meshStandardMaterial color={accentHex} metalness={0.9} roughness={0.3} />
+          </mesh>
+          <mesh position={[-W / 2 - 0.005, 0.9, 0]}>
+            <boxGeometry args={[0.03, 0.34, 0.12]} />
+            <meshStandardMaterial color={accentHex} metalness={0.9} roughness={0.3} />
+          </mesh>
+          <mesh position={[-W / 2 - 0.005, 0.45, 0]}>
+            <boxGeometry args={[0.03, 0.34, 0.12]} />
+            <meshStandardMaterial color={accentHex} metalness={0.9} roughness={0.3} />
+          </mesh>
+        </>
+      )}
 
-      <CameraModule layout={cameraLayout} accent={accentHex} />
+      {isTablet ? (
+        <TabletCameras accent={accentHex} back={BACK} />
+      ) : (
+        <PhoneCameras layout={cameraLayout} accent={accentHex} back={BACK} />
+      )}
     </group>
   );
 }

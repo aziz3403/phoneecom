@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { GradeId } from "./grades";
+import type { Brand, DeviceType } from "./products";
 import { unitPrice } from "./wholesale";
 
 export type CartMode = "retail" | "wholesale";
@@ -10,14 +11,16 @@ export type CartMode = "retail" | "wholesale";
 export interface CartItem {
   slug: string;
   name: string;
-  brand: string;
-  color: string;
+  brand: Brand;
+  type: DeviceType;
+  colorName: string;
   colorHex: string;
+  accent: string;
+  gb: number;
   grade: GradeId;
-  storage: number;
   mode: CartMode;
   qty: number;
-  /** unit price for retail lines */
+  /** unit price for retail lines (for the chosen storage) */
   retailPrice: number;
   /** tier-1 base price for wholesale lines (discount applied by quantity) */
   wholesaleBase: number;
@@ -29,12 +32,13 @@ interface CartState {
   hydrated: boolean;
   setOpen: (open: boolean) => void;
   add: (item: Omit<CartItem, "qty">, qty?: number) => void;
-  remove: (slug: string, mode: CartMode) => void;
-  setQty: (slug: string, mode: CartMode, qty: number) => void;
+  remove: (key: string) => void;
+  setQty: (key: string, qty: number) => void;
   clear: () => void;
 }
 
-const keyOf = (slug: string, mode: CartMode) => `${slug}::${mode}`;
+export const itemKey = (i: Pick<CartItem, "slug" | "gb" | "colorName" | "mode">) =>
+  `${i.slug}::${i.gb}::${i.colorName}::${i.mode}`;
 
 export const useCart = create<CartState>()(
   persist(
@@ -45,9 +49,8 @@ export const useCart = create<CartState>()(
       setOpen: (open) => set({ open }),
       add: (item, qty = 1) =>
         set((state) => {
-          const idx = state.items.findIndex(
-            (i) => keyOf(i.slug, i.mode) === keyOf(item.slug, item.mode),
-          );
+          const k = itemKey(item);
+          const idx = state.items.findIndex((i) => itemKey(i) === k);
           if (idx >= 0) {
             const items = [...state.items];
             items[idx] = { ...items[idx], qty: items[idx].qty + qty };
@@ -55,16 +58,12 @@ export const useCart = create<CartState>()(
           }
           return { items: [...state.items, { ...item, qty }], open: true };
         }),
-      remove: (slug, mode) =>
-        set((state) => ({
-          items: state.items.filter((i) => keyOf(i.slug, i.mode) !== keyOf(slug, mode)),
-        })),
-      setQty: (slug, mode, qty) =>
+      remove: (key) =>
+        set((state) => ({ items: state.items.filter((i) => itemKey(i) !== key) })),
+      setQty: (key, qty) =>
         set((state) => ({
           items: state.items
-            .map((i) =>
-              keyOf(i.slug, i.mode) === keyOf(slug, mode) ? { ...i, qty: Math.max(0, qty) } : i,
-            )
+            .map((i) => (itemKey(i) === key ? { ...i, qty: Math.max(0, qty) } : i))
             .filter((i) => i.qty > 0),
         })),
       clear: () => set({ items: [] }),
@@ -79,7 +78,6 @@ export const useCart = create<CartState>()(
   ),
 );
 
-/** unit price for a line, honoring wholesale volume tiers */
 export function lineUnitPrice(item: CartItem): number {
   return item.mode === "wholesale" ? unitPrice(item.wholesaleBase, item.qty) : item.retailPrice;
 }

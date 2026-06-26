@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { TrendingDown, ChevronRight } from "lucide-react";
-import { PHONES } from "@/lib/products";
+import { DEVICES, baseStorage, storageFor } from "@/lib/products";
 import { tierForQty, unitPrice, nextTier, MOQ, WHOLESALE_TIERS } from "@/lib/wholesale";
 import { formatPrice, cn } from "@/lib/utils";
 
@@ -11,35 +11,57 @@ const QUICK = [5, 25, 100, 250, 500];
 const MAX_QTY = 750;
 
 export function SavingsCalculator() {
-  const [slug, setSlug] = useState(PHONES[0].slug);
+  const [slug, setSlug] = useState(DEVICES[0].slug);
+  const device = useMemo(() => DEVICES.find((d) => d.slug === slug)!, [slug]);
+  const [gb, setGb] = useState(baseStorage(device).gb);
   const [qty, setQty] = useState(100);
 
-  const phone = useMemo(() => PHONES.find((p) => p.slug === slug)!, [slug]);
-
+  const sOpt = storageFor(device, gb);
   const tier = tierForQty(qty);
-  const unit = unitPrice(phone.wholesalePrice, qty);
+  const unit = unitPrice(sOpt.wholesale, qty);
   const total = unit * qty;
-  const retailTotal = phone.price * qty;
+  const retailTotal = sOpt.price * qty;
   const savings = retailTotal - total;
   const next = nextTier(qty);
   const tierIndex = WHOLESALE_TIERS.findIndex((t) => t.id === tier.id);
 
+  function changeDevice(newSlug: string) {
+    setSlug(newSlug);
+    const d = DEVICES.find((x) => x.slug === newSlug)!;
+    setGb(baseStorage(d).gb);
+  }
+
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      {/* controls */}
       <div className="rounded-3xl border border-white/10 bg-ink-850/50 p-6 sm:p-8">
         <label className="text-xs font-semibold uppercase tracking-[0.16em] text-white/40">Model</label>
         <select
           value={slug}
-          onChange={(e) => setSlug(e.target.value)}
+          onChange={(e) => changeDevice(e.target.value)}
           className="mt-2 w-full rounded-2xl border border-white/10 bg-ink-900 px-4 py-3 text-white focus:border-brand-400/60 focus:outline-none"
         >
-          {PHONES.map((p) => (
-            <option key={p.slug} value={p.slug} className="bg-ink-900">
-              {p.name} · {p.color} · {p.storage}GB
+          {DEVICES.map((d) => (
+            <option key={d.slug} value={d.slug} className="bg-ink-900">
+              {d.name}
             </option>
           ))}
         </select>
+
+        <label className="mt-5 block text-xs font-semibold uppercase tracking-[0.16em] text-white/40">Storage</label>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {device.storage.map((s) => (
+            <button
+              key={s.gb}
+              onClick={() => setGb(s.gb)}
+              className={cn(
+                "rounded-full border px-3.5 py-1.5 text-sm transition",
+                gb === s.gb ? "border-brand-400/60 bg-brand-500/20 text-white" : "border-white/10 text-white/55 hover:border-white/25",
+              )}
+            >
+              {s.gb}GB
+            </button>
+          ))}
+        </div>
 
         <div className="mt-6 flex items-center justify-between">
           <label className="text-xs font-semibold uppercase tracking-[0.16em] text-white/40">Quantity</label>
@@ -69,16 +91,13 @@ export function SavingsCalculator() {
           ))}
         </div>
 
-        {/* tier ladder */}
         <div className="mt-7 space-y-2">
           {WHOLESALE_TIERS.map((t, i) => (
             <div
               key={t.id}
               className={cn(
                 "flex items-center justify-between rounded-xl border px-4 py-2.5 text-sm transition",
-                i === tierIndex
-                  ? "border-brand-400/60 bg-brand-500/15 text-white"
-                  : "border-white/10 text-white/45",
+                i === tierIndex ? "border-brand-400/60 bg-brand-500/15 text-white" : "border-white/10 text-white/45",
               )}
             >
               <span>
@@ -93,9 +112,8 @@ export function SavingsCalculator() {
         </div>
       </div>
 
-      {/* result */}
       <motion.div
-        key={`${slug}-${tier.id}`}
+        key={`${slug}-${gb}-${tier.id}`}
         initial={{ opacity: 0.6, scale: 0.99 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3 }}
@@ -103,21 +121,14 @@ export function SavingsCalculator() {
       >
         <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-brand-600/30 blur-[90px]" />
         <span className="inline-flex w-fit items-center gap-2 rounded-full bg-brand-500/20 px-3 py-1 text-xs font-semibold text-brand-200">
-          {tier.label} tier
+          {tier.label} tier · {device.name} {gb}GB
         </span>
 
         <div className="mt-5">
           <p className="text-sm text-white/45">Your unit price</p>
           <div className="flex items-end gap-3">
-            <motion.span
-              key={unit}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="font-display text-5xl font-extrabold text-white"
-            >
-              {formatPrice(unit)}
-            </motion.span>
-            <span className="mb-1.5 text-white/40 line-through">{formatPrice(phone.price)}</span>
+            <span className="font-display text-5xl font-extrabold text-white">{formatPrice(unit)}</span>
+            <span className="mb-1.5 text-white/40 line-through">{formatPrice(sOpt.price)}</span>
           </div>
         </div>
 

@@ -16,6 +16,7 @@ import {
   Tag,
 } from "lucide-react";
 import { useCart, lineUnitPrice, lineTotal, cartSubtotal, itemKey } from "@/lib/cart-store";
+import { useAccount } from "@/lib/account-store";
 import { tierForQty } from "@/lib/wholesale";
 import { formatPrice, cn } from "@/lib/utils";
 import { GradeBadge } from "@/components/ui/Badge";
@@ -26,6 +27,7 @@ export function CartClient() {
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
   const clear = useCart((s) => s.clear);
+  const addOrder = useAccount((s) => s.addOrder);
 
   const [mounted, setMounted] = useState(false);
   const [placed, setPlaced] = useState(false);
@@ -39,7 +41,22 @@ export function CartClient() {
   const total = subtotal + tax;
 
   function placeOrder() {
-    setOrderId("RM-" + Math.floor(100000 + Math.random() * 899999));
+    const id = "RM-" + Math.floor(100000 + Math.random() * 899999);
+    addOrder({
+      id,
+      dateLabel: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+      total,
+      status: "Processing",
+      lines: items.map((i) => ({
+        name: i.name,
+        qty: i.qty,
+        gb: i.gb,
+        colorName: i.colorName,
+        mode: i.mode,
+        unit: lineUnitPrice(i),
+      })),
+    });
+    setOrderId(id);
     setPlaced(true);
     clear();
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -79,8 +96,8 @@ export function CartClient() {
           <ButtonLink href="/shop" size="lg">
             Keep shopping <ArrowRight className="h-4.5 w-4.5" />
           </ButtonLink>
-          <ButtonLink href="/" variant="secondary" size="lg">
-            Back home
+          <ButtonLink href="/account" variant="secondary" size="lg">
+            View your orders
           </ButtonLink>
         </div>
       </div>

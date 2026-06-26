@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ShoppingBag, Menu, X, Sparkles, Heart, ChevronDown, Smartphone, Tablet } from "lucide-react";
+import { ShoppingBag, Menu, X, Sparkles, Heart, ChevronDown, Smartphone, Tablet, User } from "lucide-react";
 import { useCart, cartCount } from "@/lib/cart-store";
 import { useWishlist } from "@/lib/wishlist-store";
 import { cn } from "@/lib/utils";
@@ -163,7 +163,7 @@ export function Navbar() {
               { href: "/sell", label: "Sell" },
               { href: "/wholesale", label: "Wholesale" },
               { href: "/#how", label: "How it works" },
-              { href: "/#certified", label: "Certified" },
+              { href: "/grades", label: "Grades" },
             ].map((l) => (
               <Link
                 key={l.href}
@@ -180,6 +180,13 @@ export function Navbar() {
 
           <div className="flex items-center gap-2">
             <SearchCommand />
+            <Link
+              href="/account"
+              aria-label="Account"
+              className="hidden h-10 w-10 place-items-center rounded-full bg-white/5 text-white ring-1 ring-white/10 transition hover:bg-white/10 sm:grid"
+            >
+              <User className="h-5 w-5" />
+            </Link>
             <Link
               href="/wishlist"
               aria-label="Wishlist"
@@ -230,7 +237,8 @@ export function Navbar() {
               { href: "/sell", label: "Sell your phone" },
               { href: "/wholesale", label: "Wholesale" },
               { href: "/wishlist", label: "Wishlist" },
-              { href: "/#certified", label: "Certified" },
+              { href: "/account", label: "Account" },
+              { href: "/grades", label: "Grades" },
             ].map((l) => (
               <Link key={l.href} href={l.href} className="block rounded-xl px-4 py-3 text-base font-medium text-white/80 hover:bg-white/5">
                 {l.label}

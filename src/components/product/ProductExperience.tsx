@@ -252,6 +252,12 @@ export function ProductExperience({ device }: { device: Device }) {
               );
             })}
           </div>
+          <p className="mt-2 text-xs leading-relaxed text-white/50">
+            {GRADES[gradeId].cosmetic}{" "}
+            <Link href="/grades" className="text-brand-300 hover:text-brand-200">
+              Grading explained →
+            </Link>
+          </p>
         </div>
 
         {/* qty + stock */}

@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, ShieldCheck } from "lucide-react";
 import { GRADES, GRADE_ORDER, type GradeId } from "@/lib/grades";
 import { Section, SectionHeading } from "@/components/ui/Section";
-import { PhoneMock } from "@/components/ui/PhoneMock";
+import { DeviceVisual } from "@/components/ui/DeviceVisual";
 
 const GUARANTEES = [
   "100% functional — every button, sensor & radio",
@@ -121,7 +121,15 @@ export function Grading() {
               className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-40 blur-[80px]"
               style={{ background: g.hex }}
             />
-            <PhoneMock colorHex={g.hex} accentHex={g.hexSoft} brand="Apple" tilt={false} className="h-80" />
+            <DeviceVisual
+              colorHex={g.hex}
+              accent={g.hexSoft}
+              brand="Apple"
+              type="phone"
+              cameraLayout="triple"
+              tilt={false}
+              className="h-80"
+            />
           </motion.div>
           <div
             className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full px-4 py-1.5 text-sm font-semibold"

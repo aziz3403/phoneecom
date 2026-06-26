@@ -13,13 +13,14 @@ import {
   PerformanceMonitor,
 } from "@react-three/drei";
 import { Phone3D } from "./Phone3D";
-import type { CameraLayout } from "@/lib/products";
+import type { CameraLayout, DeviceType } from "@/lib/products";
 
 interface PhoneCanvasProps {
   colorHex: string;
   accentHex: string;
   cameraLayout: CameraLayout;
   brand: string;
+  formFactor?: DeviceType;
   mode?: "hero" | "viewer" | "card";
   className?: string;
 }
@@ -42,12 +43,14 @@ export default function PhoneCanvas({
   accentHex,
   cameraLayout,
   brand,
+  formFactor = "phone",
   mode = "hero",
   className,
 }: PhoneCanvasProps) {
   const [dpr, setDpr] = useState(1.5);
   const isViewer = mode === "viewer";
   const isCard = mode === "card";
+  const camZ = formFactor === "tablet" ? 9.6 : 8.4;
 
   return (
     <Canvas
@@ -55,7 +58,7 @@ export default function PhoneCanvas({
       shadows
       dpr={dpr}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
-      camera={{ position: [0, 0.2, 8.4], fov: 32 }}
+      camera={{ position: [0, 0.2, camZ], fov: 32 }}
     >
       <PerformanceMonitor onIncline={() => setDpr(2)} onDecline={() => setDpr(1)} />
 
@@ -71,6 +74,7 @@ export default function PhoneCanvas({
             accentHex={accentHex}
             cameraLayout={cameraLayout}
             brand={brand}
+            formFactor={formFactor}
             spin={0.45}
           />
         ) : (
@@ -80,6 +84,7 @@ export default function PhoneCanvas({
               accentHex={accentHex}
               cameraLayout={cameraLayout}
               brand={brand}
+              formFactor={formFactor}
               spin={isViewer ? 0 : 0.35}
               reactive={!isViewer}
             />

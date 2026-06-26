@@ -1,5 +1,6 @@
 import { Hero } from "@/components/home/Hero";
 import { TrustMarquee } from "@/components/home/TrustMarquee";
+import { Categories } from "@/components/home/Categories";
 import { Stats } from "@/components/home/Stats";
 import { Featured } from "@/components/home/Featured";
 import { HowItWorks } from "@/components/home/HowItWorks";
@@ -13,6 +14,7 @@ export default function HomePage() {
     <>
       <Hero />
       <TrustMarquee />
+      <Categories />
       <Featured />
       <HowItWorks />
       <Grading />

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
-import { useCart, lineUnitPrice, lineTotal, cartSubtotal } from "@/lib/cart-store";
+import { useCart, lineUnitPrice, lineTotal, cartSubtotal, itemKey } from "@/lib/cart-store";
 import { formatPrice, cn } from "@/lib/utils";
 import { ButtonLink } from "@/components/ui/Button";
 import { GradeBadge } from "@/components/ui/Badge";
@@ -63,7 +63,7 @@ export function CartDrawer() {
                 <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
                   {items.map((item) => (
                     <div
-                      key={`${item.slug}-${item.mode}`}
+                      key={itemKey(item)}
                       className="flex gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3"
                     >
                       <div
@@ -80,11 +80,11 @@ export function CartDrawer() {
                           <div className="min-w-0">
                             <p className="truncate font-medium text-white">{item.name}</p>
                             <p className="text-xs text-white/45">
-                              {item.color} · {item.storage}GB
+                              {item.colorName} · {item.gb}GB
                             </p>
                           </div>
                           <button
-                            onClick={() => remove(item.slug, item.mode)}
+                            onClick={() => remove(itemKey(item))}
                             className="text-white/30 hover:text-rose-400"
                             aria-label="Remove"
                           >
@@ -102,14 +102,14 @@ export function CartDrawer() {
                         <div className="mt-auto flex items-center justify-between pt-2">
                           <div className="flex items-center gap-1 rounded-full bg-white/5 p-1">
                             <button
-                              onClick={() => setQty(item.slug, item.mode, item.qty - 1)}
+                              onClick={() => setQty(itemKey(item), item.qty - 1)}
                               className="grid h-7 w-7 place-items-center rounded-full text-white/70 hover:bg-white/10"
                             >
                               <Minus className="h-3.5 w-3.5" />
                             </button>
                             <span className="w-7 text-center text-sm font-semibold text-white">{item.qty}</span>
                             <button
-                              onClick={() => setQty(item.slug, item.mode, item.qty + 1)}
+                              onClick={() => setQty(itemKey(item), item.qty + 1)}
                               className="grid h-7 w-7 place-items-center rounded-full text-white/70 hover:bg-white/10"
                             >
                               <Plus className="h-3.5 w-3.5" />

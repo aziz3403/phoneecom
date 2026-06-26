@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Check, RotateCw, ScanLine, Sparkles } from "lucide-react";
-import { PHONES, getPhone, relatedPhones } from "@/lib/products";
-import PhoneViewer from "@/components/three/PhoneViewer";
-import { ProductBuyPanel } from "@/components/product/ProductBuyPanel";
+import { Check, ScanLine, Sparkles } from "lucide-react";
+import { DEVICES, getDevice, relatedDevices, startingPrice } from "@/lib/products";
+import { ProductExperience } from "@/components/product/ProductExperience";
+import { Reviews } from "@/components/product/Reviews";
+import { RecentlyViewed } from "@/components/product/RecentlyViewed";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { Reveal } from "@/components/ui/Reveal";
 
 export function generateStaticParams() {
-  return PHONES.map((p) => ({ slug: p.slug }));
+  return DEVICES.map((d) => ({ slug: d.slug }));
 }
 
 export async function generateMetadata({
@@ -19,29 +20,32 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const phone = getPhone(slug);
-  if (!phone) return { title: "Phone not found" };
+  const device = getDevice(slug);
+  if (!device) return { title: "Not found" };
   return {
-    title: `${phone.name} — ${phone.color}`,
-    description: `Certified pre-owned ${phone.name} (${phone.color}, ${phone.storage}GB) graded ${phone.grade}. ${phone.batteryHealth}% battery health, 12-month warranty.`,
+    title: `${device.name} — certified pre-owned`,
+    description: `Certified pre-owned ${device.name} from ${startingPrice(device)}. ${device.batteryHealth}% battery health, 12-month warranty, free 2-day shipping.`,
   };
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const phone = getPhone(slug);
-  if (!phone) notFound();
+  const device = getDevice(slug);
+  if (!device) notFound();
 
-  const related = relatedPhones(phone, 3);
+  const related = relatedDevices(device, 3);
   const specs: [string, string][] = [
-    ["Display", `${phone.screen}" OLED`],
-    ["Chip", phone.chip],
-    ["Memory", `${phone.ram}GB RAM`],
-    ["Storage", `${phone.storage}GB`],
-    ["Battery health", `${phone.batteryHealth}%`],
-    ["Connectivity", phone.fiveG ? "5G · Wi-Fi 6" : "4G LTE · Wi-Fi"],
-    ["Carrier", phone.carrier],
-    ["Released", String(phone.releaseYear)],
+    ["Display", `${device.screen}" ${device.type === "tablet" ? "Liquid Retina" : "OLED"}`],
+    ["Chip", device.chip],
+    ["Memory", `${device.ram}GB RAM`],
+    ["Storage", device.storage.map((s) => `${s.gb}GB`).join(" · ")],
+    ["Battery health", `${device.batteryHealth}%`],
+    [
+      "Connectivity",
+      device.fiveG ? "5G · Wi-Fi 6" : device.cellular ? "Wi-Fi + Cellular" : "Wi-Fi 6",
+    ],
+    ["Colors", `${device.colors.length} available`],
+    ["Released", String(device.releaseYear)],
   ];
 
   return (
@@ -51,45 +55,13 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <Link href="/shop" className="hover:text-white">
             Shop
           </Link>{" "}
-          · {phone.brand} · <span className="text-white/70">{phone.name}</span>
+          · {device.type === "tablet" ? "iPad" : device.brand} ·{" "}
+          <span className="text-white/70">{device.name}</span>
         </p>
       </div>
 
-      <div className="mx-auto mt-6 grid max-w-7xl gap-10 px-5 sm:px-8 lg:grid-cols-2">
-        {/* 3D viewer */}
-        <div>
-          <div className="relative aspect-square overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-b from-ink-800/60 to-ink-900/70">
-            <div
-              className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30 blur-[90px]"
-              style={{ background: phone.colorHex }}
-            />
-            <PhoneViewer
-              colorHex={phone.colorHex}
-              accentHex={phone.accentHex}
-              cameraLayout={phone.cameraLayout}
-              brand={phone.brand}
-              mode="viewer"
-              className="h-full w-full"
-            />
-            <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/40 px-4 py-1.5 text-xs text-white/70 backdrop-blur">
-              <span className="inline-flex items-center gap-1.5">
-                <RotateCw className="h-3.5 w-3.5" /> Drag to rotate · scroll to zoom
-              </span>
-            </div>
-          </div>
-
-          <div className="mt-4 flex items-center gap-3">
-            <span className="text-sm text-white/45">Colorway</span>
-            <span
-              className="h-7 w-7 rounded-full ring-2 ring-white/20 ring-offset-2 ring-offset-ink-950"
-              style={{ background: phone.colorHex }}
-            />
-            <span className="text-sm font-medium text-white">{phone.color}</span>
-          </div>
-        </div>
-
-        {/* purchase */}
-        <ProductBuyPanel phone={phone} />
+      <div className="mx-auto mt-6 max-w-7xl px-5 sm:px-8">
+        <ProductExperience device={device} />
       </div>
 
       {/* highlights */}
@@ -100,11 +72,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               Why you&apos;ll love it
             </h2>
             <p className="mt-3 text-white/55">
-              The standout reasons this {phone.brand} is a smart buy — certified, guaranteed, and
-              priced for the real world.
+              The standout reasons this {device.brand} {device.type === "tablet" ? "iPad" : "device"} is
+              a smart buy — certified, guaranteed, and priced for the real world.
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
-              {phone.features.map((f) => (
+              {device.features.map((f) => (
                 <span
                   key={f}
                   className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white/70"
@@ -117,11 +89,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
           <Reveal delay={0.1}>
             <ul className="space-y-3">
-              {phone.highlights.map((h) => (
-                <li
-                  key={h}
-                  className="flex items-start gap-3 rounded-2xl border border-white/10 bg-ink-850/50 p-4"
-                >
+              {device.highlights.map((h) => (
+                <li key={h} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-ink-850/50 p-4">
                   <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-mint-500/20">
                     <Check className="h-3.5 w-3.5 text-mint-400" />
                   </span>
@@ -138,7 +107,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <div className="grid gap-6 lg:grid-cols-2">
           <Reveal className="rounded-3xl border border-white/10 bg-ink-850/50 p-6 sm:p-8">
             <h3 className="font-display text-xl font-bold text-white">Tech specs</h3>
-            <dl className="mt-5 grid grid-cols-1 gap-x-8 gap-y-0 sm:grid-cols-2">
+            <dl className="mt-5 grid grid-cols-1 gap-x-8 sm:grid-cols-2">
               {specs.map(([k, v]) => (
                 <div key={k} className="flex justify-between border-b border-white/10 py-3">
                   <dt className="text-sm text-white/45">{k}</dt>
@@ -154,20 +123,20 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <h3 className="font-display text-xl font-bold text-white">The 50-point check</h3>
             </div>
             <p className="mt-3 text-sm text-white/55">
-              Before this device shipped, our lab verified each of these — and {phone.batteryHealth}%
+              Before this device shipped, our lab verified each of these — and {device.batteryHealth}%
               battery health was measured directly.
             </p>
             <div className="mt-5 grid grid-cols-2 gap-2.5">
               {[
                 "Touchscreen & display",
                 "Battery cycle count",
-                "Front & rear cameras",
-                "Face ID / fingerprint",
+                "Cameras & sensors",
+                "Face ID / Touch ID",
                 "Speakers & mics",
-                "Cellular & Wi-Fi",
+                "Wi-Fi & cellular",
                 "Buttons & haptics",
                 "Charging & ports",
-                "Water-resist seals",
+                "Housing integrity",
                 "Factory data wipe",
               ].map((c) => (
                 <div key={c} className="flex items-center gap-2 text-sm text-white/65">
@@ -182,15 +151,25 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         </div>
       </Section>
 
+      {/* reviews */}
+      <Section className="py-8">
+        <SectionHeading align="left" eyebrow="Customer reviews" title="What buyers say" />
+        <div className="mt-10">
+          <Reviews rating={device.rating} count={device.reviews} slug={device.slug} />
+        </div>
+      </Section>
+
       {/* related */}
       <Section>
         <SectionHeading align="left" eyebrow="You may also like" title="Complete the lineup" />
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {related.map((p, i) => (
-            <ProductCard key={p.id} phone={p} index={i} />
+          {related.map((d, i) => (
+            <ProductCard key={d.id} device={d} index={i} />
           ))}
         </div>
       </Section>
+
+      <RecentlyViewed exclude={device.slug} />
     </div>
   );
 }

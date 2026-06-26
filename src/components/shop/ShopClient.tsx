@@ -3,14 +3,30 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, SlidersHorizontal, X, Check, Zap } from "lucide-react";
-import { PHONES, BRANDS, STORAGE_OPTIONS, type Brand } from "@/lib/products";
+import {
+  DEVICES,
+  BRANDS,
+  COLOR_FAMILIES,
+  startingPrice,
+  type Brand,
+  type DeviceType,
+  type ColorFamily,
+} from "@/lib/products";
 import { GRADES, GRADE_ORDER, type GradeId } from "@/lib/grades";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { formatPrice, cn } from "@/lib/utils";
 
-const PRICES = PHONES.map((p) => p.price);
+const PRICES = DEVICES.map(startingPrice);
 const MIN_PRICE = Math.min(...PRICES);
 const MAX_PRICE = Math.max(...PRICES);
+const ALL_STORAGES = Array.from(new Set(DEVICES.flatMap((d) => d.storage.map((s) => s.gb)))).sort(
+  (a, b) => a - b,
+);
+const PRESENT_FAMILIES = COLOR_FAMILIES.filter((f) =>
+  DEVICES.some((d) => d.colors.some((c) => c.family === f)),
+);
+
+const TYPE_LABEL: Record<DeviceType, string> = { phone: "Phones", tablet: "iPads" };
 
 const SORTS = [
   { id: "featured", label: "Featured" },
@@ -19,8 +35,36 @@ const SORTS = [
   { id: "battery", label: "Best battery" },
   { id: "newest", label: "Newest" },
 ] as const;
-
 type SortId = (typeof SORTS)[number]["id"];
+
+interface Filters {
+  query: string;
+  types: Set<DeviceType>;
+  brands: Set<Brand>;
+  grades: Set<GradeId>;
+  storages: Set<number>;
+  colors: Set<ColorFamily>;
+  maxPrice: number;
+  fiveG: boolean;
+}
+
+type Dim = "type" | "brand" | "grade" | "storage" | "color" | "price" | "fiveg" | "query";
+
+function passes(d: (typeof DEVICES)[number], f: Filters, skip?: Dim): boolean {
+  if (skip !== "type" && f.types.size && !f.types.has(d.type)) return false;
+  if (skip !== "brand" && f.brands.size && !f.brands.has(d.brand)) return false;
+  if (skip !== "grade" && f.grades.size && !f.grades.has(d.grade)) return false;
+  if (skip !== "storage" && f.storages.size && !d.storage.some((s) => f.storages.has(s.gb))) return false;
+  if (skip !== "color" && f.colors.size && !d.colors.some((c) => f.colors.has(c.family))) return false;
+  if (skip !== "price" && startingPrice(d) > f.maxPrice) return false;
+  if (skip !== "fiveg" && f.fiveG && !d.fiveG) return false;
+  if (skip !== "query" && f.query) {
+    const q = f.query.toLowerCase();
+    const hay = `${d.brand} ${d.name} ${d.line} ${d.chip} ${d.colors.map((c) => c.name).join(" ")}`.toLowerCase();
+    if (!hay.includes(q)) return false;
+  }
+  return true;
+}
 
 function toggle<T>(set: Set<T>, value: T): Set<T> {
   const next = new Set(set);
@@ -31,17 +75,23 @@ function toggle<T>(set: Set<T>, value: T): Set<T> {
 
 export function ShopClient({
   initialBrand,
+  initialType,
   initialMax,
 }: {
   initialBrand?: string;
+  initialType?: string;
   initialMax?: number;
 }) {
   const [query, setQuery] = useState("");
+  const [types, setTypes] = useState<Set<DeviceType>>(
+    new Set(initialType === "tablet" || initialType === "phone" ? [initialType as DeviceType] : []),
+  );
   const [brands, setBrands] = useState<Set<Brand>>(
     new Set(initialBrand && BRANDS.includes(initialBrand as Brand) ? [initialBrand as Brand] : []),
   );
   const [grades, setGrades] = useState<Set<GradeId>>(new Set());
   const [storages, setStorages] = useState<Set<number>>(new Set());
+  const [colors, setColors] = useState<Set<ColorFamily>>(new Set());
   const [maxPrice, setMaxPrice] = useState<number>(
     initialMax && initialMax >= MIN_PRICE ? Math.min(initialMax, MAX_PRICE) : MAX_PRICE,
   );
@@ -49,26 +99,16 @@ export function ShopClient({
   const [sort, setSort] = useState<SortId>("featured");
   const [mobileFilters, setMobileFilters] = useState(false);
 
-  const filtered = useMemo(() => {
-    let list = PHONES.filter((p) => {
-      if (brands.size && !brands.has(p.brand)) return false;
-      if (grades.size && !grades.has(p.grade)) return false;
-      if (storages.size && !storages.has(p.storage)) return false;
-      if (p.price > maxPrice) return false;
-      if (fiveG && !p.fiveG) return false;
-      if (query) {
-        const q = query.toLowerCase();
-        if (!`${p.brand} ${p.name} ${p.color} ${p.chip}`.toLowerCase().includes(q)) return false;
-      }
-      return true;
-    });
+  const filters: Filters = { query, types, brands, grades, storages, colors, maxPrice, fiveG };
 
-    list = [...list].sort((a, b) => {
+  const filtered = useMemo(() => {
+    const list = DEVICES.filter((d) => passes(d, filters));
+    return [...list].sort((a, b) => {
       switch (sort) {
         case "price-asc":
-          return a.price - b.price;
+          return startingPrice(a) - startingPrice(b);
         case "price-desc":
-          return b.price - a.price;
+          return startingPrice(b) - startingPrice(a);
         case "battery":
           return b.batteryHealth - a.batteryHealth;
         case "newest":
@@ -77,16 +117,21 @@ export function ShopClient({
           return (b.popular ? 1 : 0) - (a.popular ? 1 : 0) || b.rating - a.rating;
       }
     });
-    return list;
-  }, [brands, grades, storages, maxPrice, fiveG, query, sort]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, types, brands, grades, storages, colors, maxPrice, fiveG, sort]);
+
+  const count = (dim: Dim, pred: (d: (typeof DEVICES)[number]) => boolean) =>
+    DEVICES.filter((d) => passes(d, filters, dim) && pred(d)).length;
 
   const activeCount =
-    brands.size + grades.size + storages.size + (fiveG ? 1 : 0) + (maxPrice < MAX_PRICE ? 1 : 0);
+    types.size + brands.size + grades.size + storages.size + colors.size + (fiveG ? 1 : 0) + (maxPrice < MAX_PRICE ? 1 : 0);
 
   function clearAll() {
+    setTypes(new Set());
     setBrands(new Set());
     setGrades(new Set());
     setStorages(new Set());
+    setColors(new Set());
     setMaxPrice(MAX_PRICE);
     setFiveG(false);
     setQuery("");
@@ -94,10 +139,30 @@ export function ShopClient({
 
   const filterPanel = (
     <div className="space-y-7">
+      <FilterGroup title="Type">
+        <div className="space-y-1.5">
+          {(["phone", "tablet"] as DeviceType[]).map((t) => (
+            <CheckRow
+              key={t}
+              checked={types.has(t)}
+              onClick={() => setTypes(toggle(types, t))}
+              label={TYPE_LABEL[t]}
+              count={count("type", (d) => d.type === t)}
+            />
+          ))}
+        </div>
+      </FilterGroup>
+
       <FilterGroup title="Brand">
         <div className="space-y-1.5">
           {BRANDS.map((b) => (
-            <CheckRow key={b} checked={brands.has(b)} onClick={() => setBrands(toggle(brands, b))} label={b} />
+            <CheckRow
+              key={b}
+              checked={brands.has(b)}
+              onClick={() => setBrands(toggle(brands, b))}
+              label={b}
+              count={count("brand", (d) => d.brand === b)}
+            />
           ))}
         </div>
       </FilterGroup>
@@ -111,6 +176,7 @@ export function ShopClient({
               onClick={() => setGrades(toggle(grades, id))}
               label={GRADES[id].label}
               dot={GRADES[id].hex}
+              count={count("grade", (d) => d.grade === id)}
             />
           ))}
         </div>
@@ -118,20 +184,38 @@ export function ShopClient({
 
       <FilterGroup title="Storage">
         <div className="flex flex-wrap gap-2">
-          {STORAGE_OPTIONS.map((s) => (
+          {ALL_STORAGES.map((s) => (
             <button
               key={s}
               onClick={() => setStorages(toggle(storages, s))}
               className={cn(
-                "rounded-full border px-3.5 py-1.5 text-sm transition",
-                storages.has(s)
-                  ? "border-brand-400/60 bg-brand-500/20 text-white"
-                  : "border-white/10 text-white/55 hover:border-white/25",
+                "rounded-full border px-3 py-1.5 text-sm transition",
+                storages.has(s) ? "border-brand-400/60 bg-brand-500/20 text-white" : "border-white/10 text-white/55 hover:border-white/25",
               )}
             >
-              {s}GB
+              {s >= 1024 ? "1TB" : `${s}GB`}
             </button>
           ))}
+        </div>
+      </FilterGroup>
+
+      <FilterGroup title="Color">
+        <div className="flex flex-wrap gap-2">
+          {PRESENT_FAMILIES.map((f) => {
+            const c = count("color", (d) => d.colors.some((cl) => cl.family === f));
+            return (
+              <button
+                key={f}
+                onClick={() => setColors(toggle(colors, f))}
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-xs transition",
+                  colors.has(f) ? "border-brand-400/60 bg-brand-500/20 text-white" : "border-white/10 text-white/55 hover:border-white/25",
+                )}
+              >
+                {f} <span className="text-white/35">{c}</span>
+              </button>
+            );
+          })}
         </div>
       </FilterGroup>
 
@@ -159,7 +243,7 @@ export function ShopClient({
         )}
       >
         <span className="inline-flex items-center gap-2">
-          <Zap className="h-4 w-4 text-glacier-300" /> 5G ready only
+          <Zap className="h-4 w-4 text-glacier-300" /> 5G only
         </span>
         <span className={cn("h-5 w-9 rounded-full p-0.5 transition", fiveG ? "bg-brand-500" : "bg-white/15")}>
           <span className={cn("block h-4 w-4 rounded-full bg-white transition", fiveG && "translate-x-4")} />
@@ -170,9 +254,8 @@ export function ShopClient({
 
   return (
     <div className="mx-auto grid max-w-7xl gap-8 px-5 pb-24 sm:px-8 lg:grid-cols-[260px_1fr]">
-      {/* desktop sidebar */}
       <aside className="hidden lg:block">
-        <div className="sticky top-24 rounded-3xl border border-white/10 bg-ink-850/50 p-6">
+        <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto rounded-3xl border border-white/10 bg-ink-850/50 p-6 [scrollbar-width:thin]">
           <div className="mb-5 flex items-center justify-between">
             <h2 className="font-display text-lg font-semibold text-white">Filters</h2>
             {activeCount > 0 && (
@@ -186,14 +269,13 @@ export function ShopClient({
       </aside>
 
       <div>
-        {/* search + sort bar */}
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="flex flex-1 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2.5">
             <Search className="h-4.5 w-4.5 text-white/40" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search iPhone, Galaxy, Pixel…"
+              placeholder="Search iPhone, Galaxy, iPad…"
               className="w-full bg-transparent text-sm text-white placeholder:text-white/35 focus:outline-none"
             />
             {query && (
@@ -227,27 +309,25 @@ export function ShopClient({
         </div>
 
         <p className="mb-5 text-sm text-white/45">
-          <span className="font-semibold text-white">{filtered.length}</span> phones
-          {brands.size === 1 ? ` · ${[...brands][0]}` : ""}
+          <span className="font-semibold text-white">{filtered.length}</span> devices
         </p>
 
         {filtered.length === 0 ? (
           <div className="grid place-items-center rounded-3xl border border-dashed border-white/15 py-24 text-center">
-            <p className="text-white/60">No phones match those filters.</p>
+            <p className="text-white/60">No devices match those filters.</p>
             <button onClick={clearAll} className="mt-3 text-brand-300 hover:text-brand-200">
               Clear filters
             </button>
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {filtered.map((p, i) => (
-              <ProductCard key={p.id} phone={p} index={i} />
+            {filtered.map((d, i) => (
+              <ProductCard key={d.id} device={d} index={i} />
             ))}
           </div>
         )}
       </div>
 
-      {/* mobile filter sheet */}
       <AnimatePresence>
         {mobileFilters && (
           <>
@@ -259,7 +339,7 @@ export function ShopClient({
               onClick={() => setMobileFilters(false)}
             />
             <motion.div
-              className="fixed inset-x-0 bottom-0 z-[70] max-h-[85vh] overflow-y-auto rounded-t-3xl border-t border-white/10 bg-ink-900 p-6 lg:hidden"
+              className="fixed inset-x-0 bottom-0 z-[70] max-h-[88vh] overflow-y-auto rounded-t-3xl border-t border-white/10 bg-ink-900 p-6 lg:hidden"
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
@@ -300,24 +380,27 @@ function CheckRow({
   onClick,
   label,
   dot,
+  count,
 }: {
   checked: boolean;
   onClick: () => void;
   label: string;
   dot?: string;
+  count?: number;
 }) {
   return (
     <button onClick={onClick} className="flex w-full items-center gap-2.5 py-1 text-left text-sm text-white/70 hover:text-white">
       <span
         className={cn(
-          "grid h-4.5 w-4.5 place-items-center rounded-md border transition",
+          "grid h-4.5 w-4.5 shrink-0 place-items-center rounded-md border transition",
           checked ? "border-brand-400 bg-brand-500" : "border-white/20",
         )}
       >
         {checked && <Check className="h-3 w-3 text-white" />}
       </span>
       {dot && <span className="h-2 w-2 rounded-full" style={{ background: dot }} />}
-      {label}
+      <span className="flex-1">{label}</span>
+      {count !== undefined && <span className="text-xs text-white/35">{count}</span>}
     </button>
   );
 }

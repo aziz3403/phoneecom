@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default async function ShopPage({
   searchParams,
 }: {
-  searchParams: Promise<{ brand?: string; max?: string }>;
+  searchParams: Promise<{ brand?: string; max?: string; type?: string }>;
 }) {
   const sp = await searchParams;
   const initialMax = sp.max ? Number(sp.max) : undefined;
@@ -32,7 +32,11 @@ export default async function ShopPage({
         </div>
       </section>
 
-      <ShopClient initialBrand={sp.brand} initialMax={Number.isFinite(initialMax) ? initialMax : undefined} />
+      <ShopClient
+        initialBrand={sp.brand}
+        initialType={sp.type}
+        initialMax={Number.isFinite(initialMax) ? initialMax : undefined}
+      />
     </div>
   );
 }

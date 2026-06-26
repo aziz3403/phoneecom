@@ -15,7 +15,7 @@ import {
   CheckCircle2,
   Tag,
 } from "lucide-react";
-import { useCart, lineUnitPrice, lineTotal, cartSubtotal } from "@/lib/cart-store";
+import { useCart, lineUnitPrice, lineTotal, cartSubtotal, itemKey } from "@/lib/cart-store";
 import { tierForQty } from "@/lib/wholesale";
 import { formatPrice, cn } from "@/lib/utils";
 import { GradeBadge } from "@/components/ui/Badge";
@@ -126,7 +126,7 @@ export function CartClient() {
           <AnimatePresence initial={false}>
             {items.map((item) => (
               <motion.div
-                key={`${item.slug}-${item.mode}`}
+                key={itemKey(item)}
                 layout
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -148,7 +148,7 @@ export function CartClient() {
                         {item.name}
                       </Link>
                       <p className="text-sm text-white/45">
-                        {item.color} · {item.storage}GB
+                        {item.colorName} · {item.gb}GB
                       </p>
                       <div className="mt-2 flex flex-wrap items-center gap-2">
                         <GradeBadge grade={item.grade} size="sm" />
@@ -160,7 +160,7 @@ export function CartClient() {
                       </div>
                     </div>
                     <button
-                      onClick={() => remove(item.slug, item.mode)}
+                      onClick={() => remove(itemKey(item))}
                       className="text-white/30 hover:text-rose-400"
                       aria-label="Remove"
                     >
@@ -171,14 +171,14 @@ export function CartClient() {
                   <div className="mt-auto flex items-center justify-between pt-3">
                     <div className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1">
                       <button
-                        onClick={() => setQty(item.slug, item.mode, item.qty - 1)}
+                        onClick={() => setQty(itemKey(item), item.qty - 1)}
                         className="grid h-8 w-8 place-items-center rounded-full text-white/70 hover:bg-white/10"
                       >
                         <Minus className="h-3.5 w-3.5" />
                       </button>
                       <span className="w-9 text-center text-sm font-semibold text-white">{item.qty}</span>
                       <button
-                        onClick={() => setQty(item.slug, item.mode, item.qty + 1)}
+                        onClick={() => setQty(itemKey(item), item.qty + 1)}
                         className="grid h-8 w-8 place-items-center rounded-full text-white/70 hover:bg-white/10"
                       >
                         <Plus className="h-3.5 w-3.5" />

@@ -3,10 +3,10 @@ import { Section } from "@/components/ui/Section";
 import { Reveal } from "@/components/ui/Reveal";
 import { ButtonLink } from "@/components/ui/Button";
 import { ProductCard } from "@/components/ui/ProductCard";
-import { popularPhones } from "@/lib/products";
+import { popularDevices } from "@/lib/products";
 
 export function Featured() {
-  const phones = popularPhones().slice(0, 4);
+  const devices = popularDevices().slice(0, 4);
   return (
     <Section>
       <div className="flex flex-wrap items-end justify-between gap-6">
@@ -26,8 +26,8 @@ export function Featured() {
       </div>
 
       <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {phones.map((p, i) => (
-          <ProductCard key={p.id} phone={p} index={i} />
+        {devices.map((d, i) => (
+          <ProductCard key={d.id} device={d} index={i} />
         ))}
       </div>
     </Section>

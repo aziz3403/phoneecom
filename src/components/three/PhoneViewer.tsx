@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useRef } from "react";
 import { useInView } from "framer-motion";
-import type { CameraLayout } from "@/lib/products";
+import type { CameraLayout, DeviceType } from "@/lib/products";
 import { cn } from "@/lib/utils";
 
 const PhoneCanvas = dynamic(() => import("./PhoneCanvas"), {
@@ -33,6 +33,7 @@ interface PhoneViewerProps {
   accentHex: string;
   cameraLayout: CameraLayout;
   brand: string;
+  formFactor?: DeviceType;
   mode?: "hero" | "viewer" | "card";
   lazy?: boolean;
   className?: string;

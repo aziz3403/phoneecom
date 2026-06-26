@@ -5,10 +5,11 @@ const COLS = [
   {
     title: "Shop",
     links: [
-      { label: "All phones", href: "/shop" },
+      { label: "All devices", href: "/shop" },
+      { label: "Phones", href: "/shop?type=phone" },
+      { label: "iPads", href: "/shop?type=tablet" },
       { label: "Apple", href: "/shop?brand=Apple" },
       { label: "Samsung", href: "/shop?brand=Samsung" },
-      { label: "Google", href: "/shop?brand=Google" },
       { label: "Under $300", href: "/shop?max=300" },
     ],
   },

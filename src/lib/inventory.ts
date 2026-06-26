@@ -2,12 +2,16 @@ import snapshot from "@/data/inventory-snapshot.json";
 import type { Brand, CameraLayout, DeviceType } from "./products";
 import type { GradeId } from "./grades";
 
+/** Models/colors we never list (parts units, cosmetic-fail, sticker variants, insurance returns). */
+export const EXCLUDE_RE = /U\/P|DISCOLOR|HOLOGRAM|ASURION/i;
+
 export interface InvRecord {
   model: string;
   storage: string;
   color: string;
   manufacturer: string;
-  grades: { aPlus: number; a: number; ab: number; b: number; c: number; raw: number; new: number };
+  // RAW (salvage) grade is intentionally excluded from the storefront.
+  grades: { aPlus: number; a: number; ab: number; b: number; c: number; new: number };
   total: number;
 }
 
@@ -191,7 +195,7 @@ function recordsFromCsv(text: string): InvRecord[] {
   const idx = (name: string) => header.findIndex((h) => h === name.toLowerCase());
   const ci = {
     model: idx("model"), storage: idx("storage"), color: idx("color"), man: idx("manufacturer"),
-    aPlus: idx("a+"), a: idx("a"), ab: idx("ab"), b: idx("b"), c: idx("c"), raw: idx("raw"), nw: idx("new"), total: idx("total"),
+    aPlus: idx("a+"), a: idx("a"), ab: idx("ab"), b: idx("b"), c: idx("c"), nw: idx("new"), total: idx("total"),
   };
   if (ci.model < 0 || ci.total < 0) return [];
   const num = (r: string[], i: number) => (i >= 0 ? parseInt((r[i] || "").trim(), 10) || 0 : 0);
@@ -199,15 +203,16 @@ function recordsFromCsv(text: string): InvRecord[] {
   for (let i = 1; i < rows.length; i++) {
     const r = rows[i];
     const model = (r[ci.model] || "").trim();
-    if (!model) continue;
-    out.push({
-      model,
-      storage: (r[ci.storage] || "").trim(),
-      color: (r[ci.color] || "").trim(),
-      manufacturer: (r[ci.man] || "").trim(),
-      grades: { aPlus: num(r, ci.aPlus), a: num(r, ci.a), ab: num(r, ci.ab), b: num(r, ci.b), c: num(r, ci.c), raw: num(r, ci.raw), new: num(r, ci.nw) },
-      total: num(r, ci.total),
-    });
+    if (!model || /^model$/i.test(model)) continue;
+    const color = (r[ci.color] || "").trim();
+    if (EXCLUDE_RE.test(model) || EXCLUDE_RE.test(color)) continue; // U/P, discolored, hologram, Asurion
+    const grades = {
+      aPlus: num(r, ci.aPlus), a: num(r, ci.a), ab: num(r, ci.ab), b: num(r, ci.b), c: num(r, ci.c), new: num(r, ci.nw),
+    };
+    // RAW excluded entirely — sellable stock is the sum of the kept grades.
+    const total = grades.aPlus + grades.a + grades.ab + grades.b + grades.c + grades.new;
+    if (total <= 0) continue;
+    out.push({ model, storage: (r[ci.storage] || "").trim(), color, manufacturer: (r[ci.man] || "").trim(), grades, total });
   }
   return out;
 }

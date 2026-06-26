@@ -8,6 +8,7 @@ import { ShoppingBag, Menu, X, Sparkles, Heart, ChevronDown, Smartphone, Tablet 
 import { useCart, cartCount } from "@/lib/cart-store";
 import { useWishlist } from "@/lib/wishlist-store";
 import { cn } from "@/lib/utils";
+import { SearchCommand } from "./SearchCommand";
 
 const MEGA = [
   {
@@ -159,6 +160,7 @@ export function Navbar() {
             </div>
 
             {[
+              { href: "/sell", label: "Sell" },
               { href: "/wholesale", label: "Wholesale" },
               { href: "/#how", label: "How it works" },
               { href: "/#certified", label: "Certified" },
@@ -177,6 +179,7 @@ export function Navbar() {
           </nav>
 
           <div className="flex items-center gap-2">
+            <SearchCommand />
             <Link
               href="/wishlist"
               aria-label="Wishlist"
@@ -224,6 +227,7 @@ export function Navbar() {
               { href: "/shop?type=phone", label: "Phones" },
               { href: "/shop?type=tablet", label: "iPads" },
               { href: "/shop", label: "All devices" },
+              { href: "/sell", label: "Sell your phone" },
               { href: "/wholesale", label: "Wholesale" },
               { href: "/wishlist", label: "Wishlist" },
               { href: "/#certified", label: "Certified" },

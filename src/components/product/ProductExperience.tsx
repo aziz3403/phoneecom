@@ -25,6 +25,7 @@ import { GRADES, GRADE_ORDER, type GradeId } from "@/lib/grades";
 import { unitPrice, MOQ } from "@/lib/wholesale";
 import { formatPrice, pct, cn } from "@/lib/utils";
 import { GradeBadge } from "@/components/ui/Badge";
+import { DeviceVisual } from "@/components/ui/DeviceVisual";
 import PhoneViewer from "@/components/three/PhoneViewer";
 
 const scoreOf = (id: GradeId) => GRADES[id].score;
@@ -42,6 +43,7 @@ export function ProductExperience({ device }: { device: Device }) {
   const [gradeId, setGradeId] = useState<GradeId>(device.grade);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+  const [view, setView] = useState<"3d" | "front" | "back">("3d");
 
   useEffect(() => {
     visit(device.slug);
@@ -93,23 +95,56 @@ export function ProductExperience({ device }: { device: Device }) {
             className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30 blur-[90px] transition-colors duration-500"
             style={{ background: color.hex }}
           />
-          <PhoneViewer
-            colorHex={color.hex}
-            accentHex={color.accent}
-            cameraLayout={device.cameraLayout}
-            brand={device.brand}
-            formFactor={device.type}
-            mode="viewer"
-            className="h-full w-full"
-          />
-          <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/40 px-4 py-1.5 text-xs text-white/70 backdrop-blur">
-            <span className="inline-flex items-center gap-1.5">
-              <RotateCw className="h-3.5 w-3.5" /> Drag to rotate · scroll to zoom
-            </span>
-          </div>
+          {view === "3d" ? (
+            <>
+              <PhoneViewer
+                colorHex={color.hex}
+                accentHex={color.accent}
+                cameraLayout={device.cameraLayout}
+                brand={device.brand}
+                formFactor={device.type}
+                mode="viewer"
+                className="h-full w-full"
+              />
+              <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/40 px-4 py-1.5 text-xs text-white/70 backdrop-blur">
+                <span className="inline-flex items-center gap-1.5">
+                  <RotateCw className="h-3.5 w-3.5" /> Drag to rotate · scroll to zoom
+                </span>
+              </div>
+            </>
+          ) : (
+            <div className="grid h-full w-full place-items-center p-12">
+              <DeviceVisual
+                colorHex={color.hex}
+                accent={color.accent}
+                brand={device.brand}
+                type={device.type}
+                cameraLayout={device.cameraLayout}
+                face={view}
+                tilt={false}
+                className="h-full"
+              />
+            </div>
+          )}
         </div>
-        <p className="mt-4 text-center text-sm text-white/45">
-          Showing <span className="font-medium text-white">{color.name}</span> · 3D preview
+
+        {/* view toggle */}
+        <div className="mt-4 flex items-center justify-center gap-2">
+          {(["3d", "front", "back"] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={cn(
+                "rounded-xl border px-5 py-2 text-xs font-medium uppercase tracking-wide transition",
+                view === v ? "border-brand-400/60 bg-brand-500/15 text-white" : "border-white/10 text-white/55 hover:border-white/30",
+              )}
+            >
+              {v === "3d" ? "3D" : v}
+            </button>
+          ))}
+        </div>
+        <p className="mt-2 text-center text-sm text-white/45">
+          Showing <span className="font-medium text-white">{color.name}</span>
         </p>
       </div>
 

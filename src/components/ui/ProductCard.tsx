@@ -128,7 +128,7 @@ export function ProductCard({ device, index = 0 }: { device: Device; index?: num
           <div className="mt-3 flex items-center gap-3 text-xs text-white/50">
             <span className="inline-flex items-center gap-1">
               <BatteryMedium className="h-3.5 w-3.5 text-mint-400" />
-              {device.batteryHealth}%
+              80%+
             </span>
             <span className="inline-flex items-center gap-1">
               <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />

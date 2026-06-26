@@ -1,4 +1,6 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 import type { Brand, CameraLayout, DeviceType } from "@/lib/products";
 import { cn } from "@/lib/utils";
 
@@ -16,8 +18,9 @@ interface DeviceVisualProps {
 }
 
 /**
- * Studio-style device render in pure CSS — phone or tablet, any colorway.
- * If `image` is supplied it renders that real photo instead (object-contain).
+ * Studio-style device render — phone or tablet, any colorway.
+ * If `image` is supplied it renders that photo; if the photo fails to load it
+ * gracefully falls back to the CSS render, so a visual always appears.
  */
 export function DeviceVisual({
   colorHex,
@@ -31,15 +34,18 @@ export function DeviceVisual({
   tilt = true,
   className,
 }: DeviceVisualProps) {
-  if (image) {
+  const [failed, setFailed] = useState(false);
+
+  if (image && !failed) {
     return (
       <div className={cn("relative h-full w-full", className)}>
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src={image}
           alt={alt}
-          fill
-          className="object-contain drop-shadow-[0_18px_40px_rgba(0,0,0,0.55)]"
-          sizes="(max-width:768px) 50vw, 320px"
+          loading="lazy"
+          onError={() => setFailed(true)}
+          className="h-full w-full object-contain drop-shadow-[0_18px_40px_rgba(0,0,0,0.55)]"
         />
       </div>
     );
@@ -47,7 +53,6 @@ export function DeviceVisual({
 
   const isTablet = type === "tablet";
   const isApple = brand === "Apple";
-  // elliptical % radius scales with size
   const radius = isTablet ? "5% / 3.6%" : "13% / 6.2%";
   const aspect = isTablet ? "10 / 13.2" : "10 / 20.6";
   const bezel = isTablet ? 5 : 4;
@@ -73,7 +78,6 @@ export function DeviceVisual({
           <BackFace colorHex={colorHex} accent={accent} isTablet={isTablet} layout={cameraLayout} radius={radius} />
         )}
 
-        {/* side button (phones only) */}
         {!isTablet && face === "front" && (
           <span
             className="absolute right-[-2px] top-[24%] h-[11%] w-[3px] rounded-full"
@@ -103,17 +107,14 @@ function FrontFace({
       className="relative h-full w-full overflow-hidden"
       style={{ borderRadius: `calc(${isTablet ? "0.7" : "0.82"} * (${radius}))` }}
     >
-      {/* wallpaper */}
       <div
         className="absolute inset-0"
         style={{
           background: `radial-gradient(120% 75% at 28% 8%, ${accent}dd, transparent 55%), radial-gradient(120% 85% at 82% 92%, #38d1ff55, transparent 52%), radial-gradient(90% 60% at 60% 50%, ${colorHex}66, transparent 60%), linear-gradient(160deg, #0c0c1a, #050509)`,
         }}
       />
-      {/* glossy diagonal reflection */}
       <div className="absolute -left-1/3 top-0 h-full w-1/2 rotate-[14deg] bg-gradient-to-r from-white/0 via-white/12 to-white/0" />
 
-      {/* notch / island / punch-hole / tablet camera */}
       {isTablet ? (
         <span className="absolute left-1/2 top-[1.6%] h-[1.6%] w-[1.6%] -translate-x-1/2 rounded-full bg-black/80 ring-1 ring-white/10" />
       ) : isApple ? (
@@ -154,7 +155,6 @@ function BackFace({
         background: `linear-gradient(155deg, color-mix(in oklab, ${colorHex} 88%, white 10%), ${colorHex} 60%, color-mix(in oklab, ${colorHex} 80%, black 26%))`,
       }}
     >
-      {/* camera module */}
       {isTablet ? (
         <div className="absolute left-[8%] top-[5%] grid h-[10%] w-[10%] place-items-center rounded-[26%] bg-black/40">
           {lens("t", "h-[55%] w-[55%]")}
@@ -182,14 +182,12 @@ function BackFace({
           {lens("a", "h-[58%] w-[58%]")}
         </div>
       ) : (
-        // dual
         <div className="absolute left-[7%] top-[6%] grid h-[20%] w-[20%] grid-cols-1 grid-rows-2 place-items-center gap-[10%] rounded-[26%] bg-black/35 p-[10%]">
           {lens("a", "h-[80%] aspect-square")}
           {lens("b", "h-[80%] aspect-square")}
         </div>
       )}
 
-      {/* subtle logo hint */}
       <div className="absolute left-1/2 top-1/2 h-[8%] w-[8%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/5" />
     </div>
   );

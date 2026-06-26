@@ -110,7 +110,7 @@ export function Hero() {
               <BatteryFull className="h-5 w-5 text-mint-400" />
               <div>
                 <p className="text-xs text-white/50">Battery health</p>
-                <p className="font-display text-lg font-bold text-white">97%</p>
+                <p className="font-display text-lg font-bold text-white">80%+</p>
               </div>
             </div>
           </motion.div>

@@ -26,7 +26,7 @@ const ROWS: { label: string; get: (d: Device) => string }[] = [
   { label: "Chip", get: (d) => d.chip },
   { label: "RAM", get: (d) => `${d.ram}GB` },
   { label: "Display", get: (d) => `${d.screen}"` },
-  { label: "Battery health", get: (d) => `${d.batteryHealth}%` },
+  { label: "Battery health", get: () => "80%+ guaranteed" },
   { label: "Storage", get: (d) => d.storage.map((s) => (s.gb >= 1024 ? "1TB" : `${s.gb}GB`)).join(" · ") },
   { label: "Cameras", get: (d) => CAMERA_LABEL[d.cameraLayout] },
   { label: "5G", get: (d) => (d.fiveG ? "Yes" : "—") },

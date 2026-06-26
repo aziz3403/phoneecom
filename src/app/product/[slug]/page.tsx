@@ -24,7 +24,7 @@ export async function generateMetadata({
   if (!device) return { title: "Not found" };
   return {
     title: `${device.name} — certified pre-owned`,
-    description: `Certified pre-owned ${device.name} from ${startingPrice(device)}. ${device.batteryHealth}% battery health, 12-month warranty, free 2-day shipping.`,
+    description: `Certified pre-owned ${device.name} from ${startingPrice(device)}. Guaranteed 80%+ battery, fully unlocked, 12-month warranty, free 2-day shipping.`,
   };
 }
 
@@ -39,7 +39,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     ["Chip", device.chip],
     ["Memory", `${device.ram}GB RAM`],
     ["Storage", device.storage.map((s) => `${s.gb}GB`).join(" · ")],
-    ["Battery health", `${device.batteryHealth}%`],
+    ["Battery health", "80%+ guaranteed"],
     [
       "Connectivity",
       device.fiveG ? "5G · Wi-Fi 6" : device.cellular ? "Wi-Fi + Cellular" : "Wi-Fi 6",
@@ -123,8 +123,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <h3 className="font-display text-xl font-bold text-white">The 50-point check</h3>
             </div>
             <p className="mt-3 text-sm text-white/55">
-              Before this device shipped, our lab verified each of these — and {device.batteryHealth}%
-              battery health was measured directly.
+              Before this device shipped, our lab verified each of these — and every unit is
+              guaranteed fully unlocked, fully functional, with 80%+ battery health.
             </p>
             <div className="mt-5 grid grid-cols-2 gap-2.5">
               {[

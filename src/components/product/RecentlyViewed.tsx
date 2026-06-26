@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRecent } from "@/lib/recent-store";
-import { getDevice, startingPrice } from "@/lib/products";
+import { getDevice, startingPrice, renderSrc } from "@/lib/products";
 import { DeviceVisual } from "@/components/ui/DeviceVisual";
 import { formatPrice } from "@/lib/utils";
 
@@ -40,7 +40,7 @@ export function RecentlyViewed({ exclude }: { exclude?: string }) {
                   brand={d.brand}
                   type={d.type}
                   cameraLayout={d.cameraLayout}
-                  image={d.image}
+                  image={d.image ?? renderSrc(d.slug)}
                   alt={d.name}
                   className="h-full"
                 />

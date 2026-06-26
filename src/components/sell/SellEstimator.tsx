@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Banknote, CreditCard, CheckCircle2, ArrowRight, Truck } from "lucide-react";
-import { DEVICES, baseStorage, storageFor, BRANDS, type Brand } from "@/lib/products";
+import { DEVICES, baseStorage, storageFor, BRANDS, renderSrc, type Brand } from "@/lib/products";
 import { DeviceVisual } from "@/components/ui/DeviceVisual";
 import { formatPrice, cn } from "@/lib/utils";
 
@@ -160,6 +160,7 @@ export function SellEstimator() {
                     brand={device.brand}
                     type={device.type}
                     cameraLayout={device.cameraLayout}
+                    image={device.image ?? renderSrc(device.slug)}
                     tilt={false}
                     className="h-full"
                   />

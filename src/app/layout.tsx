@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
+import { SITE_URL } from "@/lib/site";
 
 const display = Sora({
   variable: "--font-display",
@@ -17,6 +18,7 @@ const sans = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "reMint — Certified Pre-Owned Phones · Retail & Wholesale",
     template: "%s · reMint",
@@ -37,6 +39,12 @@ export const metadata: Metadata = {
     description:
       "Mint-condition pre-owned smartphones with a 12-month warranty. Plus volume pricing for resellers and enterprises.",
     type: "website",
+    siteName: "reMint",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "reMint — Certified Pre-Owned Phones",
+    description: "Premium phones, half the price. Certified pre-owned iPhone, Galaxy & iPad — retail & wholesale.",
   },
 };
 

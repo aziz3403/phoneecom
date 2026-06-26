@@ -25,10 +25,10 @@ const COLS = [
   {
     title: "Trust",
     links: [
-      { label: "How grading works", href: "/#certified" },
-      { label: "12-month warranty", href: "/#how" },
-      { label: "30-day returns", href: "/#how" },
-      { label: "Reviews", href: "/#reviews" },
+      { label: "How grading works", href: "/grades" },
+      { label: "Shipping & returns", href: "/help" },
+      { label: "Warranty", href: "/help" },
+      { label: "Compare devices", href: "/compare" },
     ],
   },
 ];

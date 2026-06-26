@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 const POLICIES = [
   { icon: Truck, title: "Free 2-day shipping", body: "Carbon-neutral delivery on every order in the contiguous US, with tracking." },
-  { icon: RefreshCw, title: "30-day returns", body: "Changed your mind? Send it back free within 30 days for a full refund." },
+  { icon: RefreshCw, title: "14-day RMA", body: "Not satisfied? Return within 14 days for a full refund — prepaid label included." },
   { icon: ShieldCheck, title: "12-month warranty", body: "Every device is covered against hardware faults for a full year." },
   { icon: CreditCard, title: "Flexible payment", body: "Pay in full or split into monthly installments at checkout." },
 ];

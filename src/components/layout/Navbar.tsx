@@ -16,6 +16,7 @@ const MEGA = [
     links: [
       { label: "All phones", href: "/shop?type=phone" },
       { label: "iPads & tablets", href: "/shop?type=tablet" },
+      { label: "Live inventory", href: "/inventory" },
       { label: "Everything", href: "/shop" },
     ],
   },
@@ -86,7 +87,7 @@ export function Navbar() {
           >
             <div className="mx-auto flex h-8 max-w-7xl items-center justify-center gap-2 px-5 text-center text-xs font-medium sm:text-sm">
               <Sparkles className="h-3.5 w-3.5" />
-              Free 2-day shipping + 12-month warranty on every device · trade pricing for businesses
+              Every device fully unlocked · 80%+ battery · 12-month warranty · free 2-day shipping
               <button
                 onClick={() => setShowBar(false)}
                 aria-label="Dismiss"
@@ -160,9 +161,9 @@ export function Navbar() {
             </div>
 
             {[
+              { href: "/inventory", label: "Inventory" },
               { href: "/sell", label: "Sell" },
               { href: "/wholesale", label: "Wholesale" },
-              { href: "/#how", label: "How it works" },
               { href: "/grades", label: "Grades" },
             ].map((l) => (
               <Link
@@ -234,6 +235,7 @@ export function Navbar() {
               { href: "/shop?type=phone", label: "Phones" },
               { href: "/shop?type=tablet", label: "iPads" },
               { href: "/shop", label: "All devices" },
+              { href: "/inventory", label: "Live inventory" },
               { href: "/sell", label: "Sell your phone" },
               { href: "/wholesale", label: "Wholesale" },
               { href: "/wishlist", label: "Wishlist" },

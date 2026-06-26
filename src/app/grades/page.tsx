@@ -17,8 +17,8 @@ const GUARANTEES = [
   "Genuine battery at 80%+ health (most far higher)",
   "Data wiped & sanitized to factory standard",
   "12-month warranty regardless of cosmetic grade",
-  "Unlocked to all carriers unless noted",
-  "30-day no-questions returns",
+  "Fully unlocked to all carriers",
+  "14-day RMA — return it if you're not satisfied",
 ];
 
 const FAQ = [
@@ -32,7 +32,7 @@ const FAQ = [
   },
   {
     q: "What battery health can I expect?",
-    a: "Every battery is verified at 80%+ health. The exact figure is listed on each product page, and most devices come in well above the minimum.",
+    a: "Every device is guaranteed at 80%+ battery health with a genuine cell — most come in well above the minimum. Every phone is also fully unlocked and fully functional.",
   },
 ];
 

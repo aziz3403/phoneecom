@@ -40,7 +40,7 @@ export function Footer() {
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 border-b border-white/10 px-5 py-10 sm:px-8 md:grid-cols-3">
         {[
           { icon: ShieldCheck, title: "Certified pre-owned", sub: "50-point inspection on every device" },
-          { icon: RefreshCw, title: "30-day returns", sub: "Changed your mind? Send it back free" },
+          { icon: RefreshCw, title: "14-day RMA", sub: "Not satisfied? Return within 14 days" },
           { icon: Truck, title: "Free 2-day shipping", sub: "Carbon-neutral on every order" },
         ].map((f) => (
           <div key={f.title} className="flex items-center gap-3">

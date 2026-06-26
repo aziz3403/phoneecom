@@ -16,7 +16,7 @@ const FAQ = [
   },
   {
     q: "What's your return policy?",
-    a: "You have 30 days to change your mind. Send it back in its original condition for a full refund — no restocking fee, no questions asked. We email you a prepaid label.",
+    a: "We offer a 14-day RMA. If you're not satisfied, start a return within 14 days and send it back in its original condition for a full refund — no restocking fee. We email you a prepaid label.",
   },
   {
     q: "Are the phones unlocked?",
@@ -28,7 +28,7 @@ const FAQ = [
   },
   {
     q: "How does battery health work?",
-    a: "Every battery is verified at 80%+ health, and the exact figure is shown on each product page. Most devices come in well above the minimum, and a genuine cell is guaranteed.",
+    a: "Every device is guaranteed at 80%+ battery health with a genuine cell. Most come in well above the minimum, and every phone is fully unlocked and fully functional.",
   },
   {
     q: "Can I pay over time?",

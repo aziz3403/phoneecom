@@ -21,7 +21,7 @@ const STEPS = [
   {
     icon: Truck,
     title: "Warranty & ship",
-    body: "12-month warranty, 30-day returns, free carbon-neutral 2-day delivery on every order.",
+    body: "12-month warranty, 14-day RMA, free carbon-neutral 2-day delivery on every order.",
   },
 ];
 

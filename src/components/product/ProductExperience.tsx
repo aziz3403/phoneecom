@@ -324,7 +324,7 @@ export function ProductExperience({ device }: { device: Device }) {
         <div className="mt-6 grid grid-cols-3 gap-3 text-center">
           {[
             { icon: ShieldCheck, label: "12-mo warranty" },
-            { icon: RefreshCw, label: "30-day returns" },
+            { icon: RefreshCw, label: "14-day RMA" },
             { icon: Truck, label: "Free 2-day" },
           ].map((b) => (
             <div key={b.label} className="rounded-2xl border border-white/10 bg-white/[0.03] px-2 py-4">
@@ -334,12 +334,14 @@ export function ProductExperience({ device }: { device: Device }) {
           ))}
         </div>
 
-        {/* battery */}
+        {/* guarantees */}
         <div className="mt-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-          <BatteryRing value={device.batteryHealth} />
+          <BatteryRing />
           <div>
-            <p className="text-xs uppercase tracking-wider text-white/40">Battery health</p>
-            <p className="mt-0.5 text-sm font-medium text-white">Verified at {device.batteryHealth}% · genuine cell</p>
+            <p className="text-xs uppercase tracking-wider text-white/40">Guaranteed on every device</p>
+            <p className="mt-0.5 text-sm font-medium text-white">
+              80%+ battery health · fully unlocked · fully functional
+            </p>
           </div>
         </div>
       </div>
@@ -347,9 +349,10 @@ export function ProductExperience({ device }: { device: Device }) {
   );
 }
 
-function BatteryRing({ value }: { value: number }) {
+function BatteryRing() {
   const r = 26;
   const c = 2 * Math.PI * r;
+  const fill = 0.86;
   return (
     <div className="relative h-16 w-16 shrink-0">
       <svg viewBox="0 0 64 64" className="h-16 w-16 -rotate-90">
@@ -364,12 +367,12 @@ function BatteryRing({ value }: { value: number }) {
           strokeLinecap="round"
           strokeDasharray={c}
           initial={{ strokeDashoffset: c }}
-          whileInView={{ strokeDashoffset: c - (value / 100) * c }}
+          whileInView={{ strokeDashoffset: c - fill * c }}
           viewport={{ once: true }}
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
         />
       </svg>
-      <span className="absolute inset-0 grid place-items-center font-display text-sm font-bold text-white">{value}%</span>
+      <span className="absolute inset-0 grid place-items-center font-display text-xs font-bold text-white">80%+</span>
     </div>
   );
 }

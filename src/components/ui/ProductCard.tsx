@@ -92,6 +92,7 @@ export function ProductCard({ device, index = 0 }: { device: Device; index?: num
             cameraLayout={device.cameraLayout}
             image={device.image ?? renderSrc(device.slug)}
             alt={device.name}
+            grade={device.grade}
             className="h-full"
           />
         </div>

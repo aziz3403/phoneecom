@@ -128,6 +128,7 @@ export function Grading() {
               type="phone"
               cameraLayout="triple"
               tilt={false}
+              grade={active}
               className="h-80"
             />
           </motion.div>

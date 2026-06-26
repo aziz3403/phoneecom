@@ -13,6 +13,8 @@ export interface InvRecord {
   // RAW (salvage) grade is intentionally excluded from the storefront.
   grades: { aPlus: number; a: number; ab: number; b: number; c: number; new: number };
   total: number;
+  /** optional real photo URL from an "Image"/"Photo" column in the sheet */
+  image?: string;
 }
 
 export interface GradeChip {
@@ -39,6 +41,7 @@ export interface InventoryItem {
   topGrade: GradeId;
   price: number;
   fiveG: boolean;
+  image?: string;
 }
 
 export const SHEET_ID = "13tjQAKJoT4YsWIDRc0phZN2Fjb424FEVyQRHDpd8LOk";
@@ -160,6 +163,7 @@ function toItem(r: InvRecord, i: number): InventoryItem {
     topGrade,
     price: estimatePrice(r.model, gb),
     fiveG: /5G/i.test(r.model),
+    image: r.image && /^https?:\/\//i.test(r.image) ? r.image : undefined,
   };
 }
 
@@ -198,6 +202,7 @@ function recordsFromCsv(text: string): InvRecord[] {
     aPlus: idx("a+"), a: idx("a"), ab: idx("ab"), b: idx("b"), c: idx("c"), nw: idx("new"), total: idx("total"),
   };
   if (ci.model < 0 || ci.total < 0) return [];
+  const imgIdx = header.findIndex((h) => /^(image|photo)(\s*url)?$/.test(h));
   const num = (r: string[], i: number) => (i >= 0 ? parseInt((r[i] || "").trim(), 10) || 0 : 0);
   const out: InvRecord[] = [];
   for (let i = 1; i < rows.length; i++) {
@@ -212,7 +217,8 @@ function recordsFromCsv(text: string): InvRecord[] {
     // RAW excluded entirely — sellable stock is the sum of the kept grades.
     const total = grades.aPlus + grades.a + grades.ab + grades.b + grades.c + grades.new;
     if (total <= 0) continue;
-    out.push({ model, storage: (r[ci.storage] || "").trim(), color, manufacturer: (r[ci.man] || "").trim(), grades, total });
+    const image = imgIdx >= 0 ? (r[imgIdx] || "").trim() : undefined;
+    out.push({ model, storage: (r[ci.storage] || "").trim(), color, manufacturer: (r[ci.man] || "").trim(), grades, total, image: image || undefined });
   }
   return out;
 }

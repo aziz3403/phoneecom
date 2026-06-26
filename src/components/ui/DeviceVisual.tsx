@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import type { Brand, CameraLayout, DeviceType } from "@/lib/products";
+import type { GradeId } from "@/lib/grades";
 import { cn } from "@/lib/utils";
+import { WearOverlay } from "./WearOverlay";
 
 interface DeviceVisualProps {
   colorHex: string;
@@ -14,6 +16,8 @@ interface DeviceVisualProps {
   image?: string;
   alt?: string;
   tilt?: boolean;
+  /** when set, overlays cosmetic wear matching the grade */
+  grade?: GradeId;
   className?: string;
 }
 
@@ -32,6 +36,7 @@ export function DeviceVisual({
   image,
   alt = "",
   tilt = true,
+  grade,
   className,
 }: DeviceVisualProps) {
   const [failed, setFailed] = useState(false);
@@ -84,6 +89,7 @@ export function DeviceVisual({
             style={{ background: accent }}
           />
         )}
+        {grade && <WearOverlay grade={grade} />}
       </div>
     </div>
   );

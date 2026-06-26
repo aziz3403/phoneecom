@@ -112,6 +112,8 @@ export function InventoryClient({ items }: { items: InventoryItem[] }) {
                 brand={it.brand}
                 type={it.type}
                 cameraLayout={it.cameraLayout}
+                image={it.image}
+                grade={it.topGrade}
                 tilt={false}
                 className="h-full"
               />

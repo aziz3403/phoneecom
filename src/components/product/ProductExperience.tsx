@@ -26,6 +26,7 @@ import { unitPrice, MOQ } from "@/lib/wholesale";
 import { formatPrice, pct, cn } from "@/lib/utils";
 import { GradeBadge } from "@/components/ui/Badge";
 import { DeviceVisual } from "@/components/ui/DeviceVisual";
+import { WearOverlay } from "@/components/ui/WearOverlay";
 import PhoneViewer from "@/components/three/PhoneViewer";
 
 const scoreOf = (id: GradeId) => GRADES[id].score;
@@ -106,6 +107,9 @@ export function ProductExperience({ device }: { device: Device }) {
                 mode="viewer"
                 className="h-full w-full"
               />
+              <div className="pointer-events-none absolute left-[32%] right-[32%] top-[14%] bottom-[12%]">
+                <WearOverlay grade={gradeId} />
+              </div>
               <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/40 px-4 py-1.5 text-xs text-white/70 backdrop-blur">
                 <span className="inline-flex items-center gap-1.5">
                   <RotateCw className="h-3.5 w-3.5" /> Drag to rotate · scroll to zoom
@@ -122,6 +126,7 @@ export function ProductExperience({ device }: { device: Device }) {
                 cameraLayout={device.cameraLayout}
                 face={view}
                 tilt={false}
+                grade={gradeId}
                 className="h-full"
               />
             </div>

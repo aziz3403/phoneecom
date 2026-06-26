@@ -34,7 +34,7 @@ interface PhoneViewerProps {
   cameraLayout: CameraLayout;
   brand: string;
   formFactor?: DeviceType;
-  mode?: "hero" | "viewer" | "card";
+  mode?: "hero" | "viewer" | "card" | "still";
   lazy?: boolean;
   className?: string;
 }

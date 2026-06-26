@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, X, CornerDownLeft } from "lucide-react";
-import { DEVICES, startingPrice, popularDevices } from "@/lib/products";
+import { DEVICES, startingPrice, popularDevices, renderSrc } from "@/lib/products";
 import { DeviceVisual } from "@/components/ui/DeviceVisual";
 import { formatPrice } from "@/lib/utils";
 
@@ -118,6 +118,7 @@ export function SearchCommand() {
                               brand={d.brand}
                               type={d.type}
                               cameraLayout={d.cameraLayout}
+                              image={d.image ?? renderSrc(d.slug)}
                               tilt={false}
                               className="h-full"
                             />

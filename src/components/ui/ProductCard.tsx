@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { BatteryMedium, Star, Plus, Check, Heart } from "lucide-react";
 import { useState } from "react";
-import { type Device, baseStorage, startingPrice, bestDiscount } from "@/lib/products";
+import { type Device, baseStorage, startingPrice, bestDiscount, renderSrc } from "@/lib/products";
 import { useCart } from "@/lib/cart-store";
 import { useWishlist } from "@/lib/wishlist-store";
 import { formatPrice, cn } from "@/lib/utils";
@@ -90,7 +90,7 @@ export function ProductCard({ device, index = 0 }: { device: Device; index?: num
             brand={device.brand}
             type={device.type}
             cameraLayout={device.cameraLayout}
-            image={device.image}
+            image={device.image ?? renderSrc(device.slug)}
             alt={device.name}
             className="h-full"
           />

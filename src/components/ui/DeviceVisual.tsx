@@ -33,8 +33,14 @@ export function DeviceVisual({
 }: DeviceVisualProps) {
   if (image) {
     return (
-      <div className={cn("relative grid place-items-center", className)}>
-        <Image src={image} alt={alt} fill className="object-contain" sizes="(max-width:768px) 50vw, 320px" />
+      <div className={cn("relative h-full w-full", className)}>
+        <Image
+          src={image}
+          alt={alt}
+          fill
+          className="object-contain drop-shadow-[0_18px_40px_rgba(0,0,0,0.55)]"
+          sizes="(max-width:768px) 50vw, 320px"
+        />
       </div>
     );
   }

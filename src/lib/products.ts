@@ -1633,6 +1633,11 @@ export const DEVICES: Device[] = [
   },
 ];
 
+/** Path to the pre-rendered 3D product photo for a device (see /public/renders). */
+export function renderSrc(slug: string): string {
+  return `/renders/${slug}.png`;
+}
+
 export function getDevice(slug: string): Device | undefined {
   return DEVICES.find((d) => d.slug === slug);
 }

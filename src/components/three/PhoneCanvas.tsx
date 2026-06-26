@@ -21,7 +21,7 @@ interface PhoneCanvasProps {
   cameraLayout: CameraLayout;
   brand: string;
   formFactor?: DeviceType;
-  mode?: "hero" | "viewer" | "card";
+  mode?: "hero" | "viewer" | "card" | "still";
   className?: string;
 }
 
@@ -50,6 +50,7 @@ export default function PhoneCanvas({
   const [dpr, setDpr] = useState(1.5);
   const isViewer = mode === "viewer";
   const isCard = mode === "card";
+  const isStill = mode === "still";
   const camZ = formFactor === "tablet" ? 9.6 : 8.4;
 
   return (
@@ -68,7 +69,19 @@ export default function PhoneCanvas({
       <pointLight position={[5, -2, 3]} intensity={28} color="#38d1ff" />
 
       <Suspense fallback={null}>
-        {isCard ? (
+        {isStill ? (
+          <group rotation={[0.1, 0, 0]}>
+            <Phone3D
+              colorHex={colorHex}
+              accentHex={accentHex}
+              cameraLayout={cameraLayout}
+              brand={brand}
+              formFactor={formFactor}
+              spin={0}
+              reactive={false}
+            />
+          </group>
+        ) : isCard ? (
           <Phone3D
             colorHex={colorHex}
             accentHex={accentHex}

@@ -119,7 +119,9 @@ function FrontFace({
           background: `radial-gradient(120% 75% at 28% 8%, ${accent}dd, transparent 55%), radial-gradient(120% 85% at 82% 92%, #38d1ff55, transparent 52%), radial-gradient(90% 60% at 60% 50%, ${colorHex}66, transparent 60%), linear-gradient(160deg, #0c0c1a, #050509)`,
         }}
       />
-      <div className="absolute -left-1/3 top-0 h-full w-1/2 rotate-[14deg] bg-gradient-to-r from-white/0 via-white/12 to-white/0" />
+      {/* glossy glare */}
+      <div className="absolute -left-1/3 top-0 h-full w-2/3 rotate-[16deg] bg-gradient-to-r from-white/0 via-white/15 to-white/0" />
+      <div className="absolute right-[6%] top-[8%] h-[34%] w-[14%] rotate-[16deg] rounded-full bg-white/10 blur-[2px]" />
 
       {isTablet ? (
         <span className="absolute left-1/2 top-[1.6%] h-[1.6%] w-[1.6%] -translate-x-1/2 rounded-full bg-black/80 ring-1 ring-white/10" />
@@ -127,6 +129,11 @@ function FrontFace({
         <span className="absolute left-1/2 top-[2.2%] h-[5.2%] w-[33%] -translate-x-1/2 rounded-full bg-black/90" />
       ) : (
         <span className="absolute left-1/2 top-[2.4%] h-[3.2%] w-[3.2%] -translate-x-1/2 rounded-full bg-black/90 ring-1 ring-white/10" />
+      )}
+
+      {/* home indicator (phones) */}
+      {!isTablet && (
+        <span className="absolute bottom-[1.4%] left-1/2 h-[0.7%] w-[26%] -translate-x-1/2 rounded-full bg-white/40" />
       )}
     </div>
   );
@@ -161,6 +168,8 @@ function BackFace({
         background: `linear-gradient(155deg, color-mix(in oklab, ${colorHex} 88%, white 10%), ${colorHex} 60%, color-mix(in oklab, ${colorHex} 80%, black 26%))`,
       }}
     >
+      {/* glossy back sheen */}
+      <div className="pointer-events-none absolute -left-1/4 top-0 h-full w-1/2 rotate-[18deg] bg-gradient-to-r from-white/0 via-white/12 to-white/0" />
       {isTablet ? (
         <div className="absolute left-[8%] top-[5%] grid h-[10%] w-[10%] place-items-center rounded-[26%] bg-black/40">
           {lens("t", "h-[55%] w-[55%]")}

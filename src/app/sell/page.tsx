@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Search, Tag, Truck, Banknote } from "lucide-react";
 import { SellEstimator } from "@/components/sell/SellEstimator";
-import { Section, SectionHeading } from "@/components/ui/Section";
-import { Reveal } from "@/components/ui/Reveal";
-import { AuroraBackground } from "@/components/ui/AuroraBackground";
 
 export const metadata: Metadata = {
   title: "Sell or trade in your phone",
@@ -20,50 +18,49 @@ const STEPS = [
 
 export default function SellPage() {
   return (
-    <div className="pt-24">
-      <section className="relative overflow-hidden">
-        <AuroraBackground />
-        <div className="bg-grid absolute inset-0 -z-10 opacity-30 [mask-image:radial-gradient(ellipse_at_center,#000,transparent_70%)]" />
-        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20">
-          <Reveal className="max-w-2xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium uppercase tracking-[0.18em] text-mint-300">
-              Trade-in
+    <div className="pt-12">
+      <header className="pagehead">
+        <p className="crumb">
+          <Link href="/">Home</Link> · Sell &amp; trade-in
+        </p>
+        <h1 className="ptitle">Your old phone is worth something.</h1>
+        <p className="psub">
+          Answer a few quick questions for an instant offer. Ship it free, get paid in two days — or
+          take 10% more as store credit toward your next upgrade.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-x-7 gap-y-2 text-sm text-[#6e6e73]">
+          {["Instant quote", "Free prepaid shipping", "Paid in 48 hours", "Price-lock 14 days"].map((t) => (
+            <span key={t} className="inline-flex items-center gap-2">
+              <span className="inline-block h-[5px] w-[5px] rounded-full bg-[#0a8f6e]" />
+              {t}
             </span>
-            <h1 className="mt-5 font-display text-[clamp(2.4rem,6vw,4.2rem)] font-extrabold leading-[1.02] tracking-tight text-white">
-              Turn your old phone
-              <br />
-              <span className="text-gradient">into instant cash.</span>
-            </h1>
-            <p className="mt-5 max-w-xl text-lg text-white/60">
-              Get a real quote in seconds, ship it free, and get paid in two days — or take 10% more
-              as store credit toward your next upgrade.
-            </p>
-          </Reveal>
-
-          <div className="mt-12">
-            <SellEstimator />
-          </div>
-        </div>
-      </section>
-
-      <Section className="py-16">
-        <SectionHeading eyebrow="How trade-in works" title="Four steps, zero hassle" />
-        <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {STEPS.map((s, i) => (
-            <Reveal key={s.title} delay={i * 0.1}>
-              <div className="h-full rounded-3xl border border-white/10 bg-ink-850/50 p-6">
-                <div className="mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-mint-500/20 to-glacier-400/10 ring-1 ring-white/10">
-                  <s.icon className="h-6 w-6 text-mint-300" />
-                </div>
-                <h3 className="font-display text-lg font-semibold text-white">
-                  {i + 1}. {s.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-white/55">{s.body}</p>
-              </div>
-            </Reveal>
           ))}
         </div>
-      </Section>
+      </header>
+
+      <div className="shell pt-10">
+        <SellEstimator />
+      </div>
+
+      <section className="graysec mt-24">
+        <div className="sechead ctr">
+          <p className="eyebrow">How trade-in works</p>
+          <h2 className="h2">Four steps, zero hassle.</h2>
+        </div>
+        <div className="shell grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          {STEPS.map((s, i) => (
+            <div key={s.title} className="scard-bord h-full">
+              <div className="mb-4 grid h-11 w-11 place-items-center rounded-[12px] bg-[#edf6f0] text-[#0a8f6e]">
+                <s.icon className="h-5 w-5" />
+              </div>
+              <h3 className="text-[17px] font-semibold tracking-[-.01em] text-[#1d1d1f]">
+                {i + 1}. {s.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-[#6e6e73]">{s.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

@@ -1,4 +1,5 @@
-import { Star, BadgeCheck, ThumbsUp } from "lucide-react";
+import { BadgeCheck, ThumbsUp } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const POOL = [
   {
@@ -62,81 +63,107 @@ function distribution(rating: number): number[] {
   return [p5, p4, p3, p2, p1];
 }
 
+const starStr = (n: number) => "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n);
+
 export function Reviews({ rating, count, slug }: { rating: number; count: number; slug: string }) {
   const dist = distribution(rating);
   const start = hash(slug) % POOL.length;
   const picks = [POOL[start], POOL[(start + 2) % POOL.length], POOL[(start + 4) % POOL.length]];
+  const recommend = Math.round(Math.min(99, (rating / 5) * 100 + 4));
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[320px_1fr]">
+    <div className="grid items-start gap-11 lg:grid-cols-[300px_1fr]">
       {/* summary */}
-      <div className="rounded-3xl border border-white/10 bg-ink-850/50 p-6">
-        <div className="flex items-end gap-3">
-          <span className="font-display text-5xl font-extrabold text-white">{rating.toFixed(1)}</span>
-          <div className="pb-1">
-            <div className="flex">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star
-                  key={i}
-                  className={
-                    i < Math.round(rating) ? "h-4 w-4 fill-amber-400 text-amber-400" : "h-4 w-4 text-white/20"
-                  }
-                />
-              ))}
-            </div>
-            <p className="mt-1 text-xs text-white/45">{count.toLocaleString()} verified reviews</p>
-          </div>
+      <div className="scard-bord text-center">
+        <div className="text-[54px] font-bold leading-none tracking-[-.03em] text-[#1d1d1f]">
+          {rating.toFixed(1)}
         </div>
+        <div className="mt-2 text-[18px] tracking-[2px] text-[#0a8f6e]">
+          {starStr(Math.round(rating))}
+        </div>
+        <div className="mt-2 text-[13.5px] text-[#6e6e73]">
+          {count.toLocaleString()} verified ratings
+        </div>
+        <div className="mt-4 border-t border-[#d2d2d7] pt-4 text-[13.5px] text-[#6e6e73]">
+          <b className="font-semibold text-[#1d1d1f]">{recommend}%</b> would recommend
+          <br />
+          to a friend
+        </div>
+      </div>
 
-        <div className="mt-5 space-y-1.5">
+      {/* bars + list */}
+      <div>
+        <div className="flex flex-col gap-[9px]">
           {dist.map((p, i) => (
-            <div key={i} className="flex items-center gap-2 text-xs text-white/50">
-              <span className="w-3">{5 - i}</span>
-              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-              <span className="h-2 flex-1 overflow-hidden rounded-full bg-white/10">
-                <span className="block h-full rounded-full bg-amber-400/70" style={{ width: `${p}%` }} />
+            <div key={i} className="flex items-center gap-[11px] text-[13px] text-[#6e6e73]">
+              <span className="flex w-[30px] flex-none items-center gap-0.5 text-[#86868b]">
+                {5 - i}★
               </span>
-              <span className="w-8 text-right">{p}%</span>
+              <span className="h-[7px] flex-1 overflow-hidden rounded-md bg-[#f5f5f7]">
+                <span
+                  className="block h-full rounded-md bg-[#0a8f6e]"
+                  style={{ width: `${p}%` }}
+                />
+              </span>
+              <span className="w-[34px] flex-none text-right text-[12.5px] text-[#86868b]">
+                {p}%
+              </span>
             </div>
           ))}
         </div>
 
-        <button className="mt-6 w-full rounded-full border border-white/15 py-2.5 text-sm font-medium text-white transition hover:bg-white/5">
-          Write a review
-        </button>
-      </div>
-
-      {/* list */}
-      <div className="space-y-4">
-        {picks.map((r, i) => (
-          <div key={i} className="rounded-3xl border border-white/10 bg-ink-850/40 p-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex">
-                  {Array.from({ length: 5 }).map((_, s) => (
-                    <Star
-                      key={s}
-                      className={s < r.stars ? "h-3.5 w-3.5 fill-amber-400 text-amber-400" : "h-3.5 w-3.5 text-white/20"}
-                    />
-                  ))}
+        <div className="mt-[22px] flex flex-col">
+          {picks.map((r, i) => (
+            <div
+              key={i}
+              className={cn("py-[22px]", i === 0 ? "pt-0" : "border-t border-[#d2d2d7]")}
+            >
+              <div className="flex items-center gap-[13px]">
+                <div className="grid h-[42px] w-[42px] flex-none place-items-center rounded-full bg-[#f5f5f7] text-[15px] font-semibold text-[#0a8f6e]">
+                  {initials(r.author)}
                 </div>
-                <span className="font-medium text-white">{r.title}</span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-[9px] text-[15px] font-semibold text-[#1d1d1f]">
+                    {r.author}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[rgba(10,143,110,.1)] px-[9px] py-0.5 text-[11px] font-semibold text-[#0a8f6e]">
+                      <BadgeCheck className="h-3 w-3" /> Verified buyer
+                    </span>
+                  </div>
+                  <div className="mt-0.5 text-[12.5px] text-[#86868b]">{r.days}d ago</div>
+                </div>
+                <div className="flex-none text-[13px] tracking-[1.5px] text-[#0a8f6e]">
+                  {starStr(r.stars)}
+                </div>
               </div>
-              <span className="text-xs text-white/35">{r.days}d ago</span>
+              <div className="mb-1.5 mt-[13px] text-[15px] font-semibold text-[#1d1d1f]">
+                {r.title}
+              </div>
+              <p className="text-[14.5px] leading-[1.6] text-[#6e6e73]">{r.body}</p>
+              <div className="mt-3.5 flex items-center gap-[18px] text-[13px] text-[#86868b]">
+                <span className="inline-flex cursor-pointer items-center gap-1.5 hover:text-[#6e6e73]">
+                  <ThumbsUp className="h-3.5 w-3.5" /> Helpful
+                </span>
+                <span>Report</span>
+              </div>
             </div>
-            <p className="mt-2 text-sm text-white/65">{r.body}</p>
-            <div className="mt-3 flex items-center gap-3 text-xs text-white/40">
-              <span className="inline-flex items-center gap-1 text-mint-300">
-                <BadgeCheck className="h-3.5 w-3.5" /> Verified buyer
-              </span>
-              <span>· {r.author}</span>
-              <span className="ml-auto inline-flex items-center gap-1">
-                <ThumbsUp className="h-3.5 w-3.5" /> Helpful
-              </span>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
+
+        <div className="mt-6 text-center">
+          <button className="rounded-full border border-[#d2d2d7] bg-white px-[26px] py-3 text-[15px] font-semibold text-[#1d1d1f] transition-colors hover:bg-[#f5f5f7]">
+            Show all {count.toLocaleString()} reviews
+          </button>
+        </div>
       </div>
     </div>
   );
+}
+
+function initials(name: string): string {
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 }

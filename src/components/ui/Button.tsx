@@ -6,22 +6,19 @@ type Variant = "primary" | "secondary" | "ghost" | "outline";
 type Size = "sm" | "md" | "lg";
 
 const base =
-  "group relative inline-flex items-center justify-center gap-2 rounded-full font-medium tracking-tight transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/70 disabled:cursor-not-allowed disabled:opacity-50";
+  "group relative inline-flex items-center justify-center gap-2 rounded-full font-medium tracking-tight transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0a8f6e]/40 disabled:cursor-not-allowed disabled:opacity-50";
 
 const variants: Record<Variant, string> = {
-  primary:
-    "bg-gradient-to-r from-brand-500 via-brand-400 to-glacier-400 text-white shadow-[0_10px_40px_-10px_rgba(116,48,255,.8)] hover:shadow-[0_14px_50px_-8px_rgba(116,48,255,.9)] hover:-translate-y-0.5",
-  secondary:
-    "glass-strong text-white hover:bg-white/10 hover:-translate-y-0.5",
-  ghost: "text-white/70 hover:text-white hover:bg-white/5",
-  outline:
-    "border border-white/15 text-white hover:border-brand-400/60 hover:bg-brand-500/10 hover:-translate-y-0.5",
+  primary: "bg-[#0a8f6e] text-white hover:bg-[#0a7d61] active:scale-[.98]",
+  secondary: "bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#ececef] active:scale-[.98]",
+  ghost: "text-[#0a8f6e] hover:bg-[#f1f7f3]",
+  outline: "border border-[#d2d2d7] text-[#1d1d1f] hover:border-[#86868b] hover:bg-[#f5f5f7]",
 };
 
 const sizes: Record<Size, string> = {
   sm: "h-9 px-4 text-sm",
-  md: "h-11 px-6 text-sm",
-  lg: "h-14 px-8 text-base",
+  md: "h-11 px-5 text-[15px]",
+  lg: "h-12 px-7 text-[17px]",
 };
 
 interface CommonProps {

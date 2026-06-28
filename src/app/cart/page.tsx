@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { CartClient } from "@/components/cart/CartClient";
 
 export const metadata: Metadata = {
@@ -8,13 +9,17 @@ export const metadata: Metadata = {
 
 export default function CartPage() {
   return (
-    <div className="pt-28">
-      <div className="mx-auto max-w-7xl px-5 pb-6 sm:px-8">
-        <p className="text-sm text-white/40">Home · Cart</p>
-        <h1 className="mt-2 font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-          Checkout
-        </h1>
-      </div>
+    <div className="pt-12">
+      <header className="pagehead">
+        <p className="crumb">
+          <Link href="/">Home</Link> · Cart
+        </p>
+        <h1 className="ptitle">Checkout</h1>
+        <p className="psub">
+          Review your certified devices, then check out securely — free 2-day shipping and a
+          12-month warranty on every order.
+        </p>
+      </header>
       <CartClient />
     </div>
   );

@@ -1,31 +1,31 @@
-import { ButtonLink } from "@/components/ui/Button";
-import { AuroraBackground } from "@/components/ui/AuroraBackground";
-import { Home, Search } from "lucide-react";
+import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="relative grid min-h-[80vh] place-items-center overflow-hidden px-5 pt-24">
-      <AuroraBackground />
-      <div className="text-center">
-        <p className="font-display text-[clamp(5rem,18vw,11rem)] font-extrabold leading-none text-gradient">
+    <section className="sec">
+      <div className="shell-narrow" style={{ textAlign: "center" }}>
+        <p className="ptitle" style={{ fontSize: "clamp(80px,16vw,160px)", lineHeight: 0.95 }}>
           404
         </p>
-        <h1 className="mt-2 font-display text-2xl font-bold text-white sm:text-3xl">
-          This page got traded in
+        <h1 className="h2" style={{ marginTop: 8 }}>
+          This page took a different upgrade path.
         </h1>
-        <p className="mx-auto mt-3 max-w-md text-white/55">
-          We couldn&apos;t find what you were looking for — but there are plenty of certified phones
-          that are still here.
+        <p className="psub" style={{ margin: "16px auto 0" }}>
+          The link you followed is broken or the page has moved. But there&apos;s a whole store of
+          certified phones waiting — let&apos;s get you back on track.
         </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <ButtonLink href="/" size="lg">
-            <Home className="h-4.5 w-4.5" /> Back home
-          </ButtonLink>
-          <ButtonLink href="/shop" variant="secondary" size="lg">
-            <Search className="h-4.5 w-4.5" /> Browse phones
-          </ButtonLink>
+        <div
+          className="hlinks"
+          style={{ marginTop: 30, justifyContent: "center", alignItems: "center" }}
+        >
+          <Link className="btn" href="/">
+            Back to home
+          </Link>
+          <Link className="link" href="/shop">
+            Browse all phones <span className="chev">&rsaquo;</span>
+          </Link>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 import { X, Plus, Star } from "lucide-react";
-import { DEVICES, getDevice, startingPrice, renderSrc, type Device, type CameraLayout } from "@/lib/products";
+import { DEVICES, getDevice, startingPrice, type Device, type CameraLayout } from "@/lib/products";
 import { GRADES } from "@/lib/grades";
-import { DeviceVisual } from "@/components/ui/DeviceVisual";
+import { PhImg } from "@/components/home/PhImg";
 import { formatPrice, cn } from "@/lib/utils";
 
 const CAMERA_LABEL: Record<CameraLayout, string> = {
@@ -42,59 +42,74 @@ export function CompareClient() {
 
   return (
     <div className="overflow-x-auto pb-4">
+      {/* device picker */}
+      <div className="mb-8 flex flex-wrap items-center gap-2">
+        <span className="mr-1 text-[13px] font-semibold text-[#86868b]">Add a device</span>
+        {available.length === 0 ? (
+          <span className="text-sm text-[#86868b]">Comparing the max of three devices.</span>
+        ) : (
+          available.slice(0, 8).map((d) => (
+            <button
+              key={d.slug}
+              onClick={() => devices.length < 3 && setSlugs((s) => [...s, d.slug])}
+              disabled={devices.length >= 3}
+              className="chip disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              <Plus className="h-3.5 w-3.5" /> {d.name}
+            </button>
+          ))
+        )}
+      </div>
+
       <div
-        className="min-w-[640px]"
-        style={{ display: "grid", gridTemplateColumns: `150px repeat(${cols}, minmax(170px, 1fr))` }}
+        className="min-w-[640px] overflow-hidden rounded-[18px] border border-[#d2d2d7]"
+        style={{ display: "grid", gridTemplateColumns: `190px repeat(${cols}, minmax(170px, 1fr))` }}
       >
         {/* header */}
-        <div className="sticky left-0 z-10 bg-ink-950" />
+        <div className="border-b border-[#d2d2d7] bg-[#f5f5f7]" />
         {devices.map((d) => (
-          <div key={d.slug} className="relative rounded-t-2xl border border-white/10 bg-ink-850/50 p-4 text-center">
+          <div
+            key={d.slug}
+            className="relative border-b border-l border-[#d2d2d7] bg-[#f5f5f7] p-4 text-center"
+          >
             <button
               onClick={() => setSlugs((s) => s.filter((x) => x !== d.slug))}
-              className="absolute right-2 top-2 text-white/30 hover:text-rose-400"
+              className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-white text-[#6e6e73] transition-colors hover:bg-[#ececef] hover:text-[#1d1d1f]"
               aria-label="Remove"
             >
-              <X className="h-4 w-4" />
+              <X className="h-3.5 w-3.5" />
             </button>
-            <div className="mx-auto h-28 w-20">
-              <DeviceVisual
-                colorHex={d.colors[0].hex}
-                accent={d.colors[0].accent}
-                brand={d.brand}
-                type={d.type}
-                cameraLayout={d.cameraLayout}
-                image={renderSrc(d.slug)}
-                tilt={false}
-                className="h-full"
-              />
+            <div className="mx-auto h-28 w-20 overflow-hidden rounded-[12px]">
+              <PhImg slug={d.slug} label={d.name} className="h-full w-full" />
             </div>
-            <Link href={`/product/${d.slug}`} className="mt-2 block text-sm font-semibold text-white hover:text-brand-200">
+            <Link
+              href={`/product/${d.slug}`}
+              className="mt-3 block text-sm font-semibold text-[#1d1d1f] transition-colors hover:text-[#0a8f6e]"
+            >
               {d.name}
             </Link>
-            <span className="inline-flex items-center gap-1 text-xs text-white/45">
-              <Star className="h-3 w-3 fill-amber-400 text-amber-400" /> {d.rating}
+            <div className="mt-1 text-base font-bold text-[#1d1d1f]">{formatPrice(startingPrice(d))}</div>
+            <span className="mt-1 inline-flex items-center gap-1 text-xs text-[#86868b]">
+              <Star className="h-3 w-3 fill-[#f5a623] text-[#f5a623]" /> {d.rating}
             </span>
           </div>
         ))}
         {devices.length < 3 && (
-          <div className="rounded-t-2xl border border-dashed border-white/15 p-4">
-            <p className="mb-2 text-center text-xs text-white/40">Add a device</p>
+          <div className="border-b border-l border-[#d2d2d7] p-4">
+            <p className="mb-2 text-center text-xs text-[#86868b]">Add a device</p>
             <select
               value=""
               onChange={(e) => e.target.value && setSlugs((s) => [...s, e.target.value])}
-              className="w-full rounded-xl border border-white/10 bg-ink-900 px-2 py-2 text-xs text-white focus:outline-none"
+              className="sel text-sm"
             >
-              <option value="" className="bg-ink-900">
-                Choose…
-              </option>
+              <option value="">Choose…</option>
               {available.map((d) => (
-                <option key={d.slug} value={d.slug} className="bg-ink-900">
+                <option key={d.slug} value={d.slug}>
                   {d.name}
                 </option>
               ))}
             </select>
-            <div className="mt-3 grid place-items-center text-white/20">
+            <div className="mt-3 grid place-items-center text-[#86868b]">
               <Plus className="h-6 w-6" />
             </div>
           </div>
@@ -105,8 +120,8 @@ export function CompareClient() {
           <div key={row.label} className="contents">
             <div
               className={cn(
-                "sticky left-0 z-10 flex items-center bg-ink-950 px-3 py-3 text-xs font-medium uppercase tracking-wide text-white/40",
-                ri % 2 === 0 && "bg-ink-900/40",
+                "flex items-center border-t border-[#d2d2d7] px-4 py-3.5 text-[13.5px] font-semibold text-[#6e6e73]",
+                ri % 2 === 1 && "bg-[#f5f5f7]",
               )}
             >
               {row.label}
@@ -115,14 +130,16 @@ export function CompareClient() {
               <div
                 key={d.slug}
                 className={cn(
-                  "flex items-center justify-center border-x border-white/5 px-3 py-3 text-center text-sm text-white/80",
-                  ri % 2 === 0 && "bg-white/[0.02]",
+                  "flex items-center justify-center border-l border-t border-[#d2d2d7] px-4 py-3.5 text-center text-[14.5px] text-[#1d1d1f]",
+                  ri % 2 === 1 && "bg-[#f5f5f7]",
                 )}
               >
                 {row.get(d)}
               </div>
             ))}
-            {devices.length < 3 && <div className={cn(ri % 2 === 0 && "bg-white/[0.01]")} />}
+            {devices.length < 3 && (
+              <div className={cn("border-l border-t border-[#d2d2d7]", ri % 2 === 1 && "bg-[#f5f5f7]")} />
+            )}
           </div>
         ))}
       </div>

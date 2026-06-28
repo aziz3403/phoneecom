@@ -1,21 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Sora, Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
+import { SearchCommand } from "@/components/layout/SearchCommand";
 import { SITE_URL } from "@/lib/site";
-
-const display = Sora({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-});
-
-const sans = Inter({
-  variable: "--font-sans",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -24,7 +13,7 @@ export const metadata: Metadata = {
     template: "%s · reMint",
   },
   description:
-    "Buy certified pre-owned iPhone, Samsung Galaxy, Google Pixel and more — every device inspected on 50+ points and backed by a 12-month warranty. Trade pricing for resellers and businesses.",
+    "Buy certified pre-owned iPhone, Samsung Galaxy and iPad — every device fully unlocked, 80%+ battery, inspected on 50 points and backed by a 12-month warranty. Trade pricing for resellers and businesses.",
   keywords: [
     "used phones",
     "refurbished phones",
@@ -37,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "reMint — Certified Pre-Owned Phones · Retail & Wholesale",
     description:
-      "Mint-condition pre-owned smartphones with a 12-month warranty. Plus volume pricing for resellers and enterprises.",
+      "Premium phones, half the price. Certified pre-owned iPhone, Galaxy & iPad — retail & wholesale.",
     type: "website",
     siteName: "reMint",
   },
@@ -49,17 +38,20 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#04040a",
+  themeColor: "#ffffff",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${display.variable} ${sans.variable} h-full antialiased`}>
-      <body className="min-h-full">
-        <Navbar />
-        <CartDrawer />
-        <main className="relative">{children}</main>
-        <Footer />
+    <html lang="en">
+      <body>
+        <div className="home">
+          <Navbar />
+          <CartDrawer />
+          <SearchCommand />
+          <main>{children}</main>
+          <Footer />
+        </div>
       </body>
     </html>
   );

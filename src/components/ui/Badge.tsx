@@ -12,16 +12,16 @@ export function Badge({
   tone?: "neutral" | "brand" | "mint" | "glacier" | "amber";
 }) {
   const tones = {
-    neutral: "bg-white/5 text-white/70 border-white/10",
-    brand: "bg-brand-500/15 text-brand-200 border-brand-400/30",
-    mint: "bg-mint-500/15 text-mint-300 border-mint-400/30",
-    glacier: "bg-glacier-500/15 text-glacier-300 border-glacier-400/30",
-    amber: "bg-amber-500/15 text-amber-200 border-amber-400/30",
+    neutral: "bg-[#f5f5f7] text-[#6e6e73]",
+    brand: "bg-[rgba(10,143,110,.1)] text-[#0a8f6e]",
+    mint: "bg-[rgba(10,143,110,.1)] text-[#0a8f6e]",
+    glacier: "bg-[rgba(38,165,168,.12)] text-[#1f7f82]",
+    amber: "bg-[rgba(245,166,35,.14)] text-[#9a6a00]",
   } as const;
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium tracking-wide",
+        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold tracking-wide",
         tones[tone],
         className,
       )}
@@ -31,6 +31,7 @@ export function Badge({
   );
 }
 
+/** A light, legible grade pill: neutral chip + a small grade-coloured dot. */
 export function GradeBadge({
   grade,
   size = "md",
@@ -46,20 +47,15 @@ export function GradeBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border font-semibold tracking-wide",
+        "inline-flex items-center gap-1.5 rounded-full bg-[#f5f5f7] font-semibold tracking-wide text-[#1d1d1f]",
         size === "sm" ? "px-2.5 py-0.5 text-[11px]" : "px-3 py-1 text-xs",
         className,
       )}
-      style={{
-        color: g.hexSoft,
-        borderColor: `${g.hex}55`,
-        background: `${g.hex}1f`,
-      }}
     >
       {showDot && (
         <span
           className="inline-block h-1.5 w-1.5 rounded-full"
-          style={{ background: g.hex, boxShadow: `0 0 8px ${g.hex}` }}
+          style={{ background: g.hex }}
         />
       )}
       {g.label}

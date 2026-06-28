@@ -6,6 +6,7 @@ import { Plus, Minus, Trash2, ShoppingCart, Check } from "lucide-react";
 import { DEVICES, getDevice, baseStorage, storageFor } from "@/lib/products";
 import { tierForQty, unitPrice, MOQ } from "@/lib/wholesale";
 import { useCart } from "@/lib/cart-store";
+import { PhImg } from "@/components/home/PhImg";
 import { formatPrice, cn } from "@/lib/utils";
 
 interface Line {
@@ -100,8 +101,8 @@ export function BulkOrderBuilder() {
   }
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-white/10 bg-ink-850/50">
-      <div className="hidden grid-cols-[1.7fr_1fr_0.7fr_1fr_auto] gap-4 border-b border-white/10 px-6 py-4 text-xs font-semibold uppercase tracking-wider text-white/40 md:grid">
+    <div className="overflow-hidden rounded-[22px] border border-[#d2d2d7] bg-white">
+      <div className="hidden grid-cols-[1.7fr_1fr_0.7fr_1fr_auto] gap-4 border-b border-[#d2d2d7] bg-[#f5f5f7] px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[#86868b] md:grid">
         <span>Model</span>
         <span>Quantity</span>
         <span>Tier</span>
@@ -109,7 +110,7 @@ export function BulkOrderBuilder() {
         <span />
       </div>
 
-      <div className="divide-y divide-white/5">
+      <div className="divide-y divide-[#ececef]">
         <AnimatePresence initial={false}>
           {computed.map((l) => (
             <motion.div
@@ -121,21 +122,21 @@ export function BulkOrderBuilder() {
               className="grid grid-cols-2 items-center gap-4 px-6 py-4 md:grid-cols-[1.7fr_1fr_0.7fr_1fr_auto]"
             >
               <div className="col-span-2 flex items-center gap-3 md:col-span-1">
-                <span
-                  className="grid h-12 w-9 shrink-0 place-items-center rounded-lg"
-                  style={{ background: `linear-gradient(150deg, ${l.device.colors[0].hex}, #0b0b17)` }}
-                >
-                  <span className="h-8 w-5 rounded bg-black/40 ring-1 ring-white/10" />
-                </span>
+                <PhImg
+                  slug={l.device.slug}
+                  src={l.device.image}
+                  label={l.device.name}
+                  className="h-14 w-11 shrink-0 rounded-xl"
+                />
                 <div className="min-w-0">
-                  <p className="truncate font-medium text-white">{l.device.name}</p>
+                  <p className="truncate font-medium text-[#1d1d1f]">{l.device.name}</p>
                   <select
                     value={l.gb}
                     onChange={(e) => setGb(l.slug, Number(e.target.value))}
-                    className="mt-0.5 rounded-md border border-white/10 bg-ink-900 px-1.5 py-0.5 text-xs text-white/60 focus:outline-none"
+                    className="mt-1 rounded-md border border-[#d2d2d7] bg-white px-1.5 py-0.5 text-xs text-[#6e6e73] focus:border-[#0a8f6e] focus:outline-none"
                   >
                     {l.device.storage.map((s) => (
-                      <option key={s.gb} value={s.gb} className="bg-ink-900">
+                      <option key={s.gb} value={s.gb}>
                         {s.gb}GB
                       </option>
                     ))}
@@ -143,32 +144,35 @@ export function BulkOrderBuilder() {
                 </div>
               </div>
 
-              <div className="flex w-fit items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1">
-                <button onClick={() => setQty(l.slug, l.qty - 5)} className="grid h-8 w-8 place-items-center rounded-full text-white/70 hover:bg-white/10">
+              <div className="qty w-fit">
+                <button onClick={() => setQty(l.slug, l.qty - 5)} aria-label="Decrease quantity">
                   <Minus className="h-3.5 w-3.5" />
                 </button>
                 <input
                   value={l.qty}
                   onChange={(e) => setQty(l.slug, Number(e.target.value.replace(/\D/g, "")) || MOQ)}
-                  className="w-12 bg-transparent text-center text-sm font-semibold text-white focus:outline-none"
+                  className="w-12 bg-transparent text-center text-sm font-semibold text-[#1d1d1f] focus:outline-none"
+                  aria-label={`Quantity for ${l.device.name}`}
                 />
-                <button onClick={() => setQty(l.slug, l.qty + 5)} className="grid h-8 w-8 place-items-center rounded-full text-white/70 hover:bg-white/10">
+                <button onClick={() => setQty(l.slug, l.qty + 5)} aria-label="Increase quantity">
                   <Plus className="h-3.5 w-3.5" />
                 </button>
               </div>
 
               <span className="hidden text-sm md:block">
-                <span className="rounded-full bg-brand-500/15 px-2.5 py-1 text-xs font-semibold text-brand-200">
-                  {l.tier.label}
-                </span>
+                <span className="tag accent">{l.tier.label}</span>
               </span>
 
               <div className="text-right">
-                <p className="font-semibold text-white">{formatPrice(l.subtotal)}</p>
-                <p className="text-xs text-white/45">{formatPrice(l.unit)}/unit</p>
+                <p className="font-semibold text-[#1d1d1f]">{formatPrice(l.subtotal)}</p>
+                <p className="text-xs text-[#86868b]">{formatPrice(l.unit)}/unit</p>
               </div>
 
-              <button onClick={() => remove(l.slug)} className="hidden justify-self-end text-white/30 hover:text-rose-400 md:block" aria-label="Remove line">
+              <button
+                onClick={() => remove(l.slug)}
+                className="hidden justify-self-end text-[#86868b] transition-colors hover:text-[#e0245e] md:block"
+                aria-label="Remove line"
+              >
                 <Trash2 className="h-4 w-4" />
               </button>
             </motion.div>
@@ -177,17 +181,15 @@ export function BulkOrderBuilder() {
       </div>
 
       {available.length > 0 && (
-        <div className="border-t border-white/10 px-6 py-4">
+        <div className="border-t border-[#d2d2d7] px-6 py-4">
           <select
             value=""
             onChange={(e) => addLine(e.target.value)}
-            className="w-full rounded-2xl border border-dashed border-white/15 bg-transparent px-4 py-3 text-sm text-white/70 focus:border-brand-400/60 focus:outline-none"
+            className="w-full rounded-2xl border border-dashed border-[#d2d2d7] bg-transparent px-4 py-3 text-sm text-[#6e6e73] focus:border-[#0a8f6e] focus:outline-none"
           >
-            <option value="" className="bg-ink-900">
-              + Add another model…
-            </option>
+            <option value="">+ Add another model…</option>
             {available.map((p) => (
-              <option key={p.slug} value={p.slug} className="bg-ink-900">
+              <option key={p.slug} value={p.slug}>
                 {p.name}
               </option>
             ))}
@@ -195,27 +197,27 @@ export function BulkOrderBuilder() {
         </div>
       )}
 
-      <div className="flex flex-col gap-4 border-t border-white/10 bg-white/[0.02] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 border-t border-[#d2d2d7] bg-[#f5f5f7] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-x-8 gap-y-2">
           <div>
-            <p className="text-xs text-white/45">Total units</p>
-            <p className="font-display text-xl font-bold text-white">{totals.units.toLocaleString()}</p>
+            <p className="text-xs text-[#86868b]">Total units</p>
+            <p className="text-xl font-bold tracking-tight text-[#1d1d1f]">{totals.units.toLocaleString()}</p>
           </div>
           <div>
-            <p className="text-xs text-white/45">You save vs retail</p>
-            <p className="font-display text-xl font-bold text-mint-300">{formatPrice(totals.savings)}</p>
+            <p className="text-xs text-[#86868b]">You save vs retail</p>
+            <p className="text-xl font-bold tracking-tight text-[#0a8f6e]">{formatPrice(totals.savings)}</p>
           </div>
           <div>
-            <p className="text-xs text-white/45">Order total</p>
-            <p className="font-display text-xl font-bold text-white">{formatPrice(totals.total)}</p>
+            <p className="text-xs text-[#86868b]">Order total</p>
+            <p className="text-xl font-bold tracking-tight text-[#1d1d1f]">{formatPrice(totals.total)}</p>
           </div>
         </div>
         <button
           onClick={addOrderToCart}
           disabled={computed.length === 0}
           className={cn(
-            "inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 font-medium transition-all duration-300 disabled:opacity-40",
-            added ? "bg-mint-500 text-ink-950" : "bg-gradient-to-r from-brand-500 to-glacier-400 text-white hover:-translate-y-0.5",
+            "inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-[17px] text-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40",
+            added ? "bg-[#0a8f6e]" : "bg-[#0a8f6e] hover:bg-[#0a7d61] active:scale-[.98]",
           )}
         >
           {added ? (

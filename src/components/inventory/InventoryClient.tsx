@@ -7,7 +7,7 @@ import type { InventoryItem } from "@/lib/inventory";
 import { useCart } from "@/lib/cart-store";
 import { GRADES } from "@/lib/grades";
 import { formatPrice, cn } from "@/lib/utils";
-import { DeviceVisual } from "@/components/ui/DeviceVisual";
+import { PhImg } from "@/components/home/PhImg";
 
 const PAGE = 36;
 
@@ -56,8 +56,8 @@ export function InventoryClient({ items }: { items: InventoryItem[] }) {
   return (
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex flex-1 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2.5">
-          <Search className="h-4.5 w-4.5 text-white/40" />
+        <div className="relative flex-1">
+          <Search className="pointer-events-none absolute left-[14px] top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#86868b]" />
           <input
             value={query}
             onChange={(e) => {
@@ -65,7 +65,7 @@ export function InventoryClient({ items }: { items: InventoryItem[] }) {
               setLimit(PAGE);
             }}
             placeholder="Search the live inventory…"
-            className="w-full bg-transparent text-sm text-white placeholder:text-white/35 focus:outline-none"
+            className="inpt pl-[42px]"
           />
         </div>
         <div className="flex flex-wrap gap-2">
@@ -76,10 +76,7 @@ export function InventoryClient({ items }: { items: InventoryItem[] }) {
                 setMan(m);
                 setLimit(PAGE);
               }}
-              className={cn(
-                "rounded-full border px-3.5 py-1.5 text-sm capitalize transition",
-                man === m ? "border-brand-400/60 bg-brand-500/20 text-white" : "border-white/10 text-white/55 hover:border-white/25",
-              )}
+              className={cn("chip capitalize", man === m && "on accent")}
             >
               {m === "all" ? "All brands" : m.toLowerCase()}
             </button>
@@ -87,11 +84,12 @@ export function InventoryClient({ items }: { items: InventoryItem[] }) {
         </div>
       </div>
 
-      <p className="mb-5 text-sm text-white/45">
-        <span className="font-semibold text-white">{filtered.length}</span> listings
+      <p className="mb-5 inline-flex items-center gap-1.5 text-sm text-[#6e6e73]">
+        <span className="livedot" />
+        <span className="font-semibold text-[#1d1d1f]">{filtered.length}</span> listings live · synced daily
       </p>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid-cards">
         {shown.map((it, idx) => (
           <motion.div
             key={it.id}
@@ -99,61 +97,52 @@ export function InventoryClient({ items }: { items: InventoryItem[] }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-30px" }}
             transition={{ duration: 0.4, delay: (idx % 4) * 0.04 }}
-            className="flex flex-col rounded-3xl border border-white/10 bg-ink-850/60 p-4"
+            className="flex h-full flex-col overflow-hidden rounded-[22px] bg-[#f5f5f7]"
           >
-            <div className="mb-2 flex items-center justify-between text-xs text-white/40">
-              <span>{it.manufacturer}</span>
-              <span>{it.storageLabel}</span>
-            </div>
-            <div className="grid h-32 place-items-center">
-              <DeviceVisual
-                colorHex={it.colorHex}
-                accent={it.accent}
-                brand={it.brand}
-                type={it.type}
-                cameraLayout={it.cameraLayout}
-                image={it.image}
-                grade={it.topGrade}
-                tilt={false}
-                className="h-full"
-              />
-            </div>
-            <h3 className="mt-2 line-clamp-1 font-display text-sm font-semibold text-white" title={it.model}>
-              {it.model}
-            </h3>
-            <p className="text-xs text-white/45">{it.color}</p>
-
-            <div className="mt-2 flex flex-wrap gap-1">
-              {it.chips.map((c) => {
-                const g = GRADES[c.gradeId];
-                return (
-                  <span
-                    key={c.code}
-                    className="rounded-md px-1.5 py-0.5 text-[10px] font-semibold"
-                    style={{ background: `${g.hex}1f`, color: g.hexSoft }}
-                    title={`${g.label} grade`}
-                  >
-                    {c.code} ×{c.count}
-                  </span>
-                );
-              })}
-            </div>
-
-            <div className="mt-auto flex items-end justify-between pt-3">
-              <div>
-                <span className="text-[11px] text-white/40">{it.stock} in stock · from</span>
-                <div className="font-display text-lg font-bold text-white">{formatPrice(it.price)}</div>
+            <PhImg slug={it.slug} src={it.image} label={it.model} className="pimg">
+              <span className="pbadge">{GRADES[it.topGrade].label}</span>
+            </PhImg>
+            <div className="flex flex-1 flex-col gap-1.5 p-5">
+              <div className="flex items-center justify-between text-xs text-[#86868b]">
+                <span>{it.manufacturer}</span>
+                <span>{it.storageLabel}</span>
               </div>
-              <button
-                onClick={() => addToCart(it)}
-                aria-label={`Add ${it.model}`}
-                className={cn(
-                  "grid h-10 w-10 shrink-0 place-items-center rounded-full transition-all",
-                  added === it.slug ? "bg-mint-500 text-ink-950" : "bg-white/10 text-white hover:bg-gradient-to-r hover:from-brand-500 hover:to-glacier-400",
-                )}
-              >
-                {added === it.slug ? <Check className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-              </button>
+              <h3 className="line-clamp-1 text-[17px] font-semibold tracking-[-.015em] text-[#1d1d1f]" title={it.model}>
+                {it.model}
+              </h3>
+              <p className="text-[13px] text-[#86868b]">{it.color}</p>
+
+              <div className="mt-1 flex flex-wrap gap-1.5">
+                {it.chips.map((c) => {
+                  const g = GRADES[c.gradeId];
+                  return (
+                    <span key={c.code} className="tag" title={`${g.label} grade`}>
+                      <span
+                        className="inline-block h-1.5 w-1.5 rounded-full"
+                        style={{ background: g.hex }}
+                      />
+                      {c.code} ×{c.count}
+                    </span>
+                  );
+                })}
+              </div>
+
+              <div className="mt-auto flex items-end justify-between pt-3">
+                <div>
+                  <span className="inline-flex items-center gap-1 text-[11px] text-[#86868b]">
+                    <span className="livedot" />
+                    {it.stock} in stock · from
+                  </span>
+                  <div className="text-lg font-bold text-[#1d1d1f]">{formatPrice(it.price)}</div>
+                </div>
+                <button
+                  onClick={() => addToCart(it)}
+                  aria-label={`Add ${it.model}`}
+                  className={cn("addbtn", added === it.slug && "added")}
+                >
+                  {added === it.slug ? <Check className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+                </button>
+              </div>
             </div>
           </motion.div>
         ))}
@@ -161,10 +150,7 @@ export function InventoryClient({ items }: { items: InventoryItem[] }) {
 
       {limit < filtered.length && (
         <div className="mt-10 flex justify-center">
-          <button
-            onClick={() => setLimit((l) => l + PAGE)}
-            className="inline-flex items-center gap-2 rounded-full border border-white/15 px-6 py-3 text-sm font-medium text-white transition hover:bg-white/5"
-          >
+          <button onClick={() => setLimit((l) => l + PAGE)} className="btn btn-lt">
             <Boxes className="h-4 w-4" /> Load more ({filtered.length - limit} left)
           </button>
         </div>

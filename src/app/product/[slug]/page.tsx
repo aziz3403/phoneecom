@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Check, ScanLine, Sparkles } from "lucide-react";
 import { DEVICES, getDevice, relatedDevices, startingPrice } from "@/lib/products";
 import { ProductExperience } from "@/components/product/ProductExperience";
 import { Reviews } from "@/components/product/Reviews";
 import { RecentlyViewed } from "@/components/product/RecentlyViewed";
 import { ProductCard } from "@/components/ui/ProductCard";
-import { Section, SectionHeading } from "@/components/ui/Section";
-import { Reveal } from "@/components/ui/Reveal";
 
 export function generateStaticParams() {
   return DEVICES.map((d) => ({ slug: d.slug }));
@@ -48,126 +45,126 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     ["Released", String(device.releaseYear)],
   ];
 
+  const included: [string, string][] = [
+    ["Certified " + device.name, "Inspected, graded and sanitized to factory standard."],
+    ["USB-C charge cable", "Brand-new, reMint-supplied."],
+    ["12-month warranty card", "Covers every grade, plus a 14-day return window."],
+  ];
+
   return (
-    <div className="pt-28">
-      <div className="mx-auto max-w-7xl px-5 sm:px-8">
-        <p className="text-sm text-white/40">
-          <Link href="/shop" className="hover:text-white">
+    <div className="pt-[26px]">
+      {/* breadcrumb */}
+      <div className="shell">
+        <p className="crumb">
+          <Link href="/shop" className="hover:text-[#1d1d1f]">
             Shop
           </Link>{" "}
-          · {device.type === "tablet" ? "iPad" : device.brand} ·{" "}
-          <span className="text-white/70">{device.name}</span>
+          <span className="opacity-50">/</span>{" "}
+          {device.type === "tablet" ? "iPad" : device.brand}{" "}
+          <span className="opacity-50">/</span>{" "}
+          <span className="text-[#6e6e73]">{device.name}</span>
         </p>
       </div>
 
-      <div className="mx-auto mt-6 max-w-7xl px-5 sm:px-8">
+      {/* hero (gallery + buy box) */}
+      <div className="shell mt-6">
         <ProductExperience device={device} />
       </div>
 
-      {/* highlights */}
-      <Section className="py-16">
-        <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
-          <Reveal>
-            <h2 className="font-display text-3xl font-bold tracking-tight text-white">
-              Why you&apos;ll love it
-            </h2>
-            <p className="mt-3 text-white/55">
-              The standout reasons this {device.brand} {device.type === "tablet" ? "iPad" : "device"} is
-              a smart buy — certified, guaranteed, and priced for the real world.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-2">
-              {device.features.map((f) => (
-                <span
-                  key={f}
-                  className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white/70"
-                >
-                  {f}
+      {/* specs + what's in the box */}
+      <div className="shell mt-20 grid gap-14 lg:grid-cols-2">
+        <div>
+          <h3 className="mb-[18px] text-[22px] font-bold tracking-[-.015em] text-[#1d1d1f]">
+            Tech specs
+          </h3>
+          <div>
+            {specs.map(([k, v]) => (
+              <div key={k} className="specrow">
+                <span className="speck">{k}</span>
+                <span className="specv">{v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <h3 className="mb-[18px] text-[22px] font-bold tracking-[-.015em] text-[#1d1d1f]">
+            What&apos;s in the box
+          </h3>
+          <div className="flex flex-col gap-[14px]">
+            {included.map(([title, note]) => (
+              <div key={title} className="flex items-start gap-[13px] text-[15px]">
+                <span className="grid h-[34px] w-[34px] flex-none place-items-center rounded-[9px] bg-[#f5f5f7] text-[15px] font-bold text-[#0a8f6e]">
+                  ✓
                 </span>
-              ))}
-            </div>
-          </Reveal>
-
-          <Reveal delay={0.1}>
-            <ul className="space-y-3">
-              {device.highlights.map((h) => (
-                <li key={h} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-ink-850/50 p-4">
-                  <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-mint-500/20">
-                    <Check className="h-3.5 w-3.5 text-mint-400" />
-                  </span>
-                  <span className="text-white/75">{h}</span>
-                </li>
-              ))}
-            </ul>
-          </Reveal>
-        </div>
-      </Section>
-
-      {/* specs + inspection */}
-      <Section className="py-8">
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Reveal className="rounded-3xl border border-white/10 bg-ink-850/50 p-6 sm:p-8">
-            <h3 className="font-display text-xl font-bold text-white">Tech specs</h3>
-            <dl className="mt-5 grid grid-cols-1 gap-x-8 sm:grid-cols-2">
-              {specs.map(([k, v]) => (
-                <div key={k} className="flex justify-between border-b border-white/10 py-3">
-                  <dt className="text-sm text-white/45">{k}</dt>
-                  <dd className="text-sm font-medium text-white">{v}</dd>
+                <div>
+                  <b className="font-semibold text-[#1d1d1f]">{title}</b>
+                  <div className="mt-0.5 text-[13px] leading-[1.5] text-[#86868b]">{note}</div>
                 </div>
-              ))}
-            </dl>
-          </Reveal>
-
-          <Reveal delay={0.1} className="rounded-3xl border border-white/10 bg-ink-850/50 p-6 sm:p-8">
-            <div className="flex items-center gap-2">
-              <ScanLine className="h-5 w-5 text-brand-300" />
-              <h3 className="font-display text-xl font-bold text-white">The 50-point check</h3>
-            </div>
-            <p className="mt-3 text-sm text-white/55">
-              Before this device shipped, our lab verified each of these — and every unit is
-              guaranteed fully unlocked, fully functional, with 80%+ battery health.
-            </p>
-            <div className="mt-5 grid grid-cols-2 gap-2.5">
-              {[
-                "Touchscreen & display",
-                "Battery cycle count",
-                "Cameras & sensors",
-                "Face ID / Touch ID",
-                "Speakers & mics",
-                "Wi-Fi & cellular",
-                "Buttons & haptics",
-                "Charging & ports",
-                "Housing integrity",
-                "Factory data wipe",
-              ].map((c) => (
-                <div key={c} className="flex items-center gap-2 text-sm text-white/65">
-                  <Check className="h-4 w-4 shrink-0 text-mint-400" /> {c}
-                </div>
-              ))}
-            </div>
-            <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-mint-500/15 px-3 py-1.5 text-sm font-medium text-mint-300">
-              <Sparkles className="h-4 w-4" /> Passed all checks · reMint Certified
-            </div>
-          </Reveal>
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-[13px] leading-[1.5] text-[#86868b]">
+            Original retail box, power adapter and EarPods are not included — part of how we keep
+            prices low and waste down.
+          </p>
         </div>
-      </Section>
+      </div>
+
+      {/* highlights / features */}
+      <div className="shell mt-20 grid gap-14 lg:grid-cols-[1fr_1.2fr]">
+        <div>
+          <h2 className="h2">
+            Why you&apos;ll love it
+          </h2>
+          <p className="mt-3 text-[17px] leading-relaxed text-[#6e6e73]">
+            The standout reasons this {device.brand}{" "}
+            {device.type === "tablet" ? "iPad" : "device"} is a smart buy — certified, guaranteed,
+            and priced for the real world.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-2">
+            {device.features.map((f) => (
+              <span key={f} className="tag">
+                {f}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <ul className="flex flex-col gap-3">
+          {device.highlights.map((h) => (
+            <li key={h} className="scard flex items-start gap-3 !p-4">
+              <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[rgba(10,143,110,.1)] text-[13px] font-bold text-[#0a8f6e]">
+                ✓
+              </span>
+              <span className="text-[15px] leading-[1.5] text-[#1d1d1f]">{h}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       {/* reviews */}
-      <Section className="py-8">
-        <SectionHeading align="left" eyebrow="Customer reviews" title="What buyers say" />
-        <div className="mt-10">
+      <div className="shell mt-20 border-t border-[#d2d2d7] pt-12">
+        <h2 className="text-[clamp(24px,3vw,34px)] font-bold tracking-[-.02em] text-[#1d1d1f]">
+          What buyers are saying
+        </h2>
+        <div className="mt-7">
           <Reviews rating={device.rating} count={device.reviews} slug={device.slug} />
         </div>
-      </Section>
+      </div>
 
       {/* related */}
-      <Section>
-        <SectionHeading align="left" eyebrow="You may also like" title="Complete the lineup" />
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="shell mt-[90px]">
+        <span className="eyebrow">You may also like</span>
+        <h3 className="mt-2 text-[26px] font-bold tracking-[-.015em] text-[#1d1d1f]">
+          Complete the lineup
+        </h3>
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {related.map((d, i) => (
             <ProductCard key={d.id} device={d} index={i} />
           ))}
         </div>
-      </Section>
+      </div>
 
       <RecentlyViewed exclude={device.slug} />
     </div>

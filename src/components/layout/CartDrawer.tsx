@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
+import { X, Minus, Plus, Trash2 } from "lucide-react";
 import { useCart, lineUnitPrice, lineTotal, cartSubtotal, itemKey } from "@/lib/cart-store";
-import { formatPrice, cn } from "@/lib/utils";
-import { ButtonLink } from "@/components/ui/Button";
-import { GradeBadge } from "@/components/ui/Badge";
+import { GRADES } from "@/lib/grades";
+import { renderSrc } from "@/lib/products";
+import { formatPrice } from "@/lib/utils";
 
 export function CartDrawer() {
   const open = useCart((s) => s.open);
@@ -21,103 +21,74 @@ export function CartDrawer() {
       {open && (
         <>
           <motion.div
-            className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
+            style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(10,20,16,.45)", backdropFilter: "blur(3px)" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setOpen(false)}
           />
           <motion.aside
-            className="fixed right-0 top-0 z-[70] flex h-full w-full max-w-md flex-col border-l border-white/10 bg-ink-900/95 backdrop-blur-xl"
+            style={{
+              position: "fixed", right: 0, top: 0, zIndex: 310, display: "flex", height: "100%",
+              width: "100%", maxWidth: 420, flexDirection: "column", background: "#fff",
+              boxShadow: "-12px 0 44px rgba(0,0,0,.18)",
+            }}
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 280 }}
           >
-            <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
-              <div className="flex items-center gap-2">
-                <ShoppingBag className="h-5 w-5 text-brand-300" />
-                <h2 className="font-display text-lg font-bold text-white">Your bag</h2>
-                <span className="text-sm text-white/40">({items.length})</span>
-              </div>
-              <button
-                onClick={() => setOpen(false)}
-                className="grid h-9 w-9 place-items-center rounded-full bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
-              >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--line)", padding: "18px 22px" }}>
+              <h2 style={{ fontSize: 19, fontWeight: 600, letterSpacing: "-.01em" }}>
+                Your bag <span style={{ color: "var(--text3)", fontWeight: 400 }}>({items.length})</span>
+              </h2>
+              <button onClick={() => setOpen(false)} aria-label="Close" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text2)", display: "flex" }}>
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             {items.length === 0 ? (
-              <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-                <div className="grid h-20 w-20 place-items-center rounded-full bg-white/5">
-                  <ShoppingBag className="h-9 w-9 text-white/30" />
-                </div>
-                <p className="text-white/60">Your bag is empty.</p>
-                <ButtonLink href="/shop" variant="primary" size="md" onClick={() => setOpen(false)}>
-                  Browse phones <ArrowRight className="h-4 w-4" />
-                </ButtonLink>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 24, textAlign: "center" }}>
+                <p style={{ color: "var(--text2)" }}>Your bag is empty.</p>
+                <Link className="btn" href="/shop" onClick={() => setOpen(false)}>
+                  Browse phones
+                </Link>
               </div>
             ) : (
               <>
-                <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+                <div style={{ flex: 1, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
                   {items.map((item) => (
-                    <div
-                      key={itemKey(item)}
-                      className="flex gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3"
-                    >
-                      <div
-                        className="grid h-20 w-16 shrink-0 place-items-center rounded-xl"
-                        style={{
-                          background: `linear-gradient(150deg, ${item.colorHex}, #0b0b17)`,
-                          boxShadow: "inset 0 0 0 1px rgba(255,255,255,.08)",
-                        }}
-                      >
-                        <div className="h-14 w-9 rounded-md bg-black/40 ring-1 ring-white/10" />
-                      </div>
-                      <div className="flex min-w-0 flex-1 flex-col">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="truncate font-medium text-white">{item.name}</p>
-                            <p className="text-xs text-white/45">
-                              {item.colorName} · {item.gb}GB
+                    <div key={itemKey(item)} style={{ display: "flex", gap: 12, borderRadius: 16, background: "var(--gray)", padding: 12 }}>
+                      <span className="ph" style={{ height: 78, width: 58, borderRadius: 12, flex: "none" }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={renderSrc(item.slug)} alt="" onError={(e) => ((e.target as HTMLImageElement).style.display = "none")} />
+                      </span>
+                      <div style={{ minWidth: 0, flex: 1, display: "flex", flexDirection: "column" }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+                          <div style={{ minWidth: 0 }}>
+                            <p style={{ fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.name}</p>
+                            <p style={{ fontSize: 12.5, color: "var(--text3)" }}>
+                              {item.colorName} · {item.gb}GB · {GRADES[item.grade].label}
+                              {item.mode === "wholesale" ? " · Wholesale" : ""}
                             </p>
                           </div>
-                          <button
-                            onClick={() => remove(itemKey(item))}
-                            className="text-white/30 hover:text-rose-400"
-                            aria-label="Remove"
-                          >
+                          <button onClick={() => remove(itemKey(item))} aria-label="Remove" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text3)", display: "flex" }}>
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
-                        <div className="mt-1 flex items-center gap-2">
-                          <GradeBadge grade={item.grade} size="sm" showDot={false} />
-                          {item.mode === "wholesale" && (
-                            <span className="rounded-full bg-brand-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase text-brand-200">
-                              Wholesale
-                            </span>
-                          )}
-                        </div>
-                        <div className="mt-auto flex items-center justify-between pt-2">
-                          <div className="flex items-center gap-1 rounded-full bg-white/5 p-1">
-                            <button
-                              onClick={() => setQty(itemKey(item), item.qty - 1)}
-                              className="grid h-7 w-7 place-items-center rounded-full text-white/70 hover:bg-white/10"
-                            >
+                        <div style={{ marginTop: "auto", paddingTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 2, borderRadius: 980, background: "#fff", border: "1px solid var(--line)", padding: 3 }}>
+                            <button onClick={() => setQty(itemKey(item), item.qty - 1)} aria-label="Decrease" style={qtyBtn}>
                               <Minus className="h-3.5 w-3.5" />
                             </button>
-                            <span className="w-7 text-center text-sm font-semibold text-white">{item.qty}</span>
-                            <button
-                              onClick={() => setQty(itemKey(item), item.qty + 1)}
-                              className="grid h-7 w-7 place-items-center rounded-full text-white/70 hover:bg-white/10"
-                            >
+                            <span style={{ width: 26, textAlign: "center", fontSize: 14, fontWeight: 600 }}>{item.qty}</span>
+                            <button onClick={() => setQty(itemKey(item), item.qty + 1)} aria-label="Increase" style={qtyBtn}>
                               <Plus className="h-3.5 w-3.5" />
                             </button>
                           </div>
-                          <div className="text-right">
-                            <p className="font-semibold text-white">{formatPrice(lineTotal(item))}</p>
-                            <p className="text-[11px] text-white/40">{formatPrice(lineUnitPrice(item))} ea</p>
+                          <div style={{ textAlign: "right" }}>
+                            <p style={{ fontWeight: 600 }}>{formatPrice(lineTotal(item))}</p>
+                            <p style={{ fontSize: 11.5, color: "var(--text3)" }}>{formatPrice(lineUnitPrice(item))} ea</p>
                           </div>
                         </div>
                       </div>
@@ -125,32 +96,23 @@ export function CartDrawer() {
                   ))}
                 </div>
 
-                <div className="border-t border-white/10 px-6 py-5">
-                  <div className="mb-1 flex items-center justify-between text-sm text-white/55">
+                <div style={{ borderTop: "1px solid var(--line)", padding: "20px 22px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, color: "var(--text2)", marginBottom: 6 }}>
                     <span>Subtotal</span>
                     <span>{formatPrice(subtotal)}</span>
                   </div>
-                  <div className="mb-4 flex items-center justify-between text-sm text-white/55">
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, color: "var(--text2)", marginBottom: 14 }}>
                     <span>Shipping</span>
-                    <span className="text-mint-300">Free · 2-day</span>
+                    <span style={{ color: "var(--accent)" }}>Free · 2-day</span>
                   </div>
-                  <div className="mb-4 flex items-center justify-between">
-                    <span className="text-white/70">Total</span>
-                    <span className="font-display text-2xl font-bold text-white">{formatPrice(subtotal)}</span>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                    <span style={{ color: "var(--text2)" }}>Total</span>
+                    <span style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-.02em" }}>{formatPrice(subtotal)}</span>
                   </div>
-                  <ButtonLink
-                    href="/cart"
-                    variant="primary"
-                    size="lg"
-                    className={cn("w-full")}
-                    onClick={() => setOpen(false)}
-                  >
-                    Checkout <ArrowRight className="h-4 w-4" />
-                  </ButtonLink>
-                  <button
-                    onClick={() => setOpen(false)}
-                    className="mt-3 w-full text-center text-sm text-white/50 hover:text-white"
-                  >
+                  <Link className="btn" href="/cart" onClick={() => setOpen(false)} style={{ width: "100%" }}>
+                    Checkout
+                  </Link>
+                  <button onClick={() => setOpen(false)} style={{ marginTop: 12, width: "100%", textAlign: "center", fontSize: 14, color: "var(--text2)", background: "none", border: "none", cursor: "pointer" }}>
                     Continue shopping
                   </button>
                 </div>
@@ -162,3 +124,15 @@ export function CartDrawer() {
     </AnimatePresence>
   );
 }
+
+const qtyBtn: React.CSSProperties = {
+  display: "grid",
+  height: 26,
+  width: 26,
+  placeItems: "center",
+  borderRadius: 980,
+  background: "none",
+  border: "none",
+  cursor: "pointer",
+  color: "var(--text2)",
+};

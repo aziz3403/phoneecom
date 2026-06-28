@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
-import { Check, ShieldCheck, Sparkles } from "lucide-react";
+import Link from "next/link";
 import { GRADES, GRADE_ORDER } from "@/lib/grades";
-import { Section, SectionHeading } from "@/components/ui/Section";
-import { Reveal } from "@/components/ui/Reveal";
-import { ButtonLink } from "@/components/ui/Button";
-import { AuroraBackground } from "@/components/ui/AuroraBackground";
+import { GradeBadge } from "@/components/ui/Badge";
+import { PhImg } from "@/components/home/PhImg";
 
 export const metadata: Metadata = {
   title: "Condition grades, defined",
@@ -36,136 +34,179 @@ const FAQ = [
   },
 ];
 
+// per-grade render slugs + cosmetic meter rows (wear widens as the grade drops)
+const RENDER: Record<string, string> = {
+  pristine: "iphone-16-pro-max",
+  excellent: "iphone-15",
+  good: "iphone-13",
+  fair: "iphone-11",
+};
+
+const METERS: Record<string, [string, string, string][]> = {
+  pristine: [
+    ["Screen", "w0", "Flawless"],
+    ["Back glass", "w0", "Flawless"],
+    ["Frame", "w0", "Flawless"],
+  ],
+  excellent: [
+    ["Screen", "w1", "Faint"],
+    ["Back glass", "w1", "Faint"],
+    ["Frame", "w1", "Minimal"],
+  ],
+  good: [
+    ["Screen", "w1", "Light"],
+    ["Back glass", "w2", "Visible"],
+    ["Frame", "w2", "Visible"],
+  ],
+  fair: [
+    ["Screen", "w2", "Visible"],
+    ["Back glass", "w3", "Marked"],
+    ["Frame", "w3", "Marked"],
+  ],
+};
+
 export default function GradesPage() {
   return (
-    <div className="pt-24">
-      <section className="relative overflow-hidden">
-        <AuroraBackground />
-        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20">
-          <Reveal className="max-w-2xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium uppercase tracking-[0.18em] text-brand-200">
-              Transparent grading
-            </span>
-            <h1 className="mt-5 font-display text-[clamp(2.4rem,6vw,4.2rem)] font-extrabold leading-[1.02] tracking-tight text-white">
-              Every grade,
-              <br />
-              <span className="text-gradient">clearly defined.</span>
-            </h1>
-            <p className="mt-5 max-w-xl text-lg text-white/60">
-              No vague A/B/C codes. Four honest grades describe a device&apos;s cosmetic condition —
-              and nothing else. Function is guaranteed across the board.
-            </p>
-          </Reveal>
+    <>
+      <div className="pagehead">
+        <p className="crumb">
+          <Link href="/">Home</Link> · Grades
+        </p>
+        <h1 className="ptitle">Every grade, clearly defined.</h1>
+        <p className="psub">
+          No vague A/B/C codes. Four honest grades describe a device&apos;s cosmetic condition — and
+          nothing else. Function is guaranteed across the board.
+        </p>
 
-          {/* condition scale */}
-          <Reveal delay={0.1} className="mt-12">
-            <div className="flex items-center gap-2">
-              {GRADE_ORDER.slice().reverse().map((id) => {
-                const g = GRADES[id];
-                return (
-                  <div key={id} className="flex-1">
-                    <div className="h-2 rounded-full" style={{ background: g.hex }} />
-                    <p className="mt-2 text-center text-xs font-medium" style={{ color: g.hexSoft }}>
-                      {g.label}
-                    </p>
+        {/* condition scale */}
+        <div style={{ maxWidth: 640, marginTop: 30 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {GRADE_ORDER.map((id) => {
+              const g = GRADES[id];
+              return (
+                <div key={id} style={{ flex: 1 }}>
+                  <div style={{ height: 8, borderRadius: 980, background: g.hex }} />
+                  <p
+                    style={{
+                      marginTop: 8,
+                      textAlign: "center",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "var(--text2)",
+                    }}
+                  >
+                    {g.label}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+          <div
+            style={{
+              marginTop: 2,
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: 12,
+              color: "var(--text3)",
+            }}
+          >
+            <span>Flawless</span>
+            <span>More character · biggest savings</span>
+          </div>
+        </div>
+      </div>
+
+      {/* per-grade detail cards */}
+      <section className="sec" style={{ paddingTop: 64 }}>
+        <div className="shell">
+          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            {GRADE_ORDER.map((id) => {
+              const g = GRADES[id];
+              return (
+                <div className="gpanel scard-bord" key={id} style={{ boxShadow: "none" }}>
+                  <div className="gphoto">
+                    <PhImg slug={RENDER[id]} label={`${g.label} condition`} />
                   </div>
-                );
-              })}
-            </div>
-            <div className="mt-1 flex justify-between text-xs text-white/40">
-              <span>More character · biggest savings</span>
-              <span>Flawless</span>
-            </div>
-          </Reveal>
+                  <div className="gdetail">
+                    <div className="gname">
+                      {g.label} <span className="gsave">{g.savings}</span>
+                      <GradeBadge grade={id} />
+                    </div>
+                    <div className="gtag">{g.tagline}</div>
+                    <p className="gdesc">{g.cosmetic}</p>
+                    <div className="meters">
+                      {METERS[id].map(([label, w, val]) => (
+                        <div className="mrow" key={label}>
+                          <span className="mlbl">{label}</span>
+                          <div className="mtrack">
+                            <div className={`mfill ${w}`} />
+                          </div>
+                          <span className="mval">{val}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </section>
 
-      <Section className="py-8">
-        <div className="grid gap-5 md:grid-cols-2">
-          {GRADE_ORDER.map((id, i) => {
-            const g = GRADES[id];
-            return (
-              <Reveal key={id} delay={(i % 2) * 0.08}>
-                <div className="relative h-full overflow-hidden rounded-3xl border border-white/10 bg-ink-850/50 p-6 sm:p-8">
-                  <div
-                    className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full opacity-25 blur-3xl"
-                    style={{ background: g.hex }}
-                  />
-                  <div className="flex items-center justify-between">
-                    <h2 className="font-display text-2xl font-bold" style={{ color: g.hexSoft }}>
-                      {g.label}
-                    </h2>
-                    <span
-                      className="rounded-full px-3 py-1 text-xs font-bold"
-                      style={{ background: `${g.hex}26`, color: g.hexSoft }}
-                    >
-                      {g.savings}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm text-white/50">{g.tagline}</p>
-                  <p className="mt-4 text-white/75">{g.cosmetic}</p>
-                  <div className="mt-6 h-2 w-full overflow-hidden rounded-full bg-white/10">
-                    <div
-                      className="h-full rounded-full"
-                      style={{ width: `${(g.score / 4) * 100}%`, background: `linear-gradient(90deg, ${g.hexSoft}, ${g.hex})` }}
-                    />
-                  </div>
-                </div>
-              </Reveal>
-            );
-          })}
-        </div>
-      </Section>
-
-      <Section className="py-8">
-        <Reveal>
-          <div className="rounded-3xl border border-white/10 bg-ink-850/50 p-6 sm:p-10">
-            <div className="mb-5 flex items-center gap-2 text-lg font-semibold text-white">
-              <ShieldCheck className="h-5 w-5 text-mint-400" />
-              Guaranteed on every grade
-            </div>
-            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {/* guarantees */}
+      <section className="graysec">
+        <div className="shell">
+          <div className="sechead ctr" style={{ marginBottom: 32, padding: 0 }}>
+            <p className="eyebrow">On every grade</p>
+            <h2 className="h2">Guaranteed, whatever the cosmetics.</h2>
+          </div>
+          <div className="scard-bord">
+            <div className="guar" style={{ marginTop: 0, paddingTop: 0, borderTop: "none" }}>
               {GUARANTEES.map((item) => (
-                <li key={item} className="flex items-start gap-2 text-sm text-white/70">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-mint-400" />
+                <div className="gitem" key={item}>
+                  <span className="gck">✓</span>
                   {item}
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
-        </Reveal>
-      </Section>
-
-      <Section className="py-8">
-        <SectionHeading align="left" eyebrow="Good to know" title="Grading FAQ" />
-        <div className="mt-10 grid gap-4 md:grid-cols-3">
-          {FAQ.map((f, i) => (
-            <Reveal key={f.q} delay={i * 0.08}>
-              <div className="h-full rounded-3xl border border-white/10 bg-ink-850/50 p-6">
-                <h3 className="font-display text-base font-semibold text-white">{f.q}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-white/60">{f.a}</p>
-              </div>
-            </Reveal>
-          ))}
         </div>
-      </Section>
+      </section>
 
-      <Section className="py-12">
-        <Reveal>
-          <div className="flex flex-col items-center gap-5 rounded-[2rem] border border-white/10 bg-gradient-to-br from-brand-600/25 via-ink-850 to-glacier-500/15 px-6 py-14 text-center">
-            <Sparkles className="h-7 w-7 text-brand-200" />
-            <h2 className="font-display text-3xl font-bold text-white sm:text-4xl">
-              Shop with total confidence
-            </h2>
-            <p className="max-w-md text-white/60">
-              Every device is certified, graded honestly, and backed by a 12-month warranty.
-            </p>
-            <ButtonLink href="/shop" size="lg">
-              Browse the collection
-            </ButtonLink>
+      {/* faq */}
+      <section className="sec">
+        <div className="shell">
+          <div className="sechead" style={{ marginBottom: 32, padding: 0 }}>
+            <p className="eyebrow">Good to know</p>
+            <h2 className="h2">Grading FAQ</h2>
           </div>
-        </Reveal>
-      </Section>
-    </div>
+          <div className="grid-cards">
+            {FAQ.map((f) => (
+              <div className="scard-bord" key={f.q}>
+                <h3 style={{ fontSize: 17, fontWeight: 600 }}>{f.q}</h3>
+                <p style={{ fontSize: 15, color: "var(--text2)", marginTop: 8, lineHeight: 1.55 }}>
+                  {f.a}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* cta */}
+      <section className="sec" style={{ paddingTop: 0 }}>
+        <div className="shell" style={{ textAlign: "center" }}>
+          <h2 className="h2">Shop with total confidence.</h2>
+          <p className="hsub" style={{ margin: "16px auto 0" }}>
+            Every device is certified, graded honestly, and backed by a 12-month warranty.
+          </p>
+          <div style={{ marginTop: 26 }}>
+            <Link className="btn" href="/shop">
+              Browse the collection
+            </Link>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

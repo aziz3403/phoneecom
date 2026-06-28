@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { AccountClient } from "@/components/account/AccountClient";
 
 export const metadata: Metadata = {
@@ -8,16 +9,18 @@ export const metadata: Metadata = {
 
 export default function AccountPage() {
   return (
-    <div className="pt-28">
-      <div className="mx-auto max-w-4xl px-5 pb-6 sm:px-8">
-        <p className="text-sm text-white/40">Home · Account</p>
-        <h1 className="mt-2 font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-          Account
-        </h1>
+    <>
+      <div className="pagehead">
+        <p className="crumb">
+          <Link href="/">Home</Link> · Account
+        </p>
+        <h1 className="ptitle">Account</h1>
       </div>
-      <div className="mx-auto max-w-4xl px-5 pb-24 sm:px-8">
-        <AccountClient />
-      </div>
-    </div>
+      <section className="sec" style={{ paddingTop: 40 }}>
+        <div className="shell-narrow">
+          <AccountClient />
+        </div>
+      </section>
+    </>
   );
 }

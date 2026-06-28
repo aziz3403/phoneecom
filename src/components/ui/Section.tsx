@@ -12,7 +12,7 @@ export function Section({
   id?: string;
 }) {
   return (
-    <section id={id} className={cn("relative mx-auto w-full max-w-7xl px-5 py-20 sm:px-8 sm:py-28", className)}>
+    <section id={id} className={cn("relative mx-auto w-full max-w-[1280px] px-[22px] py-20 sm:py-24", className)}>
       {children}
     </section>
   );
@@ -34,20 +34,16 @@ export function SectionHeading({
   return (
     <Reveal
       className={cn(
-        "flex flex-col gap-4",
+        "flex flex-col gap-3",
         align === "center" ? "mx-auto max-w-2xl items-center text-center" : "max-w-2xl items-start text-left",
         className,
       )}
     >
-      {eyebrow && (
-        <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-brand-200">
-          {eyebrow}
-        </span>
-      )}
-      <h2 className="font-display text-3xl font-bold leading-[1.08] tracking-tight text-white sm:text-4xl md:text-5xl">
+      {eyebrow && <span className="eyebrow">{eyebrow}</span>}
+      <h2 className="text-[clamp(28px,4vw,46px)] font-bold leading-[1.07] tracking-[-.025em] text-[#1d1d1f]">
         {title}
       </h2>
-      {subtitle && <p className="text-balance text-base leading-relaxed text-white/55 sm:text-lg">{subtitle}</p>}
+      {subtitle && <p className="text-[17px] leading-relaxed text-[#6e6e73] sm:text-[19px]">{subtitle}</p>}
     </Reveal>
   );
 }

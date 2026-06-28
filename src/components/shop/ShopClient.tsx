@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, SlidersHorizontal, X, Check, Zap } from "lucide-react";
+import { Search, SlidersHorizontal, X, Zap } from "lucide-react";
 import {
   DEVICES,
   BRANDS,
@@ -140,11 +140,11 @@ export function ShopClient({
   const filterPanel = (
     <div className="space-y-7">
       <FilterGroup title="Type">
-        <div className="space-y-1.5">
+        <div className="flex flex-wrap gap-2">
           {(["phone", "tablet"] as DeviceType[]).map((t) => (
-            <CheckRow
+            <FacetChip
               key={t}
-              checked={types.has(t)}
+              active={types.has(t)}
               onClick={() => setTypes(toggle(types, t))}
               label={TYPE_LABEL[t]}
               count={count("type", (d) => d.type === t)}
@@ -154,11 +154,11 @@ export function ShopClient({
       </FilterGroup>
 
       <FilterGroup title="Brand">
-        <div className="space-y-1.5">
+        <div className="flex flex-wrap gap-2">
           {BRANDS.map((b) => (
-            <CheckRow
+            <FacetChip
               key={b}
-              checked={brands.has(b)}
+              active={brands.has(b)}
               onClick={() => setBrands(toggle(brands, b))}
               label={b}
               count={count("brand", (d) => d.brand === b)}
@@ -168,11 +168,11 @@ export function ShopClient({
       </FilterGroup>
 
       <FilterGroup title="Condition">
-        <div className="space-y-1.5">
+        <div className="flex flex-wrap gap-2">
           {GRADE_ORDER.map((id) => (
-            <CheckRow
+            <FacetChip
               key={id}
-              checked={grades.has(id)}
+              active={grades.has(id)}
               onClick={() => setGrades(toggle(grades, id))}
               label={GRADES[id].label}
               dot={GRADES[id].hex}
@@ -185,37 +185,27 @@ export function ShopClient({
       <FilterGroup title="Storage">
         <div className="flex flex-wrap gap-2">
           {ALL_STORAGES.map((s) => (
-            <button
+            <FacetChip
               key={s}
+              active={storages.has(s)}
               onClick={() => setStorages(toggle(storages, s))}
-              className={cn(
-                "rounded-full border px-3 py-1.5 text-sm transition",
-                storages.has(s) ? "border-brand-400/60 bg-brand-500/20 text-white" : "border-white/10 text-white/55 hover:border-white/25",
-              )}
-            >
-              {s >= 1024 ? "1TB" : `${s}GB`}
-            </button>
+              label={s >= 1024 ? "1TB" : `${s}GB`}
+            />
           ))}
         </div>
       </FilterGroup>
 
       <FilterGroup title="Color">
         <div className="flex flex-wrap gap-2">
-          {PRESENT_FAMILIES.map((f) => {
-            const c = count("color", (d) => d.colors.some((cl) => cl.family === f));
-            return (
-              <button
-                key={f}
-                onClick={() => setColors(toggle(colors, f))}
-                className={cn(
-                  "rounded-full border px-3 py-1.5 text-xs transition",
-                  colors.has(f) ? "border-brand-400/60 bg-brand-500/20 text-white" : "border-white/10 text-white/55 hover:border-white/25",
-                )}
-              >
-                {f} <span className="text-white/35">{c}</span>
-              </button>
-            );
-          })}
+          {PRESENT_FAMILIES.map((f) => (
+            <FacetChip
+              key={f}
+              active={colors.has(f)}
+              onClick={() => setColors(toggle(colors, f))}
+              label={f}
+              count={count("color", (d) => d.colors.some((cl) => cl.family === f))}
+            />
+          ))}
         </div>
       </FilterGroup>
 
@@ -227,11 +217,11 @@ export function ShopClient({
           step={10}
           value={maxPrice}
           onChange={(e) => setMaxPrice(Number(e.target.value))}
-          className="w-full accent-brand-500"
+          className="w-full accent-[#0a8f6e]"
         />
-        <div className="mt-1 flex justify-between text-xs text-white/45">
+        <div className="mt-1 flex justify-between text-xs text-[#86868b]">
           <span>{formatPrice(MIN_PRICE)}</span>
-          <span className="font-semibold text-white">Up to {formatPrice(maxPrice)}</span>
+          <span className="font-semibold text-[#1d1d1f]">Up to {formatPrice(maxPrice)}</span>
         </div>
       </FilterGroup>
 
@@ -239,13 +229,20 @@ export function ShopClient({
         onClick={() => setFiveG((v) => !v)}
         className={cn(
           "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm transition",
-          fiveG ? "border-brand-400/50 bg-brand-500/15 text-white" : "border-white/10 text-white/60",
+          fiveG
+            ? "border-[#0a8f6e] bg-[rgba(10,143,110,0.08)] text-[#1d1d1f]"
+            : "border-[#d2d2d7] text-[#6e6e73] hover:border-[#86868b]",
         )}
       >
         <span className="inline-flex items-center gap-2">
-          <Zap className="h-4 w-4 text-glacier-300" /> 5G only
+          <Zap className="h-4 w-4 text-[#0a8f6e]" /> 5G only
         </span>
-        <span className={cn("h-5 w-9 rounded-full p-0.5 transition", fiveG ? "bg-brand-500" : "bg-white/15")}>
+        <span
+          className={cn(
+            "h-5 w-9 rounded-full p-0.5 transition",
+            fiveG ? "bg-[#0a8f6e]" : "bg-[#d2d2d7]",
+          )}
+        >
           <span className={cn("block h-4 w-4 rounded-full bg-white transition", fiveG && "translate-x-4")} />
         </span>
       </button>
@@ -253,13 +250,13 @@ export function ShopClient({
   );
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-8 px-5 pb-24 sm:px-8 lg:grid-cols-[260px_1fr]">
+    <div className="mx-auto grid max-w-[1280px] gap-10 px-[22px] pb-24 pt-10 lg:grid-cols-[260px_1fr]">
       <aside className="hidden lg:block">
-        <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto rounded-3xl border border-white/10 bg-ink-850/50 p-6 [scrollbar-width:thin]">
+        <div className="scard-bord sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto [scrollbar-width:thin]">
           <div className="mb-5 flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold text-white">Filters</h2>
+            <h2 className="text-lg font-semibold text-[#1d1d1f]">Filters</h2>
             {activeCount > 0 && (
-              <button onClick={clearAll} className="text-xs text-brand-300 hover:text-brand-200">
+              <button onClick={clearAll} className="link" style={{ fontSize: 13 }}>
                 Clear all
               </button>
             )}
@@ -270,16 +267,16 @@ export function ShopClient({
 
       <div>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="flex flex-1 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2.5">
-            <Search className="h-4.5 w-4.5 text-white/40" />
+          <div className="flex flex-1 items-center gap-2 rounded-full border border-[#d2d2d7] bg-white px-4 py-2.5">
+            <Search className="h-4 w-4 text-[#86868b]" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search iPhone, Galaxy, iPad…"
-              className="w-full bg-transparent text-sm text-white placeholder:text-white/35 focus:outline-none"
+              className="w-full bg-transparent text-sm text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none"
             />
             {query && (
-              <button onClick={() => setQuery("")} className="text-white/40 hover:text-white">
+              <button onClick={() => setQuery("")} className="text-[#86868b] hover:text-[#1d1d1f]" aria-label="Clear search">
                 <X className="h-4 w-4" />
               </button>
             )}
@@ -287,40 +284,48 @@ export function ShopClient({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setMobileFilters(true)}
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white lg:hidden"
+              className="inline-flex items-center gap-2 rounded-full border border-[#d2d2d7] bg-white px-4 py-2.5 text-sm text-[#1d1d1f] lg:hidden"
             >
               <SlidersHorizontal className="h-4 w-4" /> Filters
               {activeCount > 0 && (
-                <span className="grid h-5 w-5 place-items-center rounded-full bg-brand-500 text-xs">{activeCount}</span>
+                <span className="grid h-5 w-5 place-items-center rounded-full bg-[#0a8f6e] text-xs text-white">
+                  {activeCount}
+                </span>
               )}
             </button>
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SortId)}
-              className="rounded-full border border-white/10 bg-ink-850 px-4 py-2.5 text-sm text-white focus:outline-none"
-            >
-              {SORTS.map((s) => (
-                <option key={s.id} value={s.id} className="bg-ink-850">
-                  {s.label}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as SortId)}
+                className="cursor-pointer appearance-none rounded-full border border-[#d2d2d7] bg-white py-2.5 pl-4 pr-9 text-sm text-[#1d1d1f] focus:outline-none"
+              >
+                {SORTS.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+              <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] text-[#86868b]">
+                ▾
+              </span>
+            </div>
           </div>
         </div>
 
-        <p className="mb-5 text-sm text-white/45">
-          <span className="font-semibold text-white">{filtered.length}</span> devices
+        <p className="mb-5 text-sm text-[#6e6e73]">
+          <span className="font-semibold text-[#1d1d1f]">{filtered.length}</span>{" "}
+          {filtered.length === 1 ? "device" : "devices"}
         </p>
 
         {filtered.length === 0 ? (
-          <div className="grid place-items-center rounded-3xl border border-dashed border-white/15 py-24 text-center">
-            <p className="text-white/60">No devices match those filters.</p>
-            <button onClick={clearAll} className="mt-3 text-brand-300 hover:text-brand-200">
+          <div className="grid place-items-center rounded-[22px] border border-dashed border-[#d2d2d7] py-24 text-center">
+            <p className="text-[#6e6e73]">No devices match those filters.</p>
+            <button onClick={clearAll} className="link mt-3" style={{ fontSize: 15 }}>
               Clear filters
             </button>
           </div>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid-cards">
             {filtered.map((d, i) => (
               <ProductCard key={d.id} device={d} index={i} />
             ))}
@@ -332,29 +337,29 @@ export function ShopClient({
         {mobileFilters && (
           <>
             <motion.div
-              className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm lg:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileFilters(false)}
             />
             <motion.div
-              className="fixed inset-x-0 bottom-0 z-[70] max-h-[88vh] overflow-y-auto rounded-t-3xl border-t border-white/10 bg-ink-900 p-6 lg:hidden"
+              className="fixed inset-x-0 bottom-0 z-[70] max-h-[88vh] overflow-y-auto rounded-t-3xl border-t border-[#d2d2d7] bg-white p-6 lg:hidden"
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 280 }}
             >
               <div className="mb-5 flex items-center justify-between">
-                <h2 className="font-display text-lg font-semibold text-white">Filters</h2>
-                <button onClick={() => setMobileFilters(false)} className="text-white/60">
+                <h2 className="text-lg font-semibold text-[#1d1d1f]">Filters</h2>
+                <button onClick={() => setMobileFilters(false)} className="text-[#6e6e73]" aria-label="Close filters">
                   <X className="h-5 w-5" />
                 </button>
               </div>
               {filterPanel}
               <button
                 onClick={() => setMobileFilters(false)}
-                className="mt-6 w-full rounded-full bg-gradient-to-r from-brand-500 to-glacier-400 py-3 font-medium text-white"
+                className="btn mt-6 w-full"
               >
                 Show {filtered.length} results
               </button>
@@ -369,38 +374,32 @@ export function ShopClient({
 function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-white/40">{title}</h3>
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#86868b]">{title}</h3>
       {children}
     </div>
   );
 }
 
-function CheckRow({
-  checked,
+function FacetChip({
+  active,
   onClick,
   label,
   dot,
   count,
 }: {
-  checked: boolean;
+  active: boolean;
   onClick: () => void;
   label: string;
   dot?: string;
   count?: number;
 }) {
   return (
-    <button onClick={onClick} className="flex w-full items-center gap-2.5 py-1 text-left text-sm text-white/70 hover:text-white">
-      <span
-        className={cn(
-          "grid h-4.5 w-4.5 shrink-0 place-items-center rounded-md border transition",
-          checked ? "border-brand-400 bg-brand-500" : "border-white/20",
-        )}
-      >
-        {checked && <Check className="h-3 w-3 text-white" />}
-      </span>
+    <button onClick={onClick} className={cn("chip", active && "on accent")} type="button">
       {dot && <span className="h-2 w-2 rounded-full" style={{ background: dot }} />}
-      <span className="flex-1">{label}</span>
-      {count !== undefined && <span className="text-xs text-white/35">{count}</span>}
+      <span>{label}</span>
+      {count !== undefined && (
+        <span className={active ? "text-white/70" : "text-[#86868b]"}>{count}</span>
+      )}
     </button>
   );
 }

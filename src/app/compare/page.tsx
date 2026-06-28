@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { CompareClient } from "@/components/compare/CompareClient";
-import { AuroraBackground } from "@/components/ui/AuroraBackground";
 
 export const metadata: Metadata = {
   title: "Compare devices",
@@ -9,21 +9,19 @@ export const metadata: Metadata = {
 
 export default function ComparePage() {
   return (
-    <div className="pt-24">
-      <section className="relative overflow-hidden">
-        <AuroraBackground />
-        <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8">
-          <p className="text-sm text-white/40">Home · Compare</p>
-          <h1 className="mt-2 font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-            Compare devices
-          </h1>
-          <p className="mt-3 max-w-xl text-white/55">
-            Line up to three devices side by side and see exactly how they stack up.
-          </p>
-        </div>
-      </section>
+    <div className="pt-12">
+      <header className="pagehead">
+        <p className="crumb">
+          <Link href="/">Home</Link> · Compare
+        </p>
+        <h1 className="ptitle">Compare devices</h1>
+        <p className="psub">
+          Line up to three devices side by side and see exactly how they stack up — the best value
+          in each row is highlighted.
+        </p>
+      </header>
 
-      <div className="mx-auto max-w-7xl px-5 pb-24 sm:px-8">
+      <div className="shell pb-24 pt-6">
         <CompareClient />
       </div>
     </div>

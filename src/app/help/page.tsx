@@ -1,86 +1,184 @@
 import type { Metadata } from "next";
-import { Truck, RefreshCw, ShieldCheck, CreditCard, Mail, MessageCircle } from "lucide-react";
+import Link from "next/link";
+import { Truck, RefreshCw, ShieldCheck, CreditCard, MessageCircle, Mail, Phone } from "lucide-react";
 import { FaqAccordion } from "@/components/help/FaqAccordion";
-import { Section, SectionHeading } from "@/components/ui/Section";
-import { Reveal } from "@/components/ui/Reveal";
-import { AuroraBackground } from "@/components/ui/AuroraBackground";
 
 export const metadata: Metadata = {
   title: "Help & support",
-  description: "Shipping, returns, warranty and payment info, plus answers to common questions about buying certified pre-owned from reMint.",
+  description:
+    "Shipping, returns, warranty and payment info, plus answers to common questions about buying certified pre-owned from reMint.",
 };
 
-const POLICIES = [
-  { icon: Truck, title: "Free 2-day shipping", body: "Carbon-neutral delivery on every order in the contiguous US, with tracking." },
-  { icon: RefreshCw, title: "14-day RMA", body: "Not satisfied? Return within 14 days for a full refund — prepaid label included." },
-  { icon: ShieldCheck, title: "12-month warranty", body: "Every device is covered against hardware faults for a full year." },
-  { icon: CreditCard, title: "Flexible payment", body: "Pay in full or split into monthly installments at checkout." },
+const TOPICS = [
+  {
+    icon: Truck,
+    title: "Orders & shipping",
+    body: "Track a delivery, change an address, shipping times and costs, and order changes.",
+  },
+  {
+    icon: RefreshCw,
+    title: "Returns & refunds",
+    body: "Our 14-day return window, how to start a return, and when refunds land.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Warranty & repairs",
+    body: "What the 12-month warranty covers and how to file a claim.",
+  },
+  {
+    icon: CreditCard,
+    title: "Payments & financing",
+    body: "Accepted payment methods, monthly financing, and billing questions.",
+  },
+];
+
+const CONTACT = [
+  {
+    icon: MessageCircle,
+    title: "Live chat",
+    body: "Fastest way to reach us. Real people, no bots for the hard stuff.",
+    action: "Start a chat",
+    href: "#",
+    meta: "Avg. reply: under 3 min",
+    primary: true,
+  },
+  {
+    icon: Mail,
+    title: "Email us",
+    body: "Send details and screenshots — great for order-specific questions.",
+    action: "help@remint.com",
+    href: "mailto:help@remint.com",
+    meta: "Replies within 24 hours",
+    primary: false,
+  },
+  {
+    icon: Phone,
+    title: "Call us",
+    body: "Prefer to talk? Our support line is open 8am–8pm ET, every day.",
+    action: "1-800-REMINT",
+    href: "#",
+    meta: "Mon–Sun · 8am–8pm ET",
+    primary: false,
+  },
 ];
 
 export default function HelpPage() {
   return (
-    <div className="pt-24">
-      <section className="relative overflow-hidden">
-        <AuroraBackground />
-        <div className="mx-auto max-w-7xl px-5 py-16 text-center sm:px-8 sm:py-20">
-          <Reveal className="mx-auto max-w-2xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium uppercase tracking-[0.18em] text-brand-200">
-              Help center
-            </span>
-            <h1 className="mt-5 font-display text-[clamp(2.4rem,6vw,4rem)] font-extrabold leading-[1.05] tracking-tight text-white">
-              How can we <span className="text-gradient">help?</span>
-            </h1>
-            <p className="mx-auto mt-5 max-w-xl text-lg text-white/60">
-              Everything you need to know about shipping, returns, warranty and buying certified
-              pre-owned.
-            </p>
-          </Reveal>
+    <>
+      <div className="pagehead">
+        <p className="crumb">
+          <Link href="/">Home</Link> · Support
+        </p>
+        <h1 className="ptitle">How can we help?</h1>
+        <p className="psub">
+          Answers on orders, grading, warranty, returns and trade-ins — or reach a real human in
+          minutes.
+        </p>
+      </div>
+
+      {/* browse by topic */}
+      <section className="sec" style={{ paddingTop: 64 }}>
+        <div className="shell">
+          <h2 className="sechead h2" style={{ marginBottom: 32 }}>
+            Browse by topic
+          </h2>
+          <div className="grid-cards">
+            {TOPICS.map((t) => (
+              <div className="scard-bord" key={t.title}>
+                <div
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 12,
+                    background: "#edf6f0",
+                    color: "var(--accent)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 16,
+                  }}
+                >
+                  <t.icon className="h-5 w-5" />
+                </div>
+                <h3 style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-.01em" }}>{t.title}</h3>
+                <p style={{ fontSize: 14, color: "var(--text2)", marginTop: 7, lineHeight: 1.5 }}>
+                  {t.body}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      <Section className="py-8">
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {POLICIES.map((p, i) => (
-            <Reveal key={p.title} delay={(i % 4) * 0.06}>
-              <div className="h-full rounded-3xl border border-white/10 bg-ink-850/50 p-6">
-                <div className="mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-brand-500/20 to-glacier-400/10 ring-1 ring-white/10">
-                  <p.icon className="h-6 w-6 text-brand-200" />
-                </div>
-                <h3 className="font-display text-base font-semibold text-white">{p.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-white/55">{p.body}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </Section>
-
-      <Section className="py-8">
-        <SectionHeading eyebrow="FAQ" title="Common questions" />
-        <div className="mt-12">
-          <FaqAccordion />
-        </div>
-      </Section>
-
-      <Section className="py-12">
-        <Reveal>
-          <div className="flex flex-col items-center gap-5 rounded-[2rem] border border-white/10 bg-gradient-to-br from-brand-600/25 via-ink-850 to-glacier-500/15 px-6 py-14 text-center">
-            <div className="flex gap-2 text-brand-200">
-              <Mail className="h-6 w-6" />
-              <MessageCircle className="h-6 w-6" />
-            </div>
-            <h2 className="font-display text-3xl font-bold text-white">Still need a hand?</h2>
-            <p className="max-w-md text-white/60">
-              Our support team replies within a few hours, 7 days a week.
-            </p>
-            <a
-              href="mailto:support@remint.example"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-500 to-glacier-400 px-7 font-medium text-white transition hover:-translate-y-0.5"
-            >
-              <Mail className="h-4.5 w-4.5" /> Email support
-            </a>
+      {/* faq */}
+      <section className="graysec">
+        <div className="shell-narrow">
+          <div className="sechead ctr" style={{ marginBottom: 30, padding: 0 }}>
+            <p className="eyebrow">FAQ</p>
+            <h2 className="h2">Frequently asked questions</h2>
+            <p className="hsub">The quick answers most people are looking for.</p>
           </div>
-        </Reveal>
-      </Section>
-    </div>
+          <div className="scard-bord" style={{ padding: "8px 22px" }}>
+            <FaqAccordion />
+          </div>
+        </div>
+      </section>
+
+      {/* contact */}
+      <section className="sec">
+        <div className="shell">
+          <div className="sechead ctr" style={{ marginBottom: 32, padding: 0 }}>
+            <h2 className="h2">Still need a hand?</h2>
+            <p className="hsub">
+              Our team is here 7 days a week. Most chats are answered in under 3 minutes.
+            </p>
+          </div>
+          <div className="grid-cards">
+            {CONTACT.map((c) => (
+              <div className="scard-bord" key={c.title} style={{ textAlign: "center" }}>
+                <div
+                  style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: 14,
+                    background: "#edf6f0",
+                    color: "var(--accent)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    margin: "0 auto 16px",
+                  }}
+                >
+                  <c.icon className="h-6 w-6" />
+                </div>
+                <h3 style={{ fontSize: 18, fontWeight: 600 }}>{c.title}</h3>
+                <p
+                  style={{
+                    fontSize: 14,
+                    color: "var(--text2)",
+                    margin: "7px 0 16px",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {c.body}
+                </p>
+                <a
+                  className={c.primary ? "btn" : "btn btn-lt"}
+                  href={c.href}
+                  style={{ width: "100%" }}
+                >
+                  {c.action}
+                </a>
+                <div style={{ fontSize: 13, color: "var(--text3)", marginTop: 10 }}>{c.meta}</div>
+              </div>
+            ))}
+          </div>
+          <div className="note2" style={{ marginTop: 28 }}>
+            reMint is a demo storefront. Support channels and contact details shown are
+            illustrative.
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

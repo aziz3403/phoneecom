@@ -59,6 +59,7 @@ export function InventoryClient({ items }: { items: InventoryItem[] }) {
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-[14px] top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#86868b]" />
           <input
+            aria-label="Search live inventory"
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -99,7 +100,7 @@ export function InventoryClient({ items }: { items: InventoryItem[] }) {
             transition={{ duration: 0.4, delay: (idx % 4) * 0.04 }}
             className="flex h-full flex-col overflow-hidden rounded-[22px] bg-[#f5f5f7]"
           >
-            <PhImg slug={it.slug} src={it.image} label={it.model} className="pimg">
+            <PhImg slug={it.renderSlug} src={it.image} label={it.model} className="pimg">
               <span className="pbadge">{GRADES[it.topGrade].label}</span>
             </PhImg>
             <div className="flex flex-1 flex-col gap-1.5 p-5">

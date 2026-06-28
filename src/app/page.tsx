@@ -6,17 +6,36 @@ import { WHOLESALE_TIERS } from "@/lib/wholesale";
 import { PhImg } from "@/components/home/PhImg";
 import { GradeExplorer } from "@/components/home/GradeExplorer";
 import { Leaf } from "@/components/ui/Leaf";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { SITE_URL } from "@/lib/site";
 
 export default async function HomePage() {
   const { items, units } = await getInventory();
   const listings = items.length;
   const rail = popularDevices();
 
+  const orgLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "reMint",
+    url: SITE_URL,
+    logo: `${SITE_URL}/favicon.ico`,
+    description:
+      "Certified pre-owned iPhone, Samsung Galaxy and iPad — retail and wholesale. Every device fully unlocked, 80%+ battery, 12-month warranty.",
+  };
+  const websiteLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "reMint",
+    url: SITE_URL,
+  };
+
   const tierSave = (d: number) => (d === 0 ? "Base" : `−${Math.round(d * 100)}%`);
   const tierQty = (min: number, max: number | null) => (max ? `${min}–${max} units` : `${min}+ units`);
 
   return (
     <>
+      <JsonLd data={[orgLd, websiteLd]} />
       {/* ───────── hero ───────── */}
       <section className="hero">
         <div className="orb orbH1" />

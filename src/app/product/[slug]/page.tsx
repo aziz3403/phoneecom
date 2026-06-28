@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { DEVICES, getDevice, relatedDevices, startingPrice } from "@/lib/products";
+import { DEVICES, getDevice, relatedDevices, startingPrice, renderSrc } from "@/lib/products";
+import { GRADES } from "@/lib/grades";
 import { ProductExperience } from "@/components/product/ProductExperience";
 import { Reviews } from "@/components/product/Reviews";
 import { RecentlyViewed } from "@/components/product/RecentlyViewed";
 import { ProductCard } from "@/components/ui/ProductCard";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { SITE_URL } from "@/lib/site";
 
 export function generateStaticParams() {
   return DEVICES.map((d) => ({ slug: d.slug }));
@@ -19,9 +22,19 @@ export async function generateMetadata({
   const { slug } = await params;
   const device = getDevice(slug);
   if (!device) return { title: "Not found" };
+  const title = `${device.name} — certified pre-owned`;
+  const description = `Certified pre-owned ${device.name} from $${startingPrice(device)}. Guaranteed 80%+ battery, fully unlocked, 12-month warranty, free 2-day shipping.`;
   return {
-    title: `${device.name} — certified pre-owned`,
-    description: `Certified pre-owned ${device.name} from ${startingPrice(device)}. Guaranteed 80%+ battery, fully unlocked, 12-month warranty, free 2-day shipping.`,
+    title,
+    description,
+    alternates: { canonical: `${SITE_URL}/product/${device.slug}` },
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: `${SITE_URL}/product/${device.slug}`,
+      images: [{ url: `${SITE_URL}${renderSrc(device.slug)}`, alt: device.name }],
+    },
   };
 }
 
@@ -51,8 +64,50 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     ["12-month warranty card", "Covers every grade, plus a 14-day return window."],
   ];
 
+  const url = `${SITE_URL}/product/${device.slug}`;
+  const productLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: `${device.name} (Certified Pre-Owned)`,
+    description: `Certified pre-owned ${device.name} — ${GRADES[device.grade].label} grade, 80%+ battery, fully unlocked, 12-month warranty.`,
+    image: `${SITE_URL}${renderSrc(device.slug)}`,
+    brand: { "@type": "Brand", name: device.brand },
+    category: device.type === "tablet" ? "Tablet" : "Smartphone",
+    itemCondition: "https://schema.org/RefurbishedCondition",
+    offers: {
+      "@type": "AggregateOffer",
+      priceCurrency: "USD",
+      lowPrice: startingPrice(device),
+      highPrice: Math.max(...device.storage.map((s) => s.price)),
+      offerCount: device.storage.length,
+      availability: "https://schema.org/InStock",
+      url,
+    },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: device.rating,
+      reviewCount: device.reviews,
+      bestRating: 5,
+    },
+  };
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Shop", item: `${SITE_URL}/shop` },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: device.type === "tablet" ? "iPad" : device.brand,
+        item: `${SITE_URL}/shop?brand=${device.brand}`,
+      },
+      { "@type": "ListItem", position: 3, name: device.name, item: url },
+    ],
+  };
+
   return (
     <div className="pt-[26px]">
+      <JsonLd data={[productLd, breadcrumbLd]} />
       {/* breadcrumb */}
       <div className="shell">
         <p className="crumb">
@@ -74,9 +129,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       {/* specs + what's in the box */}
       <div className="shell mt-20 grid gap-14 lg:grid-cols-2">
         <div>
-          <h3 className="mb-[18px] text-[22px] font-bold tracking-[-.015em] text-[#1d1d1f]">
+          <h2 className="mb-[18px] text-[22px] font-bold tracking-[-.015em] text-[#1d1d1f]">
             Tech specs
-          </h3>
+          </h2>
           <div>
             {specs.map(([k, v]) => (
               <div key={k} className="specrow">
@@ -88,9 +143,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         </div>
 
         <div>
-          <h3 className="mb-[18px] text-[22px] font-bold tracking-[-.015em] text-[#1d1d1f]">
+          <h2 className="mb-[18px] text-[22px] font-bold tracking-[-.015em] text-[#1d1d1f]">
             What&apos;s in the box
-          </h3>
+          </h2>
           <div className="flex flex-col gap-[14px]">
             {included.map(([title, note]) => (
               <div key={title} className="flex items-start gap-[13px] text-[15px]">

@@ -98,6 +98,7 @@ export function CompareClient() {
           <div className="border-b border-l border-[#d2d2d7] p-4">
             <p className="mb-2 text-center text-xs text-[#86868b]">Add a device</p>
             <select
+              aria-label="Add a device to compare"
               value=""
               onChange={(e) => e.target.value && setSlugs((s) => [...s, e.target.value])}
               className="sel text-sm"

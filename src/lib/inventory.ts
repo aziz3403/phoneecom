@@ -1,6 +1,19 @@
 import snapshot from "@/data/inventory-snapshot.json";
-import type { Brand, CameraLayout, DeviceType } from "./products";
+import { DEVICES, type Brand, type CameraLayout, type DeviceType } from "./products";
 import type { GradeId } from "./grades";
+
+// Map a sheet model string ("IPHONE 13 PRO MAX (A2484)") to a catalog device
+// slug so live-inventory cards can reuse the real 3D render. Picks the longest
+// catalog name the model name starts with (so "13 Pro Max" beats "13").
+const NORM = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, "");
+const CATALOG_NORM = DEVICES.map((d) => ({ slug: d.slug, n: NORM(d.name) })).sort(
+  (a, b) => b.n.length - a.n.length,
+);
+function catalogSlugForModel(model: string): string | undefined {
+  const m = NORM(model);
+  for (const c of CATALOG_NORM) if (m === c.n || m.startsWith(c.n)) return c.slug;
+  return undefined;
+}
 
 /** Models/colors we never list (parts units, cosmetic-fail, sticker variants, insurance returns). */
 export const EXCLUDE_RE = /U\/P|DISCOLOR|HOLOGRAM|ASURION/i;
@@ -42,6 +55,8 @@ export interface InventoryItem {
   price: number;
   fiveG: boolean;
   image?: string;
+  /** catalog slug whose 3D render matches this model (if any) */
+  renderSlug?: string;
 }
 
 export const SHEET_ID = "13tjQAKJoT4YsWIDRc0phZN2Fjb424FEVyQRHDpd8LOk";
@@ -164,6 +179,7 @@ function toItem(r: InvRecord, i: number): InventoryItem {
     price: estimatePrice(r.model, gb),
     fiveG: /5G/i.test(r.model),
     image: r.image && /^https?:\/\//i.test(r.image) ? r.image : undefined,
+    renderSlug: catalogSlugForModel(r.model),
   };
 }
 

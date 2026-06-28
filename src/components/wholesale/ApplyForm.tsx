@@ -92,6 +92,7 @@ export function ApplyForm() {
                   <label className="flabel">Company *</label>
                   <input
                     className="inpt"
+                    aria-label="Company"
                     placeholder="Acme Mobile"
                     value={form.company}
                     onChange={(e) => set("company", e.target.value)}
@@ -101,6 +102,7 @@ export function ApplyForm() {
                   <label className="flabel">Your name *</label>
                   <input
                     className="inpt"
+                    aria-label="Your name"
                     placeholder="Jordan Lee"
                     value={form.name}
                     onChange={(e) => set("name", e.target.value)}
@@ -112,6 +114,7 @@ export function ApplyForm() {
                 <input
                   type="email"
                   className="inpt"
+                  aria-label="Work email"
                   placeholder="jordan@acme.com"
                   value={form.email}
                   onChange={(e) => set("email", e.target.value)}
@@ -120,7 +123,7 @@ export function ApplyForm() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="field">
                   <label className="flabel">Monthly volume</label>
-                  <select className="sel" value={form.volume} onChange={(e) => set("volume", e.target.value)}>
+                  <select aria-label="Monthly volume" className="sel" value={form.volume} onChange={(e) => set("volume", e.target.value)}>
                     {VOLUMES.map((v) => (
                       <option key={v}>{v}</option>
                     ))}
@@ -128,7 +131,7 @@ export function ApplyForm() {
                 </div>
                 <div className="field">
                   <label className="flabel">Business type</label>
-                  <select className="sel" value={form.type} onChange={(e) => set("type", e.target.value)}>
+                  <select aria-label="Business type" className="sel" value={form.type} onChange={(e) => set("type", e.target.value)}>
                     {TYPES.map((t) => (
                       <option key={t}>{t}</option>
                     ))}
@@ -139,6 +142,7 @@ export function ApplyForm() {
                 <label className="flabel">Anything else?</label>
                 <textarea
                   rows={3}
+                  aria-label="Anything else"
                   className="area"
                   placeholder="Models you're after, target volumes, timelines…"
                   value={form.message}

@@ -86,7 +86,7 @@ export function CartClient() {
             <CheckCircle2 className="h-11 w-11 text-[#0a8f6e]" />
           </div>
         </motion.div>
-        <h1 className="mt-6 text-4xl font-bold tracking-tight text-[#1d1d1f]">Order confirmed</h1>
+        <h2 className="mt-6 text-4xl font-bold tracking-tight text-[#1d1d1f]">Order confirmed</h2>
         <p className="mt-3 text-[#6e6e73]">
           Thanks for going certified pre-owned. Your order{" "}
           <span className="font-semibold text-[#1d1d1f]">{orderId}</span> is on its way — free 2-day
@@ -111,7 +111,7 @@ export function CartClient() {
         <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-[#f5f5f7]">
           <ShoppingBag className="h-9 w-9 text-[#86868b]" />
         </div>
-        <h1 className="mt-6 text-3xl font-bold tracking-tight text-[#1d1d1f]">Your bag is empty</h1>
+        <h2 className="mt-6 text-3xl font-bold tracking-tight text-[#1d1d1f]">Your bag is empty</h2>
         <p className="mt-2 text-[#6e6e73]">Find a certified phone you&apos;ll love for less.</p>
         <div className="mt-7 flex justify-center gap-3">
           <ButtonLink href="/shop" size="lg">

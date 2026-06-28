@@ -3,7 +3,17 @@ import { DEVICES } from "@/lib/products";
 import { SITE_URL } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const routes = ["", "/shop", "/wholesale", "/sell", "/grades", "/help", "/compare"].map((p) => ({
+  const routes = [
+    "",
+    "/shop",
+    "/wholesale",
+    "/sell",
+    "/grades",
+    "/help",
+    "/compare",
+    "/inventory",
+    "/sustainability",
+  ].map((p) => ({
     url: `${SITE_URL}${p}`,
     changeFrequency: "weekly" as const,
     priority: p === "" ? 1 : 0.7,

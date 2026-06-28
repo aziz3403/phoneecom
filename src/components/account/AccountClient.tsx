@@ -56,6 +56,7 @@ export function AccountClient() {
           <div className="field">
             <input
               className="inpt"
+              aria-label="Full name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Full name"
@@ -65,6 +66,7 @@ export function AccountClient() {
             <input
               className="inpt"
               type="email"
+              aria-label="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email address"

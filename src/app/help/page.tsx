@@ -56,7 +56,7 @@ const CONTACT = [
     title: "Call us",
     body: "Prefer to talk? Our support line is open 8am–8pm ET, every day.",
     action: "1-800-REMINT",
-    href: "#",
+    href: "tel:+18007364680",
     meta: "Mon–Sun · 8am–8pm ET",
     primary: false,
   },
@@ -162,13 +162,23 @@ export default function HelpPage() {
                 >
                   {c.body}
                 </p>
-                <a
-                  className={c.primary ? "btn" : "btn btn-lt"}
-                  href={c.href}
-                  style={{ width: "100%" }}
-                >
-                  {c.action}
-                </a>
+                {c.href === "#" ? (
+                  <button
+                    type="button"
+                    className={c.primary ? "btn" : "btn btn-lt"}
+                    style={{ width: "100%" }}
+                  >
+                    {c.action}
+                  </button>
+                ) : (
+                  <a
+                    className={c.primary ? "btn" : "btn btn-lt"}
+                    href={c.href}
+                    style={{ width: "100%" }}
+                  >
+                    {c.action}
+                  </a>
+                )}
                 <div style={{ fontSize: 13, color: "var(--text3)", marginTop: 10 }}>{c.meta}</div>
               </div>
             ))}

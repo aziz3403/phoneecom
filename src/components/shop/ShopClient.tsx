@@ -212,6 +212,7 @@ export function ShopClient({
       <FilterGroup title="Max price">
         <input
           type="range"
+          aria-label="Maximum price"
           min={MIN_PRICE}
           max={MAX_PRICE}
           step={10}
@@ -270,6 +271,7 @@ export function ShopClient({
           <div className="flex flex-1 items-center gap-2 rounded-full border border-[#d2d2d7] bg-white px-4 py-2.5">
             <Search className="h-4 w-4 text-[#86868b]" />
             <input
+              aria-label="Search devices"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search iPhone, Galaxy, iPad…"
@@ -295,6 +297,7 @@ export function ShopClient({
             </button>
             <div className="relative">
               <select
+                aria-label="Sort devices"
                 value={sort}
                 onChange={(e) => setSort(e.target.value as SortId)}
                 className="cursor-pointer appearance-none rounded-full border border-[#d2d2d7] bg-white py-2.5 pl-4 pr-9 text-sm text-[#1d1d1f] focus:outline-none"

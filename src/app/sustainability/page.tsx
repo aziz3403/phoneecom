@@ -70,11 +70,11 @@ export default function SustainabilityPage() {
               <Leaf size={18} vein="#edf6f0" />
               Our impact
             </div>
-            <h2 className="plhead">
+            <h1 className="plhead">
               The greenest phone is the one
               <br />
               that already exists.
-            </h2>
+            </h1>
             <p className="pltext">
               Every device we give a second life saves the carbon, water and rare metals it would
               take to build a brand-new one. Here&apos;s exactly how much — and what we do beyond the

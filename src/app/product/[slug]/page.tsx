@@ -129,9 +129,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       {/* specs + what's in the box */}
       <div className="shell mt-20 grid gap-14 lg:grid-cols-2">
         <div>
-          <h3 className="mb-[18px] text-[22px] font-bold tracking-[-.015em] text-[#1d1d1f]">
+          <h2 className="mb-[18px] text-[22px] font-bold tracking-[-.015em] text-[#1d1d1f]">
             Tech specs
-          </h3>
+          </h2>
           <div>
             {specs.map(([k, v]) => (
               <div key={k} className="specrow">
@@ -143,9 +143,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         </div>
 
         <div>
-          <h3 className="mb-[18px] text-[22px] font-bold tracking-[-.015em] text-[#1d1d1f]">
+          <h2 className="mb-[18px] text-[22px] font-bold tracking-[-.015em] text-[#1d1d1f]">
             What&apos;s in the box
-          </h3>
+          </h2>
           <div className="flex flex-col gap-[14px]">
             {included.map(([title, note]) => (
               <div key={title} className="flex items-start gap-[13px] text-[15px]">

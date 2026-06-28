@@ -46,6 +46,7 @@ export function SavingsCalculator() {
           <div className="min-w-0 flex-1">
             <label className="flabel">Model</label>
             <select
+              aria-label="Model"
               value={slug}
               onChange={(e) => changeDevice(e.target.value)}
               className="sel mt-1.5"
@@ -78,6 +79,7 @@ export function SavingsCalculator() {
         </div>
         <input
           type="range"
+          aria-label="Quantity"
           min={MOQ}
           max={MAX_QTY}
           step={5}

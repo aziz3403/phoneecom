@@ -131,6 +131,7 @@ export function BulkOrderBuilder() {
                 <div className="min-w-0">
                   <p className="truncate font-medium text-[#1d1d1f]">{l.device.name}</p>
                   <select
+                    aria-label={`Storage for ${l.device.name}`}
                     value={l.gb}
                     onChange={(e) => setGb(l.slug, Number(e.target.value))}
                     className="mt-1 rounded-md border border-[#d2d2d7] bg-white px-1.5 py-0.5 text-xs text-[#6e6e73] focus:border-[#0a8f6e] focus:outline-none"
@@ -183,6 +184,7 @@ export function BulkOrderBuilder() {
       {available.length > 0 && (
         <div className="border-t border-[#d2d2d7] px-6 py-4">
           <select
+            aria-label="Add a model to the order"
             value=""
             onChange={(e) => addLine(e.target.value)}
             className="w-full rounded-2xl border border-dashed border-[#d2d2d7] bg-transparent px-4 py-3 text-sm text-[#6e6e73] focus:border-[#0a8f6e] focus:outline-none"

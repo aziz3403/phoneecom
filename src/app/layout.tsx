@@ -4,6 +4,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { SearchCommand } from "@/components/layout/SearchCommand";
+import { SupportChat } from "@/components/support/SupportChat";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -51,6 +52,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <SearchCommand />
           <main>{children}</main>
           <Footer />
+          <SupportChat />
         </div>
       </body>
     </html>

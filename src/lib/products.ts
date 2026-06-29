@@ -499,6 +499,7 @@ export const DEVICES: Device[] = [
   {
     id: "ip14",
     slug: "iphone-14",
+    image: "/photos/iphone-14.jpg",
     brand: "Apple",
     type: "phone",
     name: "iPhone 14",

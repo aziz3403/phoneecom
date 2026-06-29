@@ -3,6 +3,7 @@ import Link from "next/link";
 import { GRADES, GRADE_ORDER } from "@/lib/grades";
 import { GradeBadge } from "@/components/ui/Badge";
 import { PhImg } from "@/components/home/PhImg";
+import { WearOverlay } from "@/components/ui/WearOverlay";
 
 export const metadata: Metadata = {
   title: "Condition grades, defined",
@@ -34,12 +35,33 @@ const FAQ = [
   },
 ];
 
-// per-grade render slugs + cosmetic meter rows (wear widens as the grade drops)
-const RENDER: Record<string, string> = {
-  pristine: "iphone-16-pro-max",
-  excellent: "iphone-15",
-  good: "iphone-13",
-  fair: "iphone-11",
+// Four example devices per grade (real photos). Each gets the grade's wear
+// overlay, so a grade reads as a small gallery of representative units.
+const EXAMPLES: Record<string, string[]> = {
+  pristine: [
+    "/photos/iphone-16-pro-max__natural-titanium.jpg",
+    "/photos/iphone-15__blue.jpg",
+    "/photos/iphone-14-pro__deep-purple.jpg",
+    "/photos/iphone-13__midnight.jpg",
+  ],
+  excellent: [
+    "/photos/iphone-15-pro__natural-titanium.jpg",
+    "/photos/iphone-14__blue.jpg",
+    "/photos/iphone-16__teal.jpg",
+    "/photos/iphone-12__purple.jpg",
+  ],
+  good: [
+    "/photos/iphone-13-pro__sierra-blue.jpg",
+    "/photos/iphone-12-pro__pacific-blue.jpg",
+    "/photos/iphone-11__purple.jpg",
+    "/photos/iphone-14-plus__starlight.jpg",
+  ],
+  fair: [
+    "/photos/iphone-11__black.jpg",
+    "/photos/iphone-12-mini__green.jpg",
+    "/photos/iphone-13-mini__pink.jpg",
+    "/photos/iphone-xr__coral.jpg",
+  ],
 };
 
 const METERS: Record<string, [string, string, string][]> = {
@@ -124,8 +146,12 @@ export default function GradesPage() {
               const g = GRADES[id];
               return (
                 <div className="gpanel scard-bord" key={id} style={{ boxShadow: "none" }}>
-                  <div className="gphoto">
-                    <PhImg slug={RENDER[id]} label={`${g.label} condition`} />
+                  <div className="gphotos">
+                    {EXAMPLES[id].map((src, i) => (
+                      <PhImg key={src} src={src} label={`${g.label} condition example`}>
+                        <WearOverlay grade={id} seed={(GRADE_ORDER.indexOf(id) + 1) * 17 + i * 5} />
+                      </PhImg>
+                    ))}
                   </div>
                   <div className="gdetail">
                     <div className="gname">

@@ -4,8 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Plus, Check, Heart } from "lucide-react";
 import { useState } from "react";
-import { type Device, baseStorage, startingPrice, bestDiscount } from "@/lib/products";
-import { GRADES } from "@/lib/grades";
+import { type Device, baseStorage, fromPrice } from "@/lib/products";
 import { useCart } from "@/lib/cart-store";
 import { useWishlist } from "@/lib/wishlist-store";
 import { formatPrice, cn } from "@/lib/utils";
@@ -18,8 +17,9 @@ export function ProductCard({ device, index = 0 }: { device: Device; index?: num
   const [added, setAdded] = useState(false);
 
   const base = baseStorage(device);
-  const price = startingPrice(device);
-  const off = bestDiscount(device);
+  // One listing per model: show the lowest (Fair-grade) price; grade is chosen on the PDP.
+  const price = fromPrice(device);
+  const off = base.original > 0 ? Math.round((1 - price / base.original) * 100) : 0;
   const color = device.colors[0];
   const minGb = Math.min(...device.storage.map((s) => s.gb));
   const maxGb = Math.max(...device.storage.map((s) => s.gb));
@@ -60,7 +60,6 @@ export function ProductCard({ device, index = 0 }: { device: Device; index?: num
     >
       <Link href={`/product/${device.slug}`} className="pcard" style={{ height: "100%" }}>
         <PhImg slug={device.slug} src={color.image ?? device.image} label={device.name} className="pimg">
-          <span className="pbadge">{GRADES[device.grade].label}</span>
           {off > 0 && <span className="pdisc">−{off}%</span>}
         </PhImg>
         <div className="pbody">

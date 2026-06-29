@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { GRADES, GRADE_ORDER } from "@/lib/grades";
+import { GRADES, GRADE_ORDER, GRADE_PHOTOS } from "@/lib/grades";
 import { GradeBadge } from "@/components/ui/Badge";
 import { PhImg } from "@/components/home/PhImg";
-import { WearOverlay } from "@/components/ui/WearOverlay";
 
 export const metadata: Metadata = {
   title: "Condition grades, defined",
@@ -35,34 +34,6 @@ const FAQ = [
   },
 ];
 
-// Four example devices per grade (real photos). Each gets the grade's wear
-// overlay, so a grade reads as a small gallery of representative units.
-const EXAMPLES: Record<string, string[]> = {
-  pristine: [
-    "/photos/iphone-16-pro-max__natural-titanium.jpg",
-    "/photos/iphone-15__blue.jpg",
-    "/photos/iphone-14-pro__deep-purple.jpg",
-    "/photos/iphone-13__midnight.jpg",
-  ],
-  excellent: [
-    "/photos/iphone-15-pro__natural-titanium.jpg",
-    "/photos/iphone-14__blue.jpg",
-    "/photos/iphone-16__teal.jpg",
-    "/photos/iphone-12__purple.jpg",
-  ],
-  good: [
-    "/photos/iphone-13-pro__sierra-blue.jpg",
-    "/photos/iphone-12-pro__pacific-blue.jpg",
-    "/photos/iphone-11__purple.jpg",
-    "/photos/iphone-14-plus__starlight.jpg",
-  ],
-  fair: [
-    "/photos/iphone-11__black.jpg",
-    "/photos/iphone-12-mini__green.jpg",
-    "/photos/iphone-13-mini__pink.jpg",
-    "/photos/iphone-xr__coral.jpg",
-  ],
-};
 
 export default function GradesPage() {
   return (
@@ -125,10 +96,8 @@ export default function GradesPage() {
               return (
                 <div className="gpanel scard-bord" key={id} style={{ boxShadow: "none" }}>
                   <div className="gphotos">
-                    {EXAMPLES[id].map((src, i) => (
-                      <PhImg key={src} src={src} label={`${g.label} condition example`}>
-                        <WearOverlay grade={id} seed={(GRADE_ORDER.indexOf(id) + 1) * 17 + i * 5} />
-                      </PhImg>
+                    {GRADE_PHOTOS[id].map((src) => (
+                      <PhImg key={src} src={src} label={`${g.label} condition example`} />
                     ))}
                   </div>
                   <div className="gdetail">

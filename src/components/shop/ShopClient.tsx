@@ -7,7 +7,7 @@ import {
   DEVICES,
   BRANDS,
   COLOR_FAMILIES,
-  startingPrice,
+  fromPrice,
   type Brand,
   type DeviceType,
   type ColorFamily,
@@ -17,7 +17,7 @@ import { ProductCard } from "@/components/ui/ProductCard";
 import { Leaf } from "@/components/ui/Leaf";
 import { formatPrice, cn } from "@/lib/utils";
 
-const PRICES = DEVICES.map(startingPrice);
+const PRICES = DEVICES.map(fromPrice);
 const MIN_PRICE = Math.min(...PRICES);
 const MAX_PRICE = Math.max(...PRICES);
 const ALL_STORAGES = Array.from(new Set(DEVICES.flatMap((d) => d.storage.map((s) => s.gb)))).sort(
@@ -58,7 +58,7 @@ function passes(d: (typeof DEVICES)[number], f: Filters, skip?: Dim): boolean {
   if (skip !== "grade" && f.grades.size && !f.grades.has(d.grade)) return false;
   if (skip !== "storage" && f.storages.size && !d.storage.some((s) => f.storages.has(s.gb))) return false;
   if (skip !== "color" && f.colors.size && !d.colors.some((c) => f.colors.has(c.family))) return false;
-  if (skip !== "price" && startingPrice(d) > f.maxPrice) return false;
+  if (skip !== "price" && fromPrice(d) > f.maxPrice) return false;
   if (skip !== "fiveg" && f.fiveG && !d.fiveG) return false;
   if (skip !== "query" && f.query) {
     const q = f.query.toLowerCase();
@@ -108,9 +108,9 @@ export function ShopClient({
     return [...list].sort((a, b) => {
       switch (sort) {
         case "price-asc":
-          return startingPrice(a) - startingPrice(b);
+          return fromPrice(a) - fromPrice(b);
         case "price-desc":
-          return startingPrice(b) - startingPrice(a);
+          return fromPrice(b) - fromPrice(a);
         case "rating":
           return b.rating - a.rating || b.reviews - a.reviews;
         case "battery":

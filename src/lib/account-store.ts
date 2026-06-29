@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import type { GradeId } from "./grades";
 
 export interface OrderLine {
   name: string;
@@ -10,6 +11,11 @@ export interface OrderLine {
   colorName: string;
   mode: "retail" | "wholesale";
   unit: number;
+  /** optional snapshot fields for the confirmation page */
+  slug?: string;
+  colorHex?: string;
+  grade?: GradeId;
+  original?: number;
 }
 
 export interface Order {
@@ -18,6 +24,16 @@ export interface Order {
   total: number;
   status: string;
   lines: OrderLine[];
+  /** optional checkout snapshot used by the confirmation page */
+  email?: string;
+  shipTo?: string;
+  deliveryLabel?: string;
+  deliveryEta?: string;
+  paymentLabel?: string;
+  subtotal?: number;
+  savings?: number;
+  tax?: number;
+  co2kg?: number;
 }
 
 interface User {

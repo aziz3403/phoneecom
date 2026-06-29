@@ -66,9 +66,19 @@ const MARKS: Record<GradeId, { scratches: Scratch[]; scuffs: Scuff[] }> = {
   fair: build("fair", 91),
 };
 
-/** Surface scuffs & scratches that intensify with worse cosmetic grade. */
-export function WearOverlay({ grade, className }: { grade: GradeId; className?: string }) {
-  const { scratches, scuffs } = MARKS[grade];
+/** Surface scuffs & scratches that intensify with worse cosmetic grade.
+ *  Pass a stable `seed` to vary the mark pattern per tile (e.g. a gallery of
+ *  examples) — omit it to use the shared per-grade pattern. */
+export function WearOverlay({
+  grade,
+  seed,
+  className,
+}: {
+  grade: GradeId;
+  seed?: number;
+  className?: string;
+}) {
+  const { scratches, scuffs } = seed === undefined ? MARKS[grade] : build(grade, seed);
   if (!scratches.length && !scuffs.length) return null;
   return (
     <div

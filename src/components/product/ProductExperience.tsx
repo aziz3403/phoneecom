@@ -127,7 +127,7 @@ export function ProductExperience({ device }: { device: Device }) {
       <div className="lg:sticky lg:top-[74px]">
         <PhImg
           slug={device.slug}
-          src={device.image ?? renderSrc(device.slug)}
+          src={color.image ?? device.image ?? renderSrc(device.slug)}
           label={`${device.name} — ${color.name}`}
           className="!aspect-[4/5] !rounded-[26px]"
         >

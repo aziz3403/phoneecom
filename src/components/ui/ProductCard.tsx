@@ -59,7 +59,7 @@ export function ProductCard({ device, index = 0 }: { device: Device; index?: num
       style={{ height: "100%" }}
     >
       <Link href={`/product/${device.slug}`} className="pcard" style={{ height: "100%" }}>
-        <PhImg slug={device.slug} src={device.image} label={device.name} className="pimg">
+        <PhImg slug={device.slug} src={color.image ?? device.image} label={device.name} className="pimg">
           <span className="pbadge">{GRADES[device.grade].label}</span>
           {off > 0 && <span className="pdisc">−{off}%</span>}
         </PhImg>

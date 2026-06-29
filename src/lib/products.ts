@@ -1,4 +1,5 @@
 import type { GradeId } from "./grades";
+import colorPhotos from "@/data/color-photos.json";
 
 export type Brand = "Apple" | "Samsung";
 export type DeviceType = "phone" | "tablet";
@@ -30,6 +31,8 @@ export interface Colorway {
   hex: string;
   accent: string;
   family: ColorFamily;
+  /** per-color product photo (wired from public/photos via color-photos.json) */
+  image?: string;
 }
 
 export interface StorageOption {
@@ -499,7 +502,6 @@ export const DEVICES: Device[] = [
   {
     id: "ip14",
     slug: "iphone-14",
-    image: "/photos/iphone-14.jpg",
     brand: "Apple",
     type: "phone",
     name: "iPhone 14",
@@ -1739,4 +1741,27 @@ export function waterResistance(d: Device): string {
 export function simType(d: Device): string {
   if (d.type === "tablet") return d.cellular ? "Nano-SIM + eSIM" : "Wi-Fi only";
   return "Nano-SIM + eSIM";
+}
+
+/** Slugify a colour name → filename token, e.g. "Space Gray" → "space-gray". */
+export function colorSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+// Wire per-colour product photos from public/photos. color-photos.json holds
+// the "<slug>::<colorSlug>" keys that actually have a file on disk, so a colour
+// only points at a photo when one exists (otherwise it falls back to the render).
+const COLOR_PHOTO_SET = new Set(colorPhotos as string[]);
+for (const d of DEVICES) {
+  let firstPhoto: string | undefined;
+  for (const c of d.colors) {
+    if (COLOR_PHOTO_SET.has(`${d.slug}::${colorSlug(c.name)}`)) {
+      c.image = `/photos/${d.slug}__${colorSlug(c.name)}.jpg`;
+      if (!firstPhoto) firstPhoto = c.image;
+    }
+  }
+  if (firstPhoto && !d.image) d.image = firstPhoto;
 }

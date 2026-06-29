@@ -13,7 +13,7 @@ const MAX_QTY = 750;
 
 /** Cosmetic condition floor — scales the per-unit price. */
 const GRADES = [
-  { id: "a", label: "Grade A", sub: "Pristine / Excellent", mult: 1.18 },
+  { id: "a", label: "Grade A", sub: "New / Excellent", mult: 1.18 },
   { id: "b", label: "Grade B", sub: "Good", mult: 1.0 },
   { id: "c", label: "Grade C", sub: "Fair / functional", mult: 0.82 },
 ] as const;

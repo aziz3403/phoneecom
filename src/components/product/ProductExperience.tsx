@@ -25,39 +25,39 @@ const SHOWCASE: Record<
   { pill: string; meters: [string, string, string][]; desc: string }
 > = {
   pristine: {
-    pill: "Save up to 15% vs Excellent",
-    desc: "No visible wear under any lighting. Screen and body are flawless to the naked eye — the closest thing to brand-new without the brand-new price.",
+    pill: "Sealed · like new",
+    desc: "Brand-new condition — no marks anywhere. Screen, body and frame are flawless, exactly as it left the factory, with a 100% battery.",
     meters: [
       ["Screen", "w0", "Flawless"],
-      ["Back glass", "w0", "Flawless"],
+      ["Body", "w0", "Flawless"],
       ["Frame", "w0", "Flawless"],
     ],
   },
   excellent: {
     pill: "Most popular",
-    desc: "Only the faintest micro-marks, invisible during everyday use. You'd need to angle it under direct light to find anything at all.",
+    desc: "No screen scratches and no cosmetic damage visible when held 12 inches away. Looks new in everyday use; battery above 80%.",
     meters: [
-      ["Screen", "w1", "Faint"],
-      ["Back glass", "w1", "Faint"],
+      ["Screen", "w0", "Flawless"],
+      ["Body", "w1", "Faint"],
       ["Frame", "w1", "Minimal"],
     ],
   },
   good: {
     pill: "Best value",
-    desc: "Minor scratches visible up close and light frame wear at the corners. Nothing that affects the display or daily use — just a phone that's been lived with.",
+    desc: "No screen scratches; light body scratches barely visible at 12 inches and imperceptible to touch. Battery above 80%.",
     meters: [
-      ["Screen", "w1", "Light"],
-      ["Back glass", "w2", "Visible"],
-      ["Frame", "w2", "Visible"],
+      ["Screen", "w0", "Flawless"],
+      ["Body", "w2", "Light"],
+      ["Frame", "w2", "Light"],
     ],
   },
   fair: {
     pill: "Lowest price",
-    desc: "Noticeable scratches and possible deeper marks or minor dents on the frame. The biggest savings for buyers who care about what a phone does, not how it looks.",
+    desc: "A few shallow screen scratches that vanish when the screen is on, plus light body scratches clearly visible at 12 inches. Battery above 80%.",
     meters: [
-      ["Screen", "w2", "Visible"],
-      ["Back glass", "w3", "Marked"],
-      ["Frame", "w3", "Marked"],
+      ["Screen", "w1", "Shallow"],
+      ["Body", "w3", "Visible"],
+      ["Frame", "w3", "Visible"],
     ],
   },
 };

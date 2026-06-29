@@ -8,7 +8,7 @@ import { WearOverlay } from "@/components/ui/WearOverlay";
 export const metadata: Metadata = {
   title: "Condition grades, defined",
   description:
-    "How reMint grades certified pre-owned devices: Pristine, Excellent, Good and Fair. Cosmetic condition only — function is guaranteed on every grade.",
+    "How reMint grades certified pre-owned devices: New, Excellent, Good and Fair — Amazon-Renewed-style screen, body and battery standards. Every grade works like new with 80%+ battery.",
 };
 
 const GUARANTEES = [
@@ -23,7 +23,7 @@ const GUARANTEES = [
 const FAQ = [
   {
     q: "Does the grade affect how the phone works?",
-    a: "No. Grades describe cosmetic appearance only. Every device — Pristine to Fair — passes the same 50-point functional inspection and ships with a 12-month warranty.",
+    a: "No. Grades describe cosmetic appearance only. Every device — New to Fair — passes the same 50-point functional inspection, works like new, and ships with a 12-month warranty.",
   },
   {
     q: "Will I get the exact unit in the photos?",
@@ -64,29 +64,6 @@ const EXAMPLES: Record<string, string[]> = {
   ],
 };
 
-const METERS: Record<string, [string, string, string][]> = {
-  pristine: [
-    ["Screen", "w0", "Flawless"],
-    ["Back glass", "w0", "Flawless"],
-    ["Frame", "w0", "Flawless"],
-  ],
-  excellent: [
-    ["Screen", "w1", "Faint"],
-    ["Back glass", "w1", "Faint"],
-    ["Frame", "w1", "Minimal"],
-  ],
-  good: [
-    ["Screen", "w1", "Light"],
-    ["Back glass", "w2", "Visible"],
-    ["Frame", "w2", "Visible"],
-  ],
-  fair: [
-    ["Screen", "w2", "Visible"],
-    ["Back glass", "w3", "Marked"],
-    ["Frame", "w3", "Marked"],
-  ],
-};
-
 export default function GradesPage() {
   return (
     <>
@@ -96,8 +73,9 @@ export default function GradesPage() {
         </p>
         <h1 className="ptitle">Every grade, clearly defined.</h1>
         <p className="psub">
-          No vague A/B/C codes. Four honest grades describe a device&apos;s cosmetic condition — and
-          nothing else. Function is guaranteed across the board.
+          Four honest grades — New, Excellent, Good and Fair — describe a device&apos;s cosmetic
+          condition only. Every grade is fully functional, works like new, and ships with a battery
+          above 80% of its original capacity.
         </p>
 
         {/* condition scale */}
@@ -159,17 +137,22 @@ export default function GradesPage() {
                       <GradeBadge grade={id} />
                     </div>
                     <div className="gtag">{g.tagline}</div>
-                    <p className="gdesc">{g.cosmetic}</p>
-                    <div className="meters">
-                      {METERS[id].map(([label, w, val]) => (
-                        <div className="mrow" key={label}>
-                          <span className="mlbl">{label}</span>
-                          <div className="mtrack">
-                            <div className={`mfill ${w}`} />
-                          </div>
-                          <span className="mval">{val}</span>
-                        </div>
-                      ))}
+                    <p className="gradesheet">
+                      Warehouse grade <strong>{g.sheet}</strong>
+                    </p>
+                    <div className="stds">
+                      <div className="stdrow">
+                        <span className="stdk">Screen</span>
+                        <span className="stdv">{g.screen}</span>
+                      </div>
+                      <div className="stdrow">
+                        <span className="stdk">Body</span>
+                        <span className="stdv">{g.body}</span>
+                      </div>
+                      <div className="stdrow">
+                        <span className="stdk">Battery</span>
+                        <span className="stdv">{g.battery}</span>
+                      </div>
                     </div>
                   </div>
                 </div>

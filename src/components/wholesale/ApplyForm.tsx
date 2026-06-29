@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, Send } from "lucide-react";
+import { CheckCircle2, Send, Loader2 } from "lucide-react";
 
 const VOLUMES = ["5–25 / month", "25–100 / month", "100–250 / month", "250–500 / month", "500+ / month"];
 const TYPES = ["Repair shop", "Reseller / retailer", "Carrier / MVNO", "Enterprise / IT", "Refurbisher", "Other"];
@@ -17,8 +17,8 @@ const REGIONS = [
   "Other",
 ];
 
-export function ApplyForm() {
-  const [submitted, setSubmitted] = useState(false);
+export function ApplyForm({ onApprove }: { onApprove?: (company: string) => void }) {
+  const [phase, setPhase] = useState<"form" | "review" | "done">("form");
   const [form, setForm] = useState({
     company: "",
     name: "",
@@ -38,8 +38,18 @@ export function ApplyForm() {
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!valid) return;
-    setSubmitted(true);
+    // When wired into the wholesale gate, run a short "reviewing" beat and then
+    // unlock the portal (demo: instant approval). Otherwise fall back to the
+    // plain "we'll email you" confirmation.
+    if (onApprove) {
+      setPhase("review");
+      setTimeout(() => onApprove(form.company), 1500);
+      return;
+    }
+    setPhase("done");
   }
+
+  const submitted = phase === "done";
 
   return (
     <div className="grid gap-10 lg:grid-cols-[1fr_1.1fr]">
@@ -83,11 +93,25 @@ export function ApplyForm() {
                 demo — no data was sent.)
               </p>
               <button
-                onClick={() => setSubmitted(false)}
+                onClick={() => setPhase("form")}
                 className="link mt-6"
               >
                 Submit another
               </button>
+            </motion.div>
+          ) : phase === "review" ? (
+            <motion.div
+              key="review"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex h-full flex-col items-center justify-center py-10 text-center"
+            >
+              <Loader2 className="h-9 w-9 animate-spin text-[#0a8f6e]" />
+              <h3 className="mt-5 text-2xl font-bold tracking-tight text-[#1d1d1f]">Reviewing your application…</h3>
+              <p className="mt-2 max-w-sm text-[#6e6e73]">
+                Checking your details against our partner criteria. This only takes a moment.
+              </p>
             </motion.div>
           ) : (
             <motion.form

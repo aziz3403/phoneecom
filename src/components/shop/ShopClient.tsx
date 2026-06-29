@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, SlidersHorizontal, X, Zap } from "lucide-react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 import {
   DEVICES,
   BRANDS,
@@ -12,7 +12,6 @@ import {
   type DeviceType,
   type ColorFamily,
 } from "@/lib/products";
-import { GRADES, GRADE_ORDER, type GradeId } from "@/lib/grades";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { Leaf } from "@/components/ui/Leaf";
 import { formatPrice, cn } from "@/lib/utils";
@@ -26,6 +25,31 @@ const ALL_STORAGES = Array.from(new Set(DEVICES.flatMap((d) => d.storage.map((s)
 const PRESENT_FAMILIES = COLOR_FAMILIES.filter((f) =>
   DEVICES.some((d) => d.colors.some((c) => c.family === f)),
 );
+
+// Representative swatch colour per family (so the Color filter shows real colours).
+const FAMILY_HEX: Record<ColorFamily, string> = {
+  Black: "#1d1d1f",
+  Gray: "#8e8e93",
+  Silver: "#cfd0d2",
+  White: "#f1f1ec",
+  Gold: "#e6cfa3",
+  Blue: "#2f6bd0",
+  Green: "#3f9a63",
+  Purple: "#9a7ad0",
+  Pink: "#f0a8c4",
+  Red: "#c2283a",
+  Orange: "#e8703a",
+  Yellow: "#f3d24e",
+  Titanium: "#b6afa2",
+};
+
+// Screen-size buckets (phones + tablets).
+const SCREEN_BUCKETS: { id: string; label: string; test: (n: number) => boolean }[] = [
+  { id: "compact", label: 'Compact · under 6.1"', test: (n) => n < 6.1 },
+  { id: "standard", label: 'Standard · 6.1–6.5"', test: (n) => n >= 6.1 && n <= 6.5 },
+  { id: "large", label: 'Large · 6.6–7.9"', test: (n) => n >= 6.6 && n < 8 },
+  { id: "tablet", label: 'Tablet · 8"+', test: (n) => n >= 8 },
+];
 
 const TYPE_LABEL: Record<DeviceType, string> = { phone: "Phones", tablet: "iPads" };
 
@@ -43,23 +67,21 @@ interface Filters {
   query: string;
   types: Set<DeviceType>;
   brands: Set<Brand>;
-  grades: Set<GradeId>;
   storages: Set<number>;
   colors: Set<ColorFamily>;
+  screens: Set<string>;
   maxPrice: number;
-  fiveG: boolean;
 }
 
-type Dim = "type" | "brand" | "grade" | "storage" | "color" | "price" | "fiveg" | "query";
+type Dim = "type" | "brand" | "storage" | "color" | "screen" | "price" | "query";
 
 function passes(d: (typeof DEVICES)[number], f: Filters, skip?: Dim): boolean {
   if (skip !== "type" && f.types.size && !f.types.has(d.type)) return false;
   if (skip !== "brand" && f.brands.size && !f.brands.has(d.brand)) return false;
-  if (skip !== "grade" && f.grades.size && !f.grades.has(d.grade)) return false;
   if (skip !== "storage" && f.storages.size && !d.storage.some((s) => f.storages.has(s.gb))) return false;
   if (skip !== "color" && f.colors.size && !d.colors.some((c) => f.colors.has(c.family))) return false;
+  if (skip !== "screen" && f.screens.size && !SCREEN_BUCKETS.some((b) => f.screens.has(b.id) && b.test(d.screen))) return false;
   if (skip !== "price" && fromPrice(d) > f.maxPrice) return false;
-  if (skip !== "fiveg" && f.fiveG && !d.fiveG) return false;
   if (skip !== "query" && f.query) {
     const q = f.query.toLowerCase();
     const hay = `${d.brand} ${d.name} ${d.line} ${d.chip} ${d.colors.map((c) => c.name).join(" ")}`.toLowerCase();
@@ -91,17 +113,25 @@ export function ShopClient({
   const [brands, setBrands] = useState<Set<Brand>>(
     new Set(initialBrand && BRANDS.includes(initialBrand as Brand) ? [initialBrand as Brand] : []),
   );
-  const [grades, setGrades] = useState<Set<GradeId>>(new Set());
   const [storages, setStorages] = useState<Set<number>>(new Set());
   const [colors, setColors] = useState<Set<ColorFamily>>(new Set());
+  const [screens, setScreens] = useState<Set<string>>(new Set());
   const [maxPrice, setMaxPrice] = useState<number>(
     initialMax && initialMax >= MIN_PRICE ? Math.min(initialMax, MAX_PRICE) : MAX_PRICE,
   );
-  const [fiveG, setFiveG] = useState(false);
   const [sort, setSort] = useState<SortId>("featured");
   const [mobileFilters, setMobileFilters] = useState(false);
 
-  const filters: Filters = { query, types, brands, grades, storages, colors, maxPrice, fiveG };
+  // Keep brand/type in sync with the URL (nav links like ?brand=Samsung) so
+  // switching brand replaces the previous selection instead of stacking.
+  useEffect(() => {
+    setBrands(new Set(initialBrand && BRANDS.includes(initialBrand as Brand) ? [initialBrand as Brand] : []));
+  }, [initialBrand]);
+  useEffect(() => {
+    setTypes(new Set(initialType === "tablet" || initialType === "phone" ? [initialType as DeviceType] : []));
+  }, [initialType]);
+
+  const filters: Filters = { query, types, brands, storages, colors, screens, maxPrice };
 
   const filtered = useMemo(() => {
     const list = DEVICES.filter((d) => passes(d, filters));
@@ -122,13 +152,13 @@ export function ShopClient({
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, types, brands, grades, storages, colors, maxPrice, fiveG, sort]);
+  }, [query, types, brands, storages, colors, screens, maxPrice, sort]);
 
   const count = (dim: Dim, pred: (d: (typeof DEVICES)[number]) => boolean) =>
     DEVICES.filter((d) => passes(d, filters, dim) && pred(d)).length;
 
   const activeCount =
-    types.size + brands.size + grades.size + storages.size + colors.size + (fiveG ? 1 : 0) + (maxPrice < MAX_PRICE ? 1 : 0);
+    types.size + brands.size + storages.size + colors.size + screens.size + (maxPrice < MAX_PRICE ? 1 : 0);
 
   const activeChips: { key: string; label: string; remove: () => void }[] = [
     ...[...types].map((t) => ({
@@ -141,14 +171,9 @@ export function ShopClient({
       label: b,
       remove: () => setBrands(toggle(brands, b)),
     })),
-    ...[...grades].map((g) => ({
-      key: `grade:${g}`,
-      label: GRADES[g].label,
-      remove: () => setGrades(toggle(grades, g)),
-    })),
     ...[...storages].map((s) => ({
       key: `storage:${s}`,
-      label: s >= 1024 ? "1TB" : `${s}GB`,
+      label: s >= 1024 ? `${s / 1024}TB` : `${s}GB`,
       remove: () => setStorages(toggle(storages, s)),
     })),
     ...[...colors].map((c) => ({
@@ -156,20 +181,23 @@ export function ShopClient({
       label: c,
       remove: () => setColors(toggle(colors, c)),
     })),
+    ...[...screens].map((id) => ({
+      key: `screen:${id}`,
+      label: SCREEN_BUCKETS.find((b) => b.id === id)?.label.split(" · ")[0] ?? id,
+      remove: () => setScreens(toggle(screens, id)),
+    })),
     ...(maxPrice < MAX_PRICE
       ? [{ key: "price", label: `Up to ${formatPrice(maxPrice)}`, remove: () => setMaxPrice(MAX_PRICE) }]
       : []),
-    ...(fiveG ? [{ key: "fiveg", label: "5G only", remove: () => setFiveG(false) }] : []),
   ];
 
   function clearAll() {
     setTypes(new Set());
     setBrands(new Set());
-    setGrades(new Set());
     setStorages(new Set());
     setColors(new Set());
+    setScreens(new Set());
     setMaxPrice(MAX_PRICE);
-    setFiveG(false);
     setQuery("");
   }
 
@@ -189,7 +217,7 @@ export function ShopClient({
         </div>
       </FilterGroup>
 
-      <FilterGroup title="Brand">
+      <FilterGroup title="Manufacturer">
         <div className="flex flex-wrap gap-2">
           {BRANDS.map((b) => (
             <FacetChip
@@ -203,21 +231,6 @@ export function ShopClient({
         </div>
       </FilterGroup>
 
-      <FilterGroup title="Condition">
-        <div className="flex flex-wrap gap-2">
-          {GRADE_ORDER.map((id) => (
-            <FacetChip
-              key={id}
-              active={grades.has(id)}
-              onClick={() => setGrades(toggle(grades, id))}
-              label={GRADES[id].label}
-              dot={GRADES[id].hex}
-              count={count("grade", (d) => d.grade === id)}
-            />
-          ))}
-        </div>
-      </FilterGroup>
-
       <FilterGroup title="Storage">
         <div className="flex flex-wrap gap-2">
           {ALL_STORAGES.map((s) => (
@@ -225,7 +238,21 @@ export function ShopClient({
               key={s}
               active={storages.has(s)}
               onClick={() => setStorages(toggle(storages, s))}
-              label={s >= 1024 ? "1TB" : `${s}GB`}
+              label={s >= 1024 ? `${s / 1024}TB` : `${s}GB`}
+            />
+          ))}
+        </div>
+      </FilterGroup>
+
+      <FilterGroup title="Screen size">
+        <div className="flex flex-wrap gap-2">
+          {SCREEN_BUCKETS.map((bk) => (
+            <FacetChip
+              key={bk.id}
+              active={screens.has(bk.id)}
+              onClick={() => setScreens(toggle(screens, bk.id))}
+              label={bk.label}
+              count={count("screen", (d) => bk.test(d.screen))}
             />
           ))}
         </div>
@@ -239,6 +266,7 @@ export function ShopClient({
               active={colors.has(f)}
               onClick={() => setColors(toggle(colors, f))}
               label={f}
+              dot={FAMILY_HEX[f]}
               count={count("color", (d) => d.colors.some((cl) => cl.family === f))}
             />
           ))}
@@ -262,27 +290,6 @@ export function ShopClient({
         </div>
       </FilterGroup>
 
-      <button
-        onClick={() => setFiveG((v) => !v)}
-        className={cn(
-          "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm transition",
-          fiveG
-            ? "border-[#0a8f6e] bg-[rgba(10,143,110,0.08)] text-[#1d1d1f]"
-            : "border-[#d2d2d7] text-[#6e6e73] hover:border-[#86868b]",
-        )}
-      >
-        <span className="inline-flex items-center gap-2">
-          <Zap className="h-4 w-4 text-[#0a8f6e]" /> 5G only
-        </span>
-        <span
-          className={cn(
-            "h-5 w-9 rounded-full p-0.5 transition",
-            fiveG ? "bg-[#0a8f6e]" : "bg-[#d2d2d7]",
-          )}
-        >
-          <span className={cn("block h-4 w-4 rounded-full bg-white transition", fiveG && "translate-x-4")} />
-        </span>
-      </button>
     </div>
   );
 
@@ -570,7 +577,12 @@ function FacetChip({
 }) {
   return (
     <button onClick={onClick} className={cn("chip", active && "on accent")} type="button">
-      {dot && <span className="h-2 w-2 rounded-full" style={{ background: dot }} />}
+      {dot && (
+        <span
+          className="h-3 w-3 rounded-full"
+          style={{ background: dot, boxShadow: "inset 0 0 0 1px rgba(0,0,0,.18)" }}
+        />
+      )}
       <span>{label}</span>
       {count !== undefined && (
         <span className={active ? "text-white/70" : "text-[#86868b]"}>{count}</span>

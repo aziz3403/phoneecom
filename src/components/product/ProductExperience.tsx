@@ -74,7 +74,6 @@ export function ProductExperience({ device }: { device: Device }) {
   const [gradeId, setGradeId] = useState<GradeId>(device.grade);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
-  const [view, setView] = useState<"3d" | "front" | "back" | "macro">("front");
 
   useEffect(() => {
     visit(device.slug);
@@ -118,8 +117,6 @@ export function ProductExperience({ device }: { device: Device }) {
     router.push("/cart");
   }
 
-  const viewLabel = view === "3d" ? "front" : view;
-
   const show = SHOWCASE[gradeId];
   const grade = GRADES[gradeId];
 
@@ -138,29 +135,6 @@ export function ProductExperience({ device }: { device: Device }) {
             {color.name} · {GRADES[gradeId].label}
           </span>
         </PhImg>
-
-        {/* thumbnails */}
-        <div className="mt-3.5 flex gap-3">
-          {(["front", "back", "3d", "macro"] as const).map((v) => {
-            const tlabel = v === "3d" ? "side" : v;
-            return (
-              <button
-                key={v}
-                onClick={() => setView(v)}
-                aria-label={`Show ${tlabel}`}
-                className={cn(
-                  "flex aspect-square flex-1 items-end justify-center rounded-[15px] border-[1.5px] bg-gradient-to-br from-[#fafbfc] to-[#e9ebef] pb-1.5 text-[10px] capitalize text-[#86868b] transition-colors",
-                  view === v ? "border-[#0a8f6e]" : "border-transparent hover:border-[#d2d2d7]",
-                )}
-              >
-                {tlabel}
-              </button>
-            );
-          })}
-        </div>
-        <p className="mt-2 text-center text-sm text-[#86868b]">
-          Showing <span className="font-medium text-[#1d1d1f]">{color.name}</span> · {viewLabel}
-        </p>
       </div>
 
       {/* buy box */}
@@ -405,53 +379,28 @@ export function ProductExperience({ device }: { device: Device }) {
         <h2 className="text-[clamp(24px,3vw,34px)] font-bold tracking-[-.02em] text-[#1d1d1f]">
           Your exact condition: see before you buy.
         </h2>
-        <p className="mt-2 max-w-[560px] text-[16px] text-[#6e6e73]">
-          Real macro photography and a transparent wear breakdown for the grade you&apos;ve
-          selected. Function is guaranteed regardless of grade.
+        <p className="mt-2 max-w-[600px] text-[16px] text-[#6e6e73]">
+          A transparent wear breakdown for the grade you&apos;ve selected. Function is guaranteed
+          regardless of grade — see all four side by side on the{" "}
+          <Link href="/grades" className="link">grades page</Link>.
         </p>
 
-        <div className="gpanel mt-[30px]">
-          <div className="gphoto">
-            <PhImg
-              slug={device.slug}
-              src={device.image ?? renderSrc(device.slug)}
-              label={`macro · ${grade.label}`}
-            />
-            <div className="gmacros">
-              <div className="ph gmacro">
-                <span className="phlbl" style={{ fontSize: 10 }}>
-                  screen
-                </span>
-              </div>
-              <div className="ph gmacro">
-                <span className="phlbl" style={{ fontSize: 10 }}>
-                  back
-                </span>
-              </div>
-              <div className="ph gmacro">
-                <span className="phlbl" style={{ fontSize: 10 }}>
-                  corner
-                </span>
-              </div>
-            </div>
+        <div className="scard-bord mt-[30px]" style={{ maxWidth: 640 }}>
+          <div className="gname">
+            {grade.label} <span className="tag accent !text-[13px]">{show.pill}</span>
           </div>
-          <div>
-            <div className="gname">
-              {grade.label} <span className="tag accent !text-[13px]">{show.pill}</span>
-            </div>
-            <div className="mt-2.5 text-[18px] font-medium text-[#1d1d1f]">{grade.tagline}</div>
-            <p className="gdesc">{show.desc}</p>
-            <div className="meters">
-              {show.meters.map(([label, w, val]) => (
-                <div className="mrow" key={label}>
-                  <span className="mlbl">{label}</span>
-                  <div className="mtrack">
-                    <div className={cn("mfill", w)} />
-                  </div>
-                  <span className="mval">{val}</span>
+          <div className="mt-2.5 text-[18px] font-medium text-[#1d1d1f]">{grade.tagline}</div>
+          <p className="gdesc">{show.desc}</p>
+          <div className="meters">
+            {show.meters.map(([label, w, val]) => (
+              <div className="mrow" key={label}>
+                <span className="mlbl">{label}</span>
+                <div className="mtrack">
+                  <div className={cn("mfill", w)} />
                 </div>
-              ))}
-            </div>
+                <span className="mval">{val}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>

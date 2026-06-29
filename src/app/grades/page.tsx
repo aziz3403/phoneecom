@@ -176,11 +176,11 @@ export default function GradesPage() {
       {/* faq */}
       <section className="sec">
         <div className="shell">
-          <div className="sechead" style={{ marginBottom: 32, padding: 0 }}>
+          <div className="sechead ctr" style={{ marginBottom: 32, padding: 0 }}>
             <p className="eyebrow">Good to know</p>
             <h2 className="h2">Grading FAQ</h2>
           </div>
-          <div className="grid-cards">
+          <div className="cards-3">
             {FAQ.map((f) => (
               <div className="scard-bord" key={f.q}>
                 <h3 style={{ fontSize: 17, fontWeight: 600 }}>{f.q}</h3>

@@ -16,15 +16,21 @@ export default async function ShopPage({
   const sp = await searchParams;
   const initialMax = sp.max ? Number(sp.max) : undefined;
 
+  const typeLabel = sp.type === "tablet" ? "Tablets" : sp.type === "phone" ? "Phones" : null;
+  const brandLabel =
+    sp.brand === "Apple" ? "Apple" : sp.brand === "Samsung" ? "Samsung" : null;
+  const title = [brandLabel, typeLabel].filter(Boolean).join(" ") || "The collection";
+  const noun = sp.type === "tablet" ? "tablet" : sp.type === "phone" ? "phone" : "device";
+
   return (
     <div className="pt-12">
       <header className="pagehead">
         <p className="crumb">
-          <Link href="/">Home</Link> · Shop
+          <Link href="/">Home</Link> · {title === "The collection" ? "Shop" : title}
         </p>
-        <h1 className="ptitle">The collection</h1>
+        <h1 className="ptitle">{title}</h1>
         <p className="psub">
-          Every phone is certified, graded honestly, and backed by a 12-month warranty. Find your
+          Every {noun} is certified, graded honestly, and backed by a 12-month warranty. Find your
           next one below.
         </p>
       </header>

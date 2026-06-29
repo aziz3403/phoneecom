@@ -14,6 +14,7 @@ import { formatPrice, pct, cn } from "@/lib/utils";
 import { GradeBadge } from "@/components/ui/Badge";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { PhImg } from "@/components/home/PhImg";
+import { WearOverlay } from "@/components/ui/WearOverlay";
 
 const scoreOf = (id: GradeId) => GRADES[id].score;
 
@@ -385,22 +386,36 @@ export function ProductExperience({ device }: { device: Device }) {
           <Link href="/grades" className="link">grades page</Link>.
         </p>
 
-        <div className="scard-bord mt-[30px]" style={{ maxWidth: 640 }}>
-          <div className="gname">
-            {grade.label} <span className="tag accent !text-[13px]">{show.pill}</span>
+        <div className="gpanel scard-bord mt-[30px]" style={{ boxShadow: "none", maxWidth: 900 }}>
+          <div className="gphoto">
+            <PhImg
+              slug={device.slug}
+              src={color.image ?? device.image ?? renderSrc(device.slug)}
+              label={`${device.name} — ${grade.label} condition`}
+            >
+              <WearOverlay grade={gradeId} />
+              <span className="absolute left-[16px] top-[16px] rounded-full bg-white/80 px-[13px] py-1.5 text-xs font-semibold text-[#6e6e73] backdrop-blur">
+                {color.name} · {grade.label}
+              </span>
+            </PhImg>
           </div>
-          <div className="mt-2.5 text-[18px] font-medium text-[#1d1d1f]">{grade.tagline}</div>
-          <p className="gdesc">{show.desc}</p>
-          <div className="meters">
-            {show.meters.map(([label, w, val]) => (
-              <div className="mrow" key={label}>
-                <span className="mlbl">{label}</span>
-                <div className="mtrack">
-                  <div className={cn("mfill", w)} />
+          <div className="gdetail">
+            <div className="gname">
+              {grade.label} <span className="tag accent !text-[13px]">{show.pill}</span>
+            </div>
+            <div className="mt-2.5 text-[18px] font-medium text-[#1d1d1f]">{grade.tagline}</div>
+            <p className="gdesc">{show.desc}</p>
+            <div className="meters">
+              {show.meters.map(([label, w, val]) => (
+                <div className="mrow" key={label}>
+                  <span className="mlbl">{label}</span>
+                  <div className="mtrack">
+                    <div className={cn("mfill", w)} />
+                  </div>
+                  <span className="mval">{val}</span>
                 </div>
-                <span className="mval">{val}</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>

@@ -19,7 +19,7 @@ const POPULAR_SEARCHES = [
 
 const TRENDING: { label: string; query: string; slug: string }[] = [
   { label: "iPhone 12 — from $299", query: "iPhone 12", slug: "iphone-12" },
-  { label: "Galaxy S24 — Pristine, from $469", query: "Galaxy S24", slug: "galaxy-s24" },
+  { label: "Galaxy S24 — Excellent, from $469", query: "Galaxy S24", slug: "galaxy-s24" },
   { label: "iPhone 13 — from $389", query: "iPhone 13", slug: "iphone-13" },
   { label: "iPhone 11 — best value, from $219", query: "iPhone 11", slug: "iphone-11" },
 ];

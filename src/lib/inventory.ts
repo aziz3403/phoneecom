@@ -136,8 +136,10 @@ function estimatePrice(model: string, gb: number): number {
   return Math.max(45, Math.round((base * mult) / 5) * 5);
 }
 
+// Warehouse sheet grade → customer-facing grade id.
+// New → New(pristine); A+ / A / AB → Excellent; B → Good; C → Fair.
 const GRADE_TO_ID: Record<string, GradeId> = {
-  "A+": "pristine", NEW: "pristine", A: "excellent", AB: "good", B: "good", C: "fair", RAW: "fair",
+  NEW: "pristine", "A+": "excellent", A: "excellent", AB: "excellent", B: "good", C: "fair", RAW: "fair",
 };
 
 function toItem(r: InvRecord, i: number): InventoryItem {
@@ -145,10 +147,10 @@ function toItem(r: InvRecord, i: number): InventoryItem {
   const gb = parseInt(r.storage, 10) || 0;
   const { hex, accent } = resolveColor(r.color);
   const chipDefs: [string, number, GradeId][] = [
-    ["A+", r.grades.aPlus, "pristine"],
     ["NEW", r.grades.new, "pristine"],
+    ["A+", r.grades.aPlus, "excellent"],
     ["A", r.grades.a, "excellent"],
-    ["AB", r.grades.ab, "good"],
+    ["AB", r.grades.ab, "excellent"],
     ["B", r.grades.b, "good"],
     ["C", r.grades.c, "fair"],
   ];

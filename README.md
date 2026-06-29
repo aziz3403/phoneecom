@@ -17,7 +17,7 @@ direct-to-consumer **retail** and **B2B wholesale** — built around an interact
   product page.
 - **Modern, premium design** — dark theme, animated aurora gradients, glassmorphism,
   film-grain, scroll-reveal motion, gradient text, animated counters, marquees.
-- **Honest condition grading** — a transparent 4-tier system (Pristine / Excellent /
+- **Honest condition grading** — a transparent 4-tier system (New / Excellent /
   Good / Fair) with cosmetic descriptions, battery health, and a 50-point inspection
   story — the trust signals used-phone shoppers actually need.
 - **Full B2B wholesale portal** — tiered volume pricing (up to 24% off), a live

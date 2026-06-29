@@ -2,9 +2,16 @@ export type GradeId = "pristine" | "excellent" | "good" | "fair";
 
 export interface Grade {
   id: GradeId;
+  /** customer-facing name */
   label: string;
+  /** matching warehouse-sheet grade letters */
+  sheet: string;
   tagline: string;
   cosmetic: string;
+  /** Amazon-Renewed-style per-area condition standards */
+  screen: string;
+  body: string;
+  battery: string;
   /** primary hex used for badges, rings and the 3D wear overlay */
   hex: string;
   /** softer companion hex */
@@ -14,26 +21,39 @@ export interface Grade {
 }
 
 /**
- * Four-tier cosmetic grading, modeled on the clearest consumer systems
- * (Back Market's Fair/Good/Excellent/Premium). Every device, regardless of
- * cosmetic grade, is fully functional and certified across 50+ checkpoints.
+ * Four-tier condition grading (New / Excellent / Good / Fair), defined in the
+ * Amazon Renewed style with explicit screen/body/battery standards. Each grade
+ * maps to our warehouse sheet letters (New, A+/A/AB, B, C). Every device —
+ * whatever the grade — is fully functional, works like new, and ships with a
+ * battery above 80% of original capacity.
+ *
+ * NOTE: the internal id "pristine" is the top grade; its customer-facing label
+ * is "New". The id is kept stable so existing data/keys don't churn.
  */
 export const GRADES: Record<GradeId, Grade> = {
   pristine: {
     id: "pristine",
-    label: "Pristine",
-    tagline: "Indistinguishable from new",
-    cosmetic: "Zero visible scratches or marks. Screen and frame flawless under any light.",
+    label: "New",
+    sheet: "New",
+    tagline: "Brand new, factory sealed",
+    cosmetic: "Brand-new condition — no marks anywhere, sealed and unused.",
+    screen: "Flawless — no scratches or marks.",
+    body: "No cosmetic wear at all; indistinguishable from new.",
+    battery: "100% — a brand-new battery.",
     hex: "#34e6a8",
     hexSoft: "#6ff7c8",
     score: 4,
-    savings: "Save up to 15%",
+    savings: "Sealed in box",
   },
   excellent: {
     id: "excellent",
     label: "Excellent",
-    tagline: "Looks new from arm's length",
-    cosmetic: "Only the faintest micro-marks, invisible during everyday use.",
+    sheet: "A+ · A · AB",
+    tagline: "Looks new from a foot away",
+    cosmetic: "No screen scratches and no cosmetic damage visible from 12 inches.",
+    screen: "No scratches.",
+    body: "No signs of cosmetic damage visible when held 12 inches away.",
+    battery: "Above 80% of original capacity.",
     hex: "#38d1ff",
     hexSoft: "#7fe7ff",
     score: 3,
@@ -42,8 +62,12 @@ export const GRADES: Record<GradeId, Grade> = {
   good: {
     id: "good",
     label: "Good",
-    tagline: "Light, honest wear",
-    cosmetic: "Minor visible scratches on frame or back. Screen remains clean.",
+    sheet: "B",
+    tagline: "Light, barely-visible wear",
+    cosmetic: "No screen scratches; light body scratches barely visible at 12 inches.",
+    screen: "No scratches.",
+    body: "Light scratches, barely visible at 12 inches and imperceptible to touch.",
+    battery: "Above 80% of original capacity.",
     hex: "#f5c451",
     hexSoft: "#ffe0a3",
     score: 2,
@@ -52,8 +76,12 @@ export const GRADES: Record<GradeId, Grade> = {
   fair: {
     id: "fair",
     label: "Fair",
-    tagline: "Maximum value, more character",
-    cosmetic: "Noticeable scuffs and scratches. Works perfectly — priced to move.",
+    sheet: "C",
+    tagline: "Honest wear, biggest savings",
+    cosmetic: "A few shallow screen scratches (invisible when on); body scratches visible at 12 inches.",
+    screen: "May have a few shallow scratches, invisible when the screen is on.",
+    body: "Light scratches, clearly visible at 12 inches and perceptible to touch.",
+    battery: "Above 80% of original capacity.",
     hex: "#fb923c",
     hexSoft: "#fdba74",
     score: 1,

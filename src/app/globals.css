@@ -168,6 +168,12 @@ body { background: #fff; color: #1d1d1f; }
 .gphoto .ph { height: 360px; border-radius: 18px; --ph-a: #fafbfc; --ph-b: #e9ebef; }
 .gphotos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .gphotos .ph { height: 178px; border-radius: 14px; --ph-a: #fafbfc; --ph-b: #e9ebef; }
+.gradesheet { font-size: 13px; color: var(--text3); margin-top: 12px; }
+.gradesheet strong { color: var(--accent); font-weight: 600; }
+.stds { margin-top: 16px; display: flex; flex-direction: column; gap: 11px; }
+.stdrow { display: grid; grid-template-columns: 74px 1fr; gap: 12px; align-items: baseline; }
+.stdk { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--text3); }
+.stdv { font-size: 14.5px; color: var(--text2); line-height: 1.5; }
 .gmacros { display: flex; gap: 10px; margin-top: 10px; }
 .gmacro { flex: 1; height: 74px; border-radius: 12px; }
 .gname { font-size: clamp(28px,3.4vw,42px); font-weight: 700; letter-spacing: -.025em; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }

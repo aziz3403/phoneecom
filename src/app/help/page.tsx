@@ -42,7 +42,7 @@ const TOPICS = [
   {
     icon: CircleDashed,
     title: "Grading & condition",
-    body: "What Pristine, Excellent, Good and Fair mean, and our battery-health promise.",
+    body: "What New, Excellent, Good and Fair mean, and our battery-health promise.",
     href: "/grades",
   },
   {

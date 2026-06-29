@@ -24,7 +24,7 @@ const FAQ: FaqItem[] = [
   {
     cat: "grading",
     q: "What do the condition grades actually mean?",
-    a: "Grades describe cosmetic condition only — function is guaranteed across all of them. Pristine is indistinguishable from new, Excellent looks new from arm's length, Good has light honest wear, and Fair is well-loved but fully working.",
+    a: "Grades describe cosmetic condition only — function is guaranteed across all of them. New is sealed and brand-new, Excellent shows no damage from 12 inches away, Good has light barely-visible wear, and Fair has honest wear visible up close — all fully working with a battery above 80%.",
   },
   {
     cat: "grading",

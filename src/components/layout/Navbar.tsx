@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCart, cartCount } from "@/lib/cart-store";
-import { useSearch } from "./SearchCommand";
 import { Leaf } from "@/components/ui/Leaf";
 
 const NAV_LINKS = [
@@ -27,11 +26,11 @@ const DRAWER_LINKS = [
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const setCartOpen = useCart((s) => s.setOpen);
   const count = useCart((s) => cartCount(s.items));
-  const openSearch = useSearch((s) => s.setOpen);
 
   useEffect(() => setMounted(true), []);
   useEffect(() => setOpen(false), [pathname]);
@@ -52,7 +51,7 @@ export function Navbar() {
             ))}
           </div>
           <div className="navic">
-            <button aria-label="Search" onClick={() => openSearch(true)}>
+            <button aria-label="Search" onClick={() => router.push("/search")}>
               <svg width="17" height="17" viewBox="0 0 17 17">
                 <circle cx="7" cy="7" r="5.4" fill="none" stroke="currentColor" strokeWidth="1.4" />
                 <line x1="11" y1="11" x2="15.6" y2="15.6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />

@@ -39,6 +39,7 @@ export function ProductCard({ device, index = 0 }: { device: Device; index?: num
       mode: "retail",
       retailPrice: base.price,
       wholesaleBase: base.wholesale,
+      original: base.original,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 1400);

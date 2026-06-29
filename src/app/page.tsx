@@ -103,7 +103,7 @@ export default async function HomePage() {
             <div className="thead">
               <p className="teyebrow">Galaxy</p>
               <h3 className="ttitle">The Samsung lineup.</h3>
-              <p className="tsub">S-series, Z foldables and more — every grade.</p>
+              <p className="tsub">S-series, Note, Z foldables and more — every grade.</p>
               <div className="tlinks">
                 <Link className="link" href="/shop?brand=Samsung">Shop <span className="chev">&rsaquo;</span></Link>
                 <Link className="link" href="/shop?brand=Samsung">Foldables <span className="chev">&rsaquo;</span></Link>

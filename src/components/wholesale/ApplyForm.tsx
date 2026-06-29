@@ -6,6 +6,16 @@ import { CheckCircle2, Send } from "lucide-react";
 
 const VOLUMES = ["5–25 / month", "25–100 / month", "100–250 / month", "250–500 / month", "500+ / month"];
 const TYPES = ["Repair shop", "Reseller / retailer", "Carrier / MVNO", "Enterprise / IT", "Refurbisher", "Other"];
+const REGIONS = [
+  "United States",
+  "Canada",
+  "United Kingdom",
+  "European Union",
+  "Latin America",
+  "Asia-Pacific",
+  "Middle East & Africa",
+  "Other",
+];
 
 export function ApplyForm() {
   const [submitted, setSubmitted] = useState(false);
@@ -15,6 +25,7 @@ export function ApplyForm() {
     email: "",
     volume: VOLUMES[1],
     type: TYPES[0],
+    region: REGIONS[0],
     message: "",
   });
 
@@ -139,6 +150,14 @@ export function ApplyForm() {
                 </div>
               </div>
               <div className="field">
+                <label className="flabel">Country / region</label>
+                <select aria-label="Country / region" className="sel" value={form.region} onChange={(e) => set("region", e.target.value)}>
+                  {REGIONS.map((r) => (
+                    <option key={r}>{r}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="field">
                 <label className="flabel">Anything else?</label>
                 <textarea
                   rows={3}
@@ -154,7 +173,7 @@ export function ApplyForm() {
                 disabled={!valid}
                 className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#0a8f6e] text-[17px] text-white transition-all duration-200 hover:bg-[#0a7d61] active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-40"
               >
-                <Send className="h-[18px] w-[18px]" /> Request pricing
+                <Send className="h-[18px] w-[18px]" /> Submit application
               </button>
             </motion.form>
           )}

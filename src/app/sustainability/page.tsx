@@ -56,6 +56,18 @@ const PLEDGES = [
     d: "If a phone can't be restored, we harvest working parts and recycle the rest through certified e-waste recovery. Nothing is dumped.",
     meta: "Certified R2 recycling",
   },
+  {
+    n: "04",
+    t: "Repair, don't replace",
+    d: "We design every refurbishment around longevity — genuine-grade parts and free software support keep devices in use for years longer.",
+    meta: "Built to last longer",
+  },
+];
+
+const CERTS = [
+  { ic: "R2", t: "R2 Certified recycling", d: "Responsible e-waste recovery" },
+  { ic: "CN", t: "Carbon-neutral certified", d: "Verified offsets, every order" },
+  { ic: "★", t: "1% for the Planet", d: "Member & annual contributor" },
 ];
 
 export default function SustainabilityPage() {
@@ -257,7 +269,7 @@ export default function SustainabilityPage() {
         <div className="shell">
           <div className="sechead ctr" style={{ marginBottom: 38, padding: 0 }}>
             <p className="eyebrow">Beyond the sale</p>
-            <h2 className="h2">Our commitments.</h2>
+            <h2 className="h2">Our four commitments.</h2>
           </div>
           <div className="grid-cards">
             {PLEDGES.map((p) => (
@@ -344,6 +356,59 @@ export default function SustainabilityPage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* certifications */}
+      <section className="sec" style={{ paddingTop: 0 }}>
+        <div className="shell">
+          <div className="sechead ctr" style={{ marginBottom: 38, padding: 0 }}>
+            <h2 className="h2">Held to a real standard.</h2>
+            <p className="hsub">Our claims are independently checked — not marketing.</p>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 14,
+              justifyContent: "center",
+            }}
+          >
+            {CERTS.map((c) => (
+              <div
+                key={c.t}
+                className="scard-bord"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "16px 22px",
+                  minWidth: 220,
+                }}
+              >
+                <div
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: 9,
+                    background: "#edf6f0",
+                    color: "var(--accent)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: 700,
+                    flex: "none",
+                  }}
+                >
+                  {c.ic}
+                </div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>{c.t}</div>
+                  <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 1 }}>{c.d}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>

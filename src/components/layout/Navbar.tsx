@@ -188,8 +188,8 @@ export function Navbar() {
             <Link className="drawersub" href="/shop?type=tablet&brand=Apple" onClick={() => setOpen(false)}>
               Apple — iPad
             </Link>
-            <Link className="drawerlink" href="/sell" onClick={() => setOpen(false)}>
-              Sell &amp; trade-in
+            <Link className="drawerlink" href="/trade-in" onClick={() => setOpen(false)}>
+              Trade-in
             </Link>
             <Link className="drawerlink" href="/wholesale" onClick={() => setOpen(false)}>
               Wholesale

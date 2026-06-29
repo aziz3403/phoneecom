@@ -7,7 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "",
     "/shop",
     "/wholesale",
-    "/sell",
+    "/trade-in",
     "/grades",
     "/help",
     "/compare",

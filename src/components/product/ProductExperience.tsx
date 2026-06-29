@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Star, ShieldCheck, Truck, ScanLine, Check, Boxes, Heart } from "lucide-react";
+import { Star, ShieldCheck, Truck, ScanLine, Check, Boxes, Heart, Recycle } from "lucide-react";
 import { type Device, baseStorage, storageFor, renderSrc } from "@/lib/products";
 import { useCart } from "@/lib/cart-store";
 import { useWishlist } from "@/lib/wishlist-store";
@@ -349,6 +349,19 @@ export function ProductExperience({ device }: { device: Device }) {
             <Boxes className="h-4 w-4 text-[#0a8f6e]" />
             Buying {MOQ}+? Trade price from{" "}
             <span className="font-semibold">{formatPrice(bulkUnit)}/unit</span>
+          </span>
+          <span className="chev text-[#0a8f6e]">&rsaquo;</span>
+        </ButtonLink>
+
+        {/* trade-in hint */}
+        <ButtonLink
+          href={`/trade-in?device=${device.slug}`}
+          variant="secondary"
+          className="mt-[11px] w-full justify-between !rounded-[14px] !px-4 !py-3.5"
+        >
+          <span className="inline-flex items-center gap-2 text-sm font-normal text-[#1d1d1f]">
+            <Recycle className="h-4 w-4 text-[#0a8f6e]" />
+            Got an old phone? Trade it in for credit toward this
           </span>
           <span className="chev text-[#0a8f6e]">&rsaquo;</span>
         </ButtonLink>

@@ -22,11 +22,14 @@ const PHONES_MENU: Menu = {
       head: "Apple — iPhone",
       href: "/shop?type=phone&brand=Apple",
       items: [
+        ["iPhone 17 Pro Max", "/product/iphone-17-pro-max"],
+        ["iPhone 17 Pro", "/product/iphone-17-pro"],
+        ["iPhone 17", "/product/iphone-17"],
+        ["iPhone Air", "/product/iphone-air"],
         ["iPhone 16 Pro Max", "/product/iphone-16-pro-max"],
+        ["iPhone 16", "/product/iphone-16"],
         ["iPhone 15", "/product/iphone-15"],
-        ["iPhone 14", "/product/iphone-14"],
         ["iPhone 13", "/product/iphone-13"],
-        ["iPhone 11", "/product/iphone-11"],
       ],
     },
     {

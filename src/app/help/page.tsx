@@ -13,6 +13,7 @@ import {
   Search,
 } from "lucide-react";
 import { FaqAccordion } from "@/components/help/FaqAccordion";
+import { ChatLauncherButton } from "@/components/support/ChatLauncherButton";
 
 export const metadata: Metadata = {
   title: "Help & support",
@@ -242,13 +243,12 @@ export default function HelpPage() {
                   {c.body}
                 </p>
                 {c.href === "#" ? (
-                  <button
-                    type="button"
+                  <ChatLauncherButton
                     className={c.primary ? "btn" : "btn btn-lt"}
                     style={{ width: "100%" }}
                   >
                     {c.action}
-                  </button>
+                  </ChatLauncherButton>
                 ) : (
                   <a
                     className={c.primary ? "btn" : "btn btn-lt"}

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getInventory } from "@/lib/inventory";
 import { popularDevices, startingPrice, bestDiscount } from "@/lib/products";
-import { GRADES } from "@/lib/grades";
 import { WHOLESALE_TIERS } from "@/lib/wholesale";
 import { PhImg } from "@/components/home/PhImg";
 import { GradeExplorer } from "@/components/home/GradeExplorer";
@@ -139,7 +138,7 @@ export default async function HomePage() {
                 <Link className="link" href="/shop?type=tablet">Shop iPad <span className="chev">&rsaquo;</span></Link>
               </div>
             </div>
-            <PhImg slug="ipad-pro-13-m4" label="iPad lineup" className="timg" />
+            <PhImg src="/ipad-lineup.png" label="iPad lineup" className="timg" />
           </div>
 
           <div className="tile tile-light">
@@ -151,7 +150,7 @@ export default async function HomePage() {
                 <Link className="link" href="/sell">Get a quote <span className="chev">&rsaquo;</span></Link>
               </div>
             </div>
-            <PhImg slug="iphone-13" label="trade-in" className="timg" />
+            <PhImg src="/tradein.png" label="Trade in" className="timg" />
           </div>
         </div>
       </section>
@@ -203,8 +202,7 @@ export default async function HomePage() {
             const maxGb = Math.max(...d.storage.map((s) => s.gb));
             return (
               <Link className="pcard" href={`/product/${d.slug}`} key={d.id}>
-                <PhImg slug={d.slug} label={d.name} className="pimg">
-                  <span className="pbadge">{GRADES[d.grade].label}</span>
+                <PhImg slug={d.slug} src={d.image} label={d.name} className="pimg">
                   <span className="pdisc">−{bestDiscount(d)}%</span>
                 </PhImg>
                 <div className="pbody">

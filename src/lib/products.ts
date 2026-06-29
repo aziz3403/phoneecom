@@ -2436,6 +2436,21 @@ export function fromPrice(d: Device): number {
   return Math.round(startingPrice(d) * mult);
 }
 
+/**
+ * Best real photo for a slug (+ optional colour) — used for cart, search and
+ * order thumbnails so they show the actual product photo, not a render.
+ */
+export function imageFor(slug: string | undefined, colorName?: string): string | undefined {
+  if (!slug) return undefined;
+  const d = getDevice(slug);
+  if (!d) return undefined;
+  if (colorName) {
+    const c = d.colors.find((x) => x.name === colorName);
+    if (c?.image) return c.image;
+  }
+  return d.image ?? d.colors.find((x) => x.image)?.image;
+}
+
 export function storageFor(d: Device, gb: number): StorageOption {
   return d.storage.find((s) => s.gb === gb) ?? baseStorage(d);
 }

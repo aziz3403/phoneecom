@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PhImg } from "./PhImg";
+import { GRADE_PHOTOS, GRADE_ORDER } from "@/lib/grades";
 
 interface Panel {
   name: string;
@@ -65,8 +66,6 @@ const GUARANTEES = [
   "12-month warranty, any grade",
 ];
 
-const RENDER = ["iphone-16-pro-max", "iphone-15", "iphone-13", "iphone-11"];
-
 export function GradeExplorer() {
   const [active, setActive] = useState(1);
   const p = PANELS[active];
@@ -86,19 +85,10 @@ export function GradeExplorer() {
       </div>
 
       <div className="gpanel">
-        <div className="gphoto">
-          <PhImg slug={RENDER[active]} label={`macro · ${p.name}`} />
-          <div className="gmacros">
-            <div className="ph gmacro">
-              <span className="phlbl" style={{ fontSize: 10 }}>screen</span>
-            </div>
-            <div className="ph gmacro">
-              <span className="phlbl" style={{ fontSize: 10 }}>back</span>
-            </div>
-            <div className="ph gmacro">
-              <span className="phlbl" style={{ fontSize: 10 }}>corner</span>
-            </div>
-          </div>
+        <div className="gphotos">
+          {GRADE_PHOTOS[GRADE_ORDER[active]].map((src) => (
+            <PhImg key={src} src={src} label={`${p.name} condition`} />
+          ))}
         </div>
         <div className="gdetail">
           <div className="gname">

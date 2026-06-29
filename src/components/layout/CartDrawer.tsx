@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X, Minus, Plus, Trash2 } from "lucide-react";
 import { useCart, lineUnitPrice, lineTotal, cartSubtotal, itemKey } from "@/lib/cart-store";
 import { GRADES } from "@/lib/grades";
-import { renderSrc } from "@/lib/products";
+import { imageFor, renderSrc } from "@/lib/products";
 import { formatPrice } from "@/lib/utils";
 
 export function CartDrawer() {
@@ -61,7 +61,7 @@ export function CartDrawer() {
                     <div key={itemKey(item)} style={{ display: "flex", gap: 12, borderRadius: 16, background: "var(--gray)", padding: 12 }}>
                       <span className="ph" style={{ height: 78, width: 58, borderRadius: 12, flex: "none" }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={renderSrc(item.slug)} alt="" onError={(e) => ((e.target as HTMLImageElement).style.display = "none")} />
+                        <img src={imageFor(item.slug, item.colorName) ?? renderSrc(item.slug)} alt="" onError={(e) => ((e.target as HTMLImageElement).style.display = "none")} />
                       </span>
                       <div style={{ minWidth: 0, flex: 1, display: "flex", flexDirection: "column" }}>
                         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>

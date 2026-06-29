@@ -311,7 +311,7 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="plvis">
-            <PhImg src="" label="old-growth forest photography" />
+            <PhImg src="/forest.jpg" label="Old-growth forest" />
             <div className="plbadge">
               <span className="pbn">−80%</span>
               <span className="pbl">lower carbon footprint than buying the same phone brand-new</span>

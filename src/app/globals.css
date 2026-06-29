@@ -108,6 +108,7 @@ body { background: #fff; color: #1d1d1f; }
 .hlinks { display: flex; gap: 30px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
 .hlinks .link { font-size: clamp(18px,2vw,21px); }
 .hstage { margin-top: 46px; position: relative; display: flex; justify-content: center; align-items: flex-end; }
+.heroimg { display: block; width: 100%; max-width: 780px; height: auto; }
 .phone { border-radius: 42px; background: #fff; border: 1px solid var(--line); box-shadow: 0 30px 70px rgba(0,0,0,.16); padding: 8px; position: relative; }
 .phscreen { border-radius: 34px; height: 100%; width: 100%; }
 .notch { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); width: 84px; height: 26px; background: #fff; border-radius: 0 0 16px 16px; z-index: 2; }

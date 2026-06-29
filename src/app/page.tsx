@@ -59,16 +59,12 @@ export default async function HomePage() {
           </Link>
         </div>
         <div className="hstage">
-          <div className="phone phSide phL">
-            <PhImg slug="galaxy-s24-ultra" label="Galaxy" className="phscreen" />
-          </div>
-          <div className="phone phMain">
-            <span className="notch" />
-            <PhImg slug="iphone-16-pro-max" label="hero device" className="phscreen" />
-          </div>
-          <div className="phone phSide phR">
-            <PhImg slug="iphone-15" label="iPhone" className="phscreen" />
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            className="heroimg"
+            src="/hero-lineup.png"
+            alt="Certified pre-owned iPhones — premium phones at half the price"
+          />
         </div>
         <div className="reassure">
           <span><span className="gd" />Free 2-day shipping</span>
@@ -96,7 +92,7 @@ export default async function HomePage() {
                 <Link className="link" href="/compare">Compare <span className="chev">&rsaquo;</span></Link>
               </div>
             </div>
-            <PhImg slug="iphone-16-pro-max" label="iPhone lineup" className="timg" />
+            <PhImg src="/apple-lineup.png" label="iPhone lineup" className="timg" />
           </div>
 
           <div className="tile tile-dark">
@@ -109,7 +105,7 @@ export default async function HomePage() {
                 <Link className="link" href="/shop?brand=Samsung">Foldables <span className="chev">&rsaquo;</span></Link>
               </div>
             </div>
-            <PhImg slug="galaxy-s24-ultra" label="Galaxy lineup" className="timg" />
+            <PhImg src="/samsung-lineup.png" label="Galaxy lineup" className="timg" />
           </div>
 
           <div className="tile tile-dark wide live">

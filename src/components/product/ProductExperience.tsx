@@ -86,7 +86,8 @@ export function ProductExperience({ device }: { device: Device }) {
   const price = priceFor(sOpt.price);
   const off = pct(price, sOpt.original);
   const bulkUnit = unitPrice(sOpt.wholesale, MOQ);
-  const lowStock = device.stock <= 18;
+  const outOfStock = device.stock <= 0;
+  const lowStock = !outOfStock && device.stock <= 10;
 
   function buildItem() {
     return {
@@ -297,15 +298,22 @@ export function ProductExperience({ device }: { device: Device }) {
               +
             </button>
           </div>
-          <span className={cn("text-sm", lowStock ? "font-medium text-[#9a6a00]" : "text-[#86868b]")}>
-            {lowStock ? `Only ${device.stock} left in stock` : `${device.stock} in stock`}
+          <span
+            className={cn(
+              "text-sm",
+              lowStock ? "font-medium text-[#9a6a00]" : "text-[#86868b]",
+            )}
+          >
+            {outOfStock ? "Restocking soon" : lowStock ? `Only ${device.stock} left` : "In stock"}
           </span>
         </div>
 
         {/* actions */}
         <div className="mt-[26px] flex flex-col gap-[11px]">
-          <Button onClick={addToCart} size="lg" className="w-full">
-            {added ? (
+          <Button onClick={addToCart} size="lg" className="w-full" disabled={outOfStock}>
+            {outOfStock ? (
+              "Restocking soon"
+            ) : added ? (
               <>
                 <Check className="h-5 w-5" /> Added to bag
               </>
@@ -314,7 +322,7 @@ export function ProductExperience({ device }: { device: Device }) {
             )}
           </Button>
           <div className="flex gap-[11px]">
-            <Button onClick={buyNow} variant="outline" size="lg" className="flex-1">
+            <Button onClick={buyNow} variant="outline" size="lg" className="flex-1" disabled={outOfStock}>
               Buy now
             </Button>
             <Button

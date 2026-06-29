@@ -23,6 +23,7 @@ export function ProductCard({ device, index = 0 }: { device: Device; index?: num
   const color = device.colors[0];
   const minGb = Math.min(...device.storage.map((s) => s.gb));
   const maxGb = Math.max(...device.storage.map((s) => s.gb));
+  const outOfStock = device.stock <= 0;
 
   function handleAdd(e: React.MouseEvent) {
     e.preventDefault();
@@ -75,7 +76,13 @@ export function ProductCard({ device, index = 0 }: { device: Device; index?: num
           </div>
           <div className="pfoot">
             <div className="pprice">
-              <small>from</small> {formatPrice(price)}
+              {outOfStock ? (
+                <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text3)" }}>Restocking soon</span>
+              ) : (
+                <>
+                  <small>from</small> {formatPrice(price)}
+                </>
+              )}
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <button
@@ -85,9 +92,11 @@ export function ProductCard({ device, index = 0 }: { device: Device; index?: num
               >
                 <Heart className="h-4 w-4" fill={wished ? "currentColor" : "none"} />
               </button>
-              <button onClick={handleAdd} aria-label={`Add ${device.name} to bag`} className={cn("addbtn", added && "added")}>
-                {added ? <Check className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-              </button>
+              {!outOfStock && (
+                <button onClick={handleAdd} aria-label={`Add ${device.name} to bag`} className={cn("addbtn", added && "added")}>
+                  {added ? <Check className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+                </button>
+              )}
             </div>
           </div>
         </div>

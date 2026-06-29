@@ -119,7 +119,7 @@ export const DEVICES: Device[] = [
     fiveG: false,
     rating: 4.4,
     reviews: 1326,
-    stock: 58,
+    stock: 0,
     features: ["12MP single", "Liquid Retina LCD", "A12 Bionic", "Face ID"],
     highlights: [
       "The value entry into Face ID iPhones",
@@ -269,7 +269,7 @@ export const DEVICES: Device[] = [
     fiveG: true,
     rating: 4.5,
     reviews: 642,
-    stock: 41,
+    stock: 8,
     features: ["Dual 12MP", '5.4" OLED', "A14 Bionic", "5G"],
     highlights: [
       "The most compact 5G iPhone",
@@ -419,7 +419,7 @@ export const DEVICES: Device[] = [
     fiveG: true,
     rating: 4.6,
     reviews: 521,
-    stock: 33,
+    stock: 11,
     features: ["Dual 12MP", "Cinematic mode", '5.4" OLED', "5G"],
     highlights: [
       "Big-phone performance, small footprint",
@@ -1198,7 +1198,7 @@ export const DEVICES: Device[] = [
     fiveG: false,
     rating: 4.3,
     reviews: 884,
-    stock: 49,
+    stock: 6,
     features: ["12MP single", "Touch ID", "A13 Bionic", '4.7" Retina'],
     highlights: [
       "Pocket-sized with classic Touch ID",
@@ -1597,7 +1597,7 @@ export const DEVICES: Device[] = [
     fiveG: true,
     rating: 4.4,
     reviews: 760,
-    stock: 55,
+    stock: 0,
     features: ["Triple camera", "120Hz AMOLED", "Snapdragon 865", "5G"],
     highlights: [
       "Flagship features at a fan-edition price",
@@ -1629,7 +1629,7 @@ export const DEVICES: Device[] = [
     fiveG: true,
     rating: 4.4,
     reviews: 612,
-    stock: 48,
+    stock: 4,
     features: ["Triple camera", "120Hz AMOLED", "Snapdragon 888", "5G"],
     highlights: [
       "Fan Edition flagship value",
@@ -2144,7 +2144,7 @@ export const DEVICES: Device[] = [
     fiveG: true,
     rating: 4.4,
     reviews: 196,
-    stock: 74,
+    stock: 9,
     badge: "Budget pick",
     features: ["50MP triple", "120Hz AMOLED", "5000mAh battery", "5G"],
     highlights: [

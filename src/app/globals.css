@@ -67,9 +67,25 @@ body { background: #fff; color: #1d1d1f; }
 .nav { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.72); backdrop-filter: saturate(180%) blur(20px); border-bottom: 1px solid rgba(0,0,0,.07); }
 .navin { max-width: 1024px; margin: 0 auto; height: 48px; display: flex; align-items: center; gap: 30px; padding: 0 22px; }
 .logo { font-size: 20px; font-weight: 600; letter-spacing: -.02em; display: flex; align-items: center; gap: 7px; }
-.navlinks { display: flex; gap: 28px; margin: 0 auto; }
-.navlinks a { font-size: 13px; color: #1d1d1f; opacity: .82; transition: opacity .2s; }
-.navlinks a:hover { opacity: 1; }
+.navlinks { display: flex; gap: 28px; margin: 0 auto; align-items: center; }
+.navlinks > a { font-size: 13px; color: #1d1d1f; opacity: .82; transition: opacity .2s; }
+.navlinks > a:hover { opacity: 1; }
+
+/* nav dropdown (mega-menu) */
+.navitem { position: relative; display: flex; align-items: center; }
+.navtrigger { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #1d1d1f; opacity: .82; background: none; border: none; cursor: pointer; font-family: inherit; padding: 0; }
+.navitem:hover .navtrigger { opacity: 1; }
+.navtrigger .dchev { font-size: 8px; opacity: .55; transition: transform .2s; }
+.navitem:hover .navtrigger .dchev { transform: rotate(180deg); }
+.navmenu { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); padding-top: 14px; z-index: 60; }
+.navmenu-card { background: #fff; border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 24px 60px -24px rgba(0,0,0,.3); padding: 20px 22px; display: flex; gap: 30px; }
+.navmenu-col { min-width: 156px; }
+.navmenu-col a.mh { display: block; font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 8px; white-space: nowrap; }
+.navmenu-col a.mh:hover { text-decoration: underline; }
+.navmenu-col a.mi { display: block; font-size: 13px; color: var(--text2); padding: 4px 0; white-space: nowrap; }
+.navmenu-col a.mi:hover { color: var(--text); }
+.drawersub { font-size: 14px; color: var(--text2); padding: 9px 8px 9px 22px; border-bottom: 1px solid var(--line); }
+.drawersub:hover { background: var(--gray); color: var(--text); }
 .navic { display: flex; gap: 20px; color: #1d1d1f; align-items: center; }
 .navic button, .navic a { background: none; border: none; cursor: pointer; color: inherit; display: flex; position: relative; opacity: .82; }
 .navic button:hover, .navic a:hover { opacity: 1; }
@@ -290,8 +306,12 @@ body { background: #fff; color: #1d1d1f; }
 .tag { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 980px; background: var(--gray); color: var(--text2); }
 .tag.accent { background: rgba(10,143,110,.1); color: var(--accent); }
 
-/* product grid */
-.grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(248px, 1fr)); gap: 18px; }
+/* product grid — auto-fit so a section with few cards fills/centres the row
+   instead of left-packing into empty trailing columns */
+.grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(248px, 1fr)); gap: 18px; }
+/* fixed centred 3-up row for small fixed-count sections (FAQ, contact cards) */
+.cards-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; max-width: 1040px; margin-inline: auto; }
+@media (max-width: 760px) { .cards-3 { grid-template-columns: 1fr; } }
 
 /* star rating row */
 .stars { color: #f5a623; letter-spacing: 1px; font-size: 13px; }

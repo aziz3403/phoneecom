@@ -6,34 +6,79 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCart, cartCount } from "@/lib/cart-store";
 import { Leaf } from "@/components/ui/Leaf";
 
-const NAV_LINKS = [
-  { label: "Store", href: "/" },
-  { label: "Phones", href: "/shop?type=phone" },
-  { label: "iPad", href: "/shop?type=tablet" },
-  { label: "Wholesale", href: "/wholesale" },
-  { label: "Grades", href: "/grades" },
-  { label: "Support", href: "/help" },
-];
+interface MenuCol {
+  head: string;
+  href: string;
+  items: [string, string][];
+}
+interface Menu {
+  cols: MenuCol[];
+  foot: [string, string];
+}
 
-const DRAWER_LINKS = [
-  { label: "Store", href: "/" },
-  { label: "Phones", href: "/shop?type=phone" },
-  { label: "Sell & trade-in", href: "/sell" },
-  { label: "Wholesale", href: "/wholesale" },
-  { label: "Impact", href: "/sustainability" },
-  { label: "Support", href: "/help" },
+const PHONES_MENU: Menu = {
+  cols: [
+    {
+      head: "Apple — iPhone",
+      href: "/shop?type=phone&brand=Apple",
+      items: [
+        ["iPhone 16 Pro Max", "/product/iphone-16-pro-max"],
+        ["iPhone 15", "/product/iphone-15"],
+        ["iPhone 14", "/product/iphone-14"],
+        ["iPhone 13", "/product/iphone-13"],
+        ["iPhone 11", "/product/iphone-11"],
+      ],
+    },
+    {
+      head: "Samsung — Galaxy",
+      href: "/shop?type=phone&brand=Samsung",
+      items: [
+        ["Galaxy S24 Ultra", "/product/galaxy-s24-ultra"],
+        ["Galaxy S24", "/product/galaxy-s24"],
+        ["Galaxy S23", "/product/galaxy-s23"],
+        ["Galaxy Z Flip5", "/product/galaxy-z-flip5"],
+        ["Galaxy A54 5G", "/product/galaxy-a54-5g"],
+      ],
+    },
+  ],
+  foot: ["See all phones", "/shop?type=phone"],
+};
+
+const TABLETS_MENU: Menu = {
+  cols: [
+    {
+      head: "Apple — iPad",
+      href: "/shop?type=tablet&brand=Apple",
+      items: [
+        ['iPad Pro 13" (M4)', "/product/ipad-pro-13-m4"],
+        ['iPad Air 11" (M2)', "/product/ipad-air-11-m2"],
+        ["iPad mini 6", "/product/ipad-mini-6"],
+        ["iPad (10th gen)", "/product/ipad-10th-gen"],
+      ],
+    },
+  ],
+  foot: ["See all tablets", "/shop?type=tablet"],
+};
+
+const DROPDOWNS: { label: string; menu: Menu }[] = [
+  { label: "Phones", menu: PHONES_MENU },
+  { label: "Tablets", menu: TABLETS_MENU },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const setCartOpen = useCart((s) => s.setOpen);
   const count = useCart((s) => cartCount(s.items));
 
   useEffect(() => setMounted(true), []);
-  useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => {
+    setOpen(false);
+    setOpenMenu(null);
+  }, [pathname]);
 
   return (
     <>
@@ -44,11 +89,45 @@ export function Navbar() {
             reMint
           </Link>
           <div className="navlinks">
-            {NAV_LINKS.map((l) => (
-              <Link key={l.label} href={l.href}>
-                {l.label}
-              </Link>
+            <Link href="/">Store</Link>
+            {DROPDOWNS.map(({ label, menu }) => (
+              <div
+                key={label}
+                className="navitem"
+                onMouseEnter={() => setOpenMenu(label)}
+                onMouseLeave={() => setOpenMenu(null)}
+              >
+                <button
+                  className="navtrigger"
+                  onClick={() => router.push(menu.foot[1])}
+                  aria-haspopup="true"
+                  aria-expanded={openMenu === label}
+                >
+                  {label} <span className="dchev">▼</span>
+                </button>
+                {openMenu === label && (
+                  <div className="navmenu">
+                    <div className="navmenu-card">
+                      {menu.cols.map((col) => (
+                        <div className="navmenu-col" key={col.head}>
+                          <Link className="mh" href={col.href}>
+                            {col.head} ›
+                          </Link>
+                          {col.items.map(([name, href]) => (
+                            <Link className="mi" key={href} href={href}>
+                              {name}
+                            </Link>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             ))}
+            <Link href="/wholesale">Wholesale</Link>
+            <Link href="/grades">Grades</Link>
+            <Link href="/help">Support</Link>
           </div>
           <div className="navic">
             <button aria-label="Search" onClick={() => router.push("/search")}>
@@ -88,13 +167,38 @@ export function Navbar() {
                 ×
               </button>
             </div>
-            {DRAWER_LINKS.map((l) => (
-              <Link key={l.label} className="drawerlink" href={l.href} onClick={() => setOpen(false)}>
-                {l.label}
-              </Link>
-            ))}
+            <Link className="drawerlink" href="/" onClick={() => setOpen(false)}>
+              Store
+            </Link>
+            <Link className="drawerlink" href="/shop?type=phone" onClick={() => setOpen(false)}>
+              Phones
+            </Link>
+            <Link className="drawersub" href="/shop?type=phone&brand=Apple" onClick={() => setOpen(false)}>
+              Apple — iPhone
+            </Link>
+            <Link className="drawersub" href="/shop?type=phone&brand=Samsung" onClick={() => setOpen(false)}>
+              Samsung — Galaxy
+            </Link>
+            <Link className="drawerlink" href="/shop?type=tablet" onClick={() => setOpen(false)}>
+              Tablets
+            </Link>
+            <Link className="drawersub" href="/shop?type=tablet&brand=Apple" onClick={() => setOpen(false)}>
+              Apple — iPad
+            </Link>
+            <Link className="drawerlink" href="/sell" onClick={() => setOpen(false)}>
+              Sell &amp; trade-in
+            </Link>
+            <Link className="drawerlink" href="/wholesale" onClick={() => setOpen(false)}>
+              Wholesale
+            </Link>
+            <Link className="drawerlink" href="/grades" onClick={() => setOpen(false)}>
+              Grades
+            </Link>
+            <Link className="drawerlink" href="/help" onClick={() => setOpen(false)}>
+              Support
+            </Link>
             <Link className="btn drawercta" href="/shop" onClick={() => setOpen(false)}>
-              Shop phones
+              Shop all devices
             </Link>
           </div>
         </div>

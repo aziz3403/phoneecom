@@ -7,6 +7,7 @@ import { useAccount, type Order } from "@/lib/account-store";
 import { GRADES } from "@/lib/grades";
 import { formatPrice, formatPriceDecimal } from "@/lib/utils";
 import { PhImg } from "@/components/home/PhImg";
+import { imageFor } from "@/lib/products";
 
 export default function OrderConfirmedPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -140,7 +141,7 @@ function Confirmation({ order }: { order: Order }) {
                   borderTop: idx === 0 ? "none" : "1px solid var(--line)",
                 }}
               >
-                <PhImg slug={l.slug} label={l.name} className="iimg" style={iimg} />
+                <PhImg slug={l.slug} src={imageFor(l.slug, l.colorName)} label={l.name} className="iimg" style={iimg} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={iname}>
                     {l.name}

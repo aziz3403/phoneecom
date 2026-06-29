@@ -14,6 +14,7 @@ import {
   type CartItem,
 } from "@/lib/cart-store";
 import { useAccount } from "@/lib/account-store";
+import { imageFor } from "@/lib/products";
 import { GRADES } from "@/lib/grades";
 import { formatPrice, formatPriceDecimal } from "@/lib/utils";
 import { PhImg } from "@/components/home/PhImg";
@@ -411,7 +412,7 @@ export function CartClient() {
                 <div style={sumitems}>
                   {items.map((item) => (
                     <div key={itemKey(item)} style={{ display: "flex", gap: 11, alignItems: "center" }}>
-                      <PhImg slug={item.slug} label={item.name} className="siimg" style={siimg} />
+                      <PhImg slug={item.slug} src={imageFor(item.slug, item.colorName)} label={item.name} className="siimg" style={siimg} />
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.2 }}>{item.name}</div>
                         <div style={{ fontSize: 11.5, color: "var(--text3)", marginTop: 2 }}>
@@ -477,7 +478,7 @@ function BagLine({
       }}
     >
       <Link href={`/product/${item.slug}`} style={{ flex: "none" }}>
-        <PhImg slug={item.slug} label={item.name} className="climg" style={climg} />
+        <PhImg slug={item.slug} src={imageFor(item.slug, item.colorName)} label={item.name} className="climg" style={climg} />
       </Link>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={clname}>

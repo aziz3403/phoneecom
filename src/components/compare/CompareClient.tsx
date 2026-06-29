@@ -125,7 +125,7 @@ export function CompareClient() {
               <X className="h-3.5 w-3.5" />
             </button>
             <div className="mx-auto h-28 w-20 overflow-hidden rounded-[12px]">
-              <PhImg slug={d.slug} label={d.name} className="h-full w-full" />
+              <PhImg slug={d.slug} src={d.image} label={d.name} className="h-full w-full" />
             </div>
             <Link
               href={`/product/${d.slug}`}

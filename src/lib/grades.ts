@@ -89,6 +89,34 @@ export const GRADES: Record<GradeId, Grade> = {
   },
 };
 
+/** Real condition photos per grade (main · back · screen · edge) — a 2×2 set. */
+export const GRADE_PHOTOS: Record<GradeId, string[]> = {
+  pristine: [
+    "/grades/new-main.png",
+    "/grades/new-back.png",
+    "/grades/new-screen.png",
+    "/grades/new-edge.png",
+  ],
+  excellent: [
+    "/grades/excellent-main.png",
+    "/grades/excellent-back.png",
+    "/grades/excellent-screen.png",
+    "/grades/excellent-edge.png",
+  ],
+  good: [
+    "/grades/good-main.png",
+    "/grades/good-back.png",
+    "/grades/good-screen.png",
+    "/grades/good-edge.png",
+  ],
+  fair: [
+    "/grades/fair-main.png",
+    "/grades/fair-back.png",
+    "/grades/fair-screen.png",
+    "/grades/fair-edge.png",
+  ],
+};
+
 export const GRADE_ORDER: GradeId[] = ["pristine", "excellent", "good", "fair"];
 
 export function grade(id: GradeId): Grade {

@@ -8,13 +8,12 @@ import { type Device, baseStorage, storageFor, renderSrc } from "@/lib/products"
 import { useCart } from "@/lib/cart-store";
 import { useWishlist } from "@/lib/wishlist-store";
 import { useRecent } from "@/lib/recent-store";
-import { GRADES, GRADE_ORDER, type GradeId } from "@/lib/grades";
+import { GRADES, GRADE_ORDER, GRADE_PHOTOS, type GradeId } from "@/lib/grades";
 import { unitPrice, MOQ } from "@/lib/wholesale";
 import { formatPrice, pct, cn } from "@/lib/utils";
 import { GradeBadge } from "@/components/ui/Badge";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { PhImg } from "@/components/home/PhImg";
-import { WearOverlay } from "@/components/ui/WearOverlay";
 
 const scoreOf = (id: GradeId) => GRADES[id].score;
 
@@ -387,17 +386,10 @@ export function ProductExperience({ device }: { device: Device }) {
         </p>
 
         <div className="gpanel scard-bord mt-[30px]" style={{ boxShadow: "none", maxWidth: 900 }}>
-          <div className="gphoto">
-            <PhImg
-              slug={device.slug}
-              src={color.image ?? device.image ?? renderSrc(device.slug)}
-              label={`${device.name} — ${grade.label} condition`}
-            >
-              <WearOverlay grade={gradeId} />
-              <span className="absolute left-[16px] top-[16px] rounded-full bg-white/80 px-[13px] py-1.5 text-xs font-semibold text-[#6e6e73] backdrop-blur">
-                {color.name} · {grade.label}
-              </span>
-            </PhImg>
+          <div className="gphotos">
+            {GRADE_PHOTOS[gradeId].map((src) => (
+              <PhImg key={src} src={src} label={`${grade.label} condition`} />
+            ))}
           </div>
           <div className="gdetail">
             <div className="gname">

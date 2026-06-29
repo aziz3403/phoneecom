@@ -1,4 +1,4 @@
-import type { GradeId } from "./grades";
+import { GRADES, type GradeId } from "./grades";
 import colorPhotos from "@/data/color-photos.json";
 
 export type Brand = "Apple" | "Samsung";
@@ -2424,6 +2424,16 @@ export function baseStorage(d: Device): StorageOption {
 
 export function startingPrice(d: Device): number {
   return Math.min(...d.storage.map((s) => s.price));
+}
+
+/**
+ * Lowest advertised price — Fair grade at the cheapest storage. Mirrors the
+ * per-grade pricing used on the product page (each grade step is ±6%). This is
+ * the "from" price shown on listing cards so one model = one listing.
+ */
+export function fromPrice(d: Device): number {
+  const mult = 1 + (GRADES.fair.score - GRADES[d.grade].score) * 0.06;
+  return Math.round(startingPrice(d) * mult);
 }
 
 export function storageFor(d: Device, gb: number): StorageOption {

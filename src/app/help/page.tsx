@@ -1,6 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Truck, RefreshCw, ShieldCheck, CreditCard, MessageCircle, Mail, Phone } from "lucide-react";
+import {
+  Truck,
+  RefreshCw,
+  ShieldCheck,
+  CreditCard,
+  CircleDashed,
+  ArrowLeftRight,
+  MessageCircle,
+  Mail,
+  Phone,
+  Search,
+} from "lucide-react";
 import { FaqAccordion } from "@/components/help/FaqAccordion";
 
 export const metadata: Metadata = {
@@ -14,22 +25,46 @@ const TOPICS = [
     icon: Truck,
     title: "Orders & shipping",
     body: "Track a delivery, change an address, shipping times and costs, and order changes.",
+    href: "/help",
   },
   {
     icon: RefreshCw,
     title: "Returns & refunds",
     body: "Our 14-day return window, how to start a return, and when refunds land.",
+    href: "/help",
   },
   {
     icon: ShieldCheck,
     title: "Warranty & repairs",
     body: "What the 12-month warranty covers and how to file a claim.",
+    href: "/help",
+  },
+  {
+    icon: CircleDashed,
+    title: "Grading & condition",
+    body: "What Pristine, Excellent, Good and Fair mean, and our battery-health promise.",
+    href: "/grades",
   },
   {
     icon: CreditCard,
     title: "Payments & financing",
     body: "Accepted payment methods, monthly financing, and billing questions.",
+    href: "/help",
   },
+  {
+    icon: ArrowLeftRight,
+    title: "Selling & trade-in",
+    body: "How quotes work, shipping your device, and getting paid in 48 hours.",
+    href: "/sell",
+  },
+];
+
+const QUICKLINKS = [
+  { label: "Track an order", href: "/account" },
+  { label: "Start a return", href: "/help" },
+  { label: "Warranty claim", href: "/help" },
+  { label: "What the grades mean", href: "/grades" },
+  { label: "Trade-in status", href: "/sell" },
 ];
 
 const CONTACT = [
@@ -74,6 +109,46 @@ export default function HelpPage() {
           Answers on orders, grading, warranty, returns and trade-ins — or reach a real human in
           minutes.
         </p>
+
+        {/* hero search bar — demo, visual anchor */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            background: "#fff",
+            border: "1px solid var(--line)",
+            borderRadius: 14,
+            padding: "13px 18px",
+            marginTop: 26,
+            maxWidth: 560,
+            boxShadow: "0 8px 24px rgba(20,60,45,.07)",
+          }}
+        >
+          <Search className="h-5 w-5" style={{ color: "var(--text3)", flex: "none" }} />
+          <input
+            aria-label="Search help articles"
+            placeholder={'Search help articles — e.g. "track my order"'}
+            style={{
+              flex: 1,
+              border: "none",
+              outline: "none",
+              font: "inherit",
+              fontSize: 16,
+              color: "var(--text)",
+              background: "none",
+            }}
+          />
+        </div>
+
+        {/* quick-link pills */}
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 18 }}>
+          {QUICKLINKS.map((q) => (
+            <Link key={q.label} className="chip" href={q.href}>
+              {q.label}
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* browse by topic */}
@@ -84,7 +159,7 @@ export default function HelpPage() {
           </h2>
           <div className="grid-cards">
             {TOPICS.map((t) => (
-              <div className="scard-bord" key={t.title}>
+              <Link className="scard-bord" key={t.title} href={t.href} style={{ display: "block" }}>
                 <div
                   style={{
                     width: 44,
@@ -104,7 +179,13 @@ export default function HelpPage() {
                 <p style={{ fontSize: 14, color: "var(--text2)", marginTop: 7, lineHeight: 1.5 }}>
                   {t.body}
                 </p>
-              </div>
+                <span
+                  className="link"
+                  style={{ fontSize: 13.5, fontWeight: 600, marginTop: 14, display: "inline-flex" }}
+                >
+                  View articles <span className="chev">&rsaquo;</span>
+                </span>
+              </Link>
             ))}
           </div>
         </div>
@@ -118,9 +199,7 @@ export default function HelpPage() {
             <h2 className="h2">Frequently asked questions</h2>
             <p className="hsub">The quick answers most people are looking for.</p>
           </div>
-          <div className="scard-bord" style={{ padding: "8px 22px" }}>
-            <FaqAccordion />
-          </div>
+          <FaqAccordion />
         </div>
       </section>
 

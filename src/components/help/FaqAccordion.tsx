@@ -2,57 +2,131 @@
 
 import { useState } from "react";
 
-const FAQ = [
+export type FaqCategory = "orders" | "grading" | "returns" | "selling";
+
+interface FaqItem {
+  cat: FaqCategory;
+  q: string;
+  a: string;
+}
+
+const FAQ: FaqItem[] = [
   {
-    q: "How fast is shipping?",
-    a: "Every order ships free with carbon-neutral 2-day delivery in the contiguous US. You'll get a tracking number the moment it leaves our lab, usually within 24 hours of ordering.",
+    cat: "orders",
+    q: "How fast is shipping, and is it really free?",
+    a: "Every order ships free with carbon-neutral 2-day delivery in the contiguous US. Next-day express is available at checkout for $15. You'll get a tracking link by email as soon as your device leaves our lab.",
   },
   {
-    q: "What does the 12-month warranty cover?",
-    a: "Any hardware fault not caused by accidental damage — battery, board, cameras, speakers, buttons and more. If something fails, we repair or replace it free, and cover return shipping both ways.",
+    cat: "orders",
+    q: "Can I change my shipping address after ordering?",
+    a: "Yes — within 1 hour of placing your order you can edit or cancel it from your confirmation email. After that, reach out to support and we'll do our best before it ships.",
   },
   {
-    q: "What's your return policy?",
-    a: "We offer a 14-day RMA. If you're not satisfied, start a return within 14 days and send it back in its original condition for a full refund — no restocking fee. We email you a prepaid label.",
+    cat: "grading",
+    q: "What do the condition grades actually mean?",
+    a: "Grades describe cosmetic condition only — function is guaranteed across all of them. Pristine is indistinguishable from new, Excellent looks new from arm's length, Good has light honest wear, and Fair is well-loved but fully working.",
   },
   {
+    cat: "grading",
+    q: "Is the battery health guaranteed?",
+    a: "Yes. Every device ships with verified battery health of 80%+ (85%+ on many newer models), and the exact figure is listed before you buy.",
+  },
+  {
+    cat: "grading",
     q: "Are the phones unlocked?",
-    a: "Yes. Unless a listing explicitly says otherwise, every device is carrier-unlocked and ready for any compatible network worldwide. Just pop in your SIM or activate your eSIM.",
+    a: "Every phone we sell is fully carrier-unlocked and network-ready worldwide, with a clean IMEI checked against global blacklists.",
   },
   {
-    q: "What condition will my device be in?",
-    a: "Exactly as graded. We use four honest cosmetic grades — Pristine, Excellent, Good and Fair — and every device passes the same 50-point functional inspection regardless of grade.",
+    cat: "returns",
+    q: "What is your return policy?",
+    a: "If it's not right, return it within 14 days for a full refund — no questions asked. Start a return from your order page and we'll email a free prepaid label.",
   },
   {
-    q: "How does battery health work?",
-    a: "Every device is guaranteed at 80%+ battery health with a genuine cell. Most come in well above the minimum, and every phone is fully unlocked and fully functional.",
+    cat: "returns",
+    q: "What does the warranty cover?",
+    a: "Every device includes a 12-month warranty covering hardware faults and battery failure (below 80%). File a claim from the Help Center and we'll repair or replace it.",
   },
   {
-    q: "Can I pay over time?",
-    a: "Yes — financing is available at checkout, splitting your order into monthly payments. The estimated monthly figure is shown on every product page.",
+    cat: "selling",
+    q: "How does trade-in payment work?",
+    a: "Get an instant quote, ship your device free with our prepaid label, and once we verify it you're paid within 48 hours by cash, PayPal, or store credit (credit pays 10% more).",
   },
   {
-    q: "Do you sell to businesses?",
-    a: "Absolutely. Our wholesale program offers tiered volume pricing, net terms and dedicated support for resellers, repair shops, carriers and enterprises. Visit the Wholesale page to get started.",
+    cat: "selling",
+    q: "What if my device is worth less than quoted?",
+    a: "We re-grade every device on arrival. If it matches your answers, you get the locked quote. If it differs, we'll send a revised offer — and you can always decline and have it returned free.",
   },
 ];
 
+const CATEGORIES: { v: "all" | FaqCategory; label: string }[] = [
+  { v: "all", label: "All" },
+  { v: "orders", label: "Orders" },
+  { v: "grading", label: "Grading" },
+  { v: "returns", label: "Returns & warranty" },
+  { v: "selling", label: "Selling" },
+];
+
 export function FaqAccordion() {
+  const [cat, setCat] = useState<"all" | FaqCategory>("all");
   const [open, setOpen] = useState<number | null>(0);
+
+  const filtered = FAQ.map((f, i) => ({ ...f, idx: i })).filter(
+    (f) => cat === "all" || f.cat === cat,
+  );
+
   return (
     <div>
-      {FAQ.map((f, i) => {
-        const isOpen = open === i;
-        return (
-          <div className="acc" key={f.q}>
-            <button className="accq" onClick={() => setOpen(isOpen ? null : i)}>
-              <span>{f.q}</span>
-              <span className="accic">{isOpen ? "−" : "+"}</span>
-            </button>
-            {isOpen && <p className="acca">{f.a}</p>}
-          </div>
-        );
-      })}
+      <div
+        style={{
+          display: "flex",
+          gap: 9,
+          flexWrap: "wrap",
+          justifyContent: "center",
+          marginBottom: 30,
+        }}
+      >
+        {CATEGORIES.map((c) => (
+          <button
+            key={c.v}
+            type="button"
+            className={cat === c.v ? "chip on accent" : "chip"}
+            onClick={() => {
+              setCat(c.v);
+              setOpen(null);
+            }}
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="scard-bord" style={{ padding: "8px 22px" }}>
+        {filtered.length === 0 ? (
+          <p
+            style={{
+              textAlign: "center",
+              color: "var(--text3)",
+              padding: 30,
+              fontSize: 14,
+            }}
+          >
+            No questions in this category yet.
+          </p>
+        ) : (
+          filtered.map((f) => {
+            const isOpen = open === f.idx;
+            return (
+              <div className="acc" key={f.q}>
+                <button className="accq" onClick={() => setOpen(isOpen ? null : f.idx)}>
+                  <span>{f.q}</span>
+                  <span className="accic">{isOpen ? "−" : "+"}</span>
+                </button>
+                {isOpen && <p className="acca">{f.a}</p>}
+              </div>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 }

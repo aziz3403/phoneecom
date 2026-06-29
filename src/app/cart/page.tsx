@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { CartClient } from "@/components/cart/CartClient";
 
 export const metadata: Metadata = {
@@ -9,17 +8,10 @@ export const metadata: Metadata = {
 
 export default function CartPage() {
   return (
-    <div className="pt-12">
-      <header className="pagehead">
-        <p className="crumb">
-          <Link href="/">Home</Link> · Cart
-        </p>
-        <h1 className="ptitle">Checkout</h1>
-        <p className="psub">
-          Review your certified devices, then check out securely — free 2-day shipping and a
-          12-month warranty on every order.
-        </p>
-      </header>
+    <div style={{ paddingTop: 30, paddingBottom: 24 }}>
+      <div className="shell" style={{ maxWidth: 1080, padding: "0 22px" }}>
+        <h1 style={{ fontSize: 27, fontWeight: 700, letterSpacing: "-.02em" }}>Checkout</h1>
+      </div>
       <CartClient />
     </div>
   );

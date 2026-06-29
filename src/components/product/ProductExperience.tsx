@@ -17,6 +17,50 @@ import { PhImg } from "@/components/home/PhImg";
 
 const scoreOf = (id: GradeId) => GRADES[id].score;
 
+// Per-grade showcase content for the "see before you buy" condition panel.
+// Meter widths/values and the contextual value pill mirror the approved design.
+const SHOWCASE: Record<
+  GradeId,
+  { pill: string; meters: [string, string, string][]; desc: string }
+> = {
+  pristine: {
+    pill: "Save up to 15% vs Excellent",
+    desc: "No visible wear under any lighting. Screen and body are flawless to the naked eye — the closest thing to brand-new without the brand-new price.",
+    meters: [
+      ["Screen", "w0", "Flawless"],
+      ["Back glass", "w0", "Flawless"],
+      ["Frame", "w0", "Flawless"],
+    ],
+  },
+  excellent: {
+    pill: "Most popular",
+    desc: "Only the faintest micro-marks, invisible during everyday use. You'd need to angle it under direct light to find anything at all.",
+    meters: [
+      ["Screen", "w1", "Faint"],
+      ["Back glass", "w1", "Faint"],
+      ["Frame", "w1", "Minimal"],
+    ],
+  },
+  good: {
+    pill: "Best value",
+    desc: "Minor scratches visible up close and light frame wear at the corners. Nothing that affects the display or daily use — just a phone that's been lived with.",
+    meters: [
+      ["Screen", "w1", "Light"],
+      ["Back glass", "w2", "Visible"],
+      ["Frame", "w2", "Visible"],
+    ],
+  },
+  fair: {
+    pill: "Lowest price",
+    desc: "Noticeable scratches and possible deeper marks or minor dents on the frame. The biggest savings for buyers who care about what a phone does, not how it looks.",
+    meters: [
+      ["Screen", "w2", "Visible"],
+      ["Back glass", "w3", "Marked"],
+      ["Frame", "w3", "Marked"],
+    ],
+  },
+};
+
 export function ProductExperience({ device }: { device: Device }) {
   const router = useRouter();
   const add = useCart((s) => s.add);
@@ -30,7 +74,7 @@ export function ProductExperience({ device }: { device: Device }) {
   const [gradeId, setGradeId] = useState<GradeId>(device.grade);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
-  const [view, setView] = useState<"3d" | "front" | "back">("front");
+  const [view, setView] = useState<"3d" | "front" | "back" | "macro">("front");
 
   useEffect(() => {
     visit(device.slug);
@@ -59,6 +103,7 @@ export function ProductExperience({ device }: { device: Device }) {
       mode: "retail" as const,
       retailPrice: price,
       wholesaleBase: sOpt.wholesale,
+      original: sOpt.original,
     };
   }
 
@@ -73,9 +118,13 @@ export function ProductExperience({ device }: { device: Device }) {
     router.push("/cart");
   }
 
-  const viewLabel = view === "back" ? "back" : view === "3d" ? "front" : view;
+  const viewLabel = view === "3d" ? "front" : view;
+
+  const show = SHOWCASE[gradeId];
+  const grade = GRADES[gradeId];
 
   return (
+    <>
     <div className="grid items-start gap-[60px] lg:grid-cols-[1.08fr_0.92fr]">
       {/* gallery */}
       <div className="lg:sticky lg:top-[74px]">
@@ -92,7 +141,7 @@ export function ProductExperience({ device }: { device: Device }) {
 
         {/* thumbnails */}
         <div className="mt-3.5 flex gap-3">
-          {(["front", "back", "3d"] as const).map((v) => {
+          {(["front", "back", "3d", "macro"] as const).map((v) => {
             const tlabel = v === "3d" ? "side" : v;
             return (
               <button
@@ -131,7 +180,7 @@ export function ProductExperience({ device }: { device: Device }) {
           {device.name}
         </h1>
         <p className="mt-1.5 text-[15px] text-[#6e6e73]">
-          {device.chip} · {device.screen}&quot; · {device.ram}GB RAM
+          Certified pre-owned · fully unlocked · 80%+ battery
         </p>
 
         <div className="mt-[22px] flex flex-wrap items-baseline gap-3 border-b border-[#d2d2d7] pb-[22px]">
@@ -150,7 +199,7 @@ export function ProductExperience({ device }: { device: Device }) {
           )}
         </div>
         <p className="mt-[9px] text-[13px] text-[#86868b]">
-          or {formatPrice(Math.round(price / 12))}/mo. for 12 mo. · free 2-day shipping
+          or {formatPrice(Math.round(price / 12))}/mo. for 12 mo. at 0% APR · free 2-day shipping
         </p>
 
         {/* color */}
@@ -207,6 +256,7 @@ export function ProductExperience({ device }: { device: Device }) {
               const p =
                 priceFor(sOpt.price) +
                 Math.round(sOpt.price * (scoreOf(id) - scoreOf(gradeId)) * 0.06);
+              const save = sOpt.original > 0 ? Math.round((1 - p / sOpt.original) * 100) : 0;
               const active = id === gradeId;
               return (
                 <button
@@ -235,12 +285,26 @@ export function ProductExperience({ device }: { device: Device }) {
                     <span className="block text-[15px] font-semibold text-[#1d1d1f]">
                       {formatPrice(p)}
                     </span>
+                    {save > 0 && (
+                      <span className="block text-[11px] font-semibold text-[#0a8f6e]">
+                        Save {save}%
+                      </span>
+                    )}
                   </span>
                 </button>
               );
             })}
           </div>
-          <p className="mt-3 text-[13px] text-[#86868b]">
+          <button
+            type="button"
+            onClick={() =>
+              document.getElementById("condition")?.scrollIntoView({ behavior: "smooth" })
+            }
+            className="mt-3 block w-full text-center text-[13px] text-[#86868b] transition-colors hover:text-[#6e6e73]"
+          >
+            See exactly what {GRADES[gradeId].label} looks like below ↓
+          </button>
+          <p className="mt-2 text-[13px] text-[#86868b]">
             Function is guaranteed regardless of grade.{" "}
             <Link href="/grades" className="link !text-[13px]">
               Grading explained <span className="chev">&rsaquo;</span>
@@ -335,6 +399,63 @@ export function ProductExperience({ device }: { device: Device }) {
         </div>
       </div>
     </div>
+
+      {/* condition showcase — reactive to the grade selected in the buy box */}
+      <section id="condition" className="mt-20 border-t border-[#d2d2d7] pt-12 scroll-mt-[74px]">
+        <h2 className="text-[clamp(24px,3vw,34px)] font-bold tracking-[-.02em] text-[#1d1d1f]">
+          Your exact condition: see before you buy.
+        </h2>
+        <p className="mt-2 max-w-[560px] text-[16px] text-[#6e6e73]">
+          Real macro photography and a transparent wear breakdown for the grade you&apos;ve
+          selected. Function is guaranteed regardless of grade.
+        </p>
+
+        <div className="gpanel mt-[30px]">
+          <div className="gphoto">
+            <PhImg
+              slug={device.slug}
+              src={device.image ?? renderSrc(device.slug)}
+              label={`macro · ${grade.label}`}
+            />
+            <div className="gmacros">
+              <div className="ph gmacro">
+                <span className="phlbl" style={{ fontSize: 10 }}>
+                  screen
+                </span>
+              </div>
+              <div className="ph gmacro">
+                <span className="phlbl" style={{ fontSize: 10 }}>
+                  back
+                </span>
+              </div>
+              <div className="ph gmacro">
+                <span className="phlbl" style={{ fontSize: 10 }}>
+                  corner
+                </span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div className="gname">
+              {grade.label} <span className="tag accent !text-[13px]">{show.pill}</span>
+            </div>
+            <div className="mt-2.5 text-[18px] font-medium text-[#1d1d1f]">{grade.tagline}</div>
+            <p className="gdesc">{show.desc}</p>
+            <div className="meters">
+              {show.meters.map(([label, w, val]) => (
+                <div className="mrow" key={label}>
+                  <span className="mlbl">{label}</span>
+                  <div className="mtrack">
+                    <div className={cn("mfill", w)} />
+                  </div>
+                  <span className="mval">{val}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
 

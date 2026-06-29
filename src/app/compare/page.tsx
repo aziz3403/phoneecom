@@ -16,8 +16,8 @@ export default function ComparePage() {
         </p>
         <h1 className="ptitle">Compare devices</h1>
         <p className="psub">
-          Line up to three devices side by side and see exactly how they stack up — the best value
-          in each row is highlighted.
+          Compare up to 3 devices side by side and see exactly how they stack up — the best value
+          in each row is highlighted in green.
         </p>
       </header>
 

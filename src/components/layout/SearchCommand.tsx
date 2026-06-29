@@ -62,6 +62,11 @@ export function SearchCommand() {
     router.push(`/product/${slug}`);
   }
 
+  function goSearch(q: string) {
+    setOpen(false);
+    router.push(`/search?q=${encodeURIComponent(q)}`);
+  }
+
   return (
     <AnimatePresence>
       {open && (
@@ -89,7 +94,10 @@ export function SearchCommand() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && results[0]) go(results[0].slug);
+                    if (e.key !== "Enter") return;
+                    const q = query.trim();
+                    if (q) goSearch(q);
+                    else if (results[0]) go(results[0].slug);
                   }}
                   placeholder="Search iPhone, Galaxy, iPad…"
                   style={{ height: 56, width: "100%", border: "none", outline: "none", background: "transparent", fontSize: 17, color: "var(--text)" }}

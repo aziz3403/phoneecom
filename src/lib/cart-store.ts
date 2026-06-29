@@ -24,6 +24,8 @@ export interface CartItem {
   retailPrice: number;
   /** tier-1 base price for wholesale lines (discount applied by quantity) */
   wholesaleBase: number;
+  /** retail-when-new reference price for the chosen storage (for "save vs new") */
+  original?: number;
 }
 
 interface CartState {

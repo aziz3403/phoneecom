@@ -14,6 +14,7 @@ import {
 } from "@/lib/products";
 import { GRADES, GRADE_ORDER, type GradeId } from "@/lib/grades";
 import { ProductCard } from "@/components/ui/ProductCard";
+import { Leaf } from "@/components/ui/Leaf";
 import { formatPrice, cn } from "@/lib/utils";
 
 const PRICES = DEVICES.map(startingPrice);
@@ -32,6 +33,7 @@ const SORTS = [
   { id: "featured", label: "Featured" },
   { id: "price-asc", label: "Price: low to high" },
   { id: "price-desc", label: "Price: high to low" },
+  { id: "rating", label: "Top rated" },
   { id: "battery", label: "Best battery" },
   { id: "newest", label: "Newest" },
 ] as const;
@@ -109,6 +111,8 @@ export function ShopClient({
           return startingPrice(a) - startingPrice(b);
         case "price-desc":
           return startingPrice(b) - startingPrice(a);
+        case "rating":
+          return b.rating - a.rating || b.reviews - a.reviews;
         case "battery":
           return b.batteryHealth - a.batteryHealth;
         case "newest":
@@ -125,6 +129,38 @@ export function ShopClient({
 
   const activeCount =
     types.size + brands.size + grades.size + storages.size + colors.size + (fiveG ? 1 : 0) + (maxPrice < MAX_PRICE ? 1 : 0);
+
+  const activeChips: { key: string; label: string; remove: () => void }[] = [
+    ...[...types].map((t) => ({
+      key: `type:${t}`,
+      label: TYPE_LABEL[t],
+      remove: () => setTypes(toggle(types, t)),
+    })),
+    ...[...brands].map((b) => ({
+      key: `brand:${b}`,
+      label: b,
+      remove: () => setBrands(toggle(brands, b)),
+    })),
+    ...[...grades].map((g) => ({
+      key: `grade:${g}`,
+      label: GRADES[g].label,
+      remove: () => setGrades(toggle(grades, g)),
+    })),
+    ...[...storages].map((s) => ({
+      key: `storage:${s}`,
+      label: s >= 1024 ? "1TB" : `${s}GB`,
+      remove: () => setStorages(toggle(storages, s)),
+    })),
+    ...[...colors].map((c) => ({
+      key: `color:${c}`,
+      label: c,
+      remove: () => setColors(toggle(colors, c)),
+    })),
+    ...(maxPrice < MAX_PRICE
+      ? [{ key: "price", label: `Up to ${formatPrice(maxPrice)}`, remove: () => setMaxPrice(MAX_PRICE) }]
+      : []),
+    ...(fiveG ? [{ key: "fiveg", label: "5G only", remove: () => setFiveG(false) }] : []),
+  ];
 
   function clearAll() {
     setTypes(new Set());
@@ -251,7 +287,10 @@ export function ShopClient({
   );
 
   return (
-    <div className="mx-auto grid max-w-[1280px] gap-10 px-[22px] pb-24 pt-10 lg:grid-cols-[260px_1fr]">
+    <>
+      <EcoBand />
+
+      <div className="mx-auto grid max-w-[1280px] gap-10 px-[22px] pb-24 pt-10 lg:grid-cols-[260px_1fr]">
       <aside className="hidden lg:block">
         <div className="scard-bord sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto [scrollbar-width:thin]">
           <div className="mb-5 flex items-center justify-between">
@@ -315,14 +354,49 @@ export function ShopClient({
           </div>
         </div>
 
-        <p className="mb-5 text-sm text-[#6e6e73]">
+        <p className="mb-4 text-sm text-[#6e6e73]">
           <span className="font-semibold text-[#1d1d1f]">{filtered.length}</span>{" "}
           {filtered.length === 1 ? "device" : "devices"}
         </p>
 
+        {activeChips.length > 0 && (
+          <div className="mb-5 flex flex-wrap gap-2">
+            {activeChips.map((c) => (
+              <button
+                key={c.key}
+                onClick={c.remove}
+                className="tag accent"
+                style={{ cursor: "pointer", paddingRight: 8 }}
+                aria-label={`Remove filter ${c.label}`}
+              >
+                {c.label}
+                <span
+                  aria-hidden
+                  style={{
+                    display: "grid",
+                    placeItems: "center",
+                    width: 16,
+                    height: 16,
+                    borderRadius: "50%",
+                    background: "rgba(10,143,110,.18)",
+                    fontSize: 10,
+                    lineHeight: 1,
+                  }}
+                >
+                  ✕
+                </span>
+              </button>
+            ))}
+            <button onClick={clearAll} className="link" style={{ fontSize: 13 }}>
+              Clear all
+            </button>
+          </div>
+        )}
+
         {filtered.length === 0 ? (
           <div className="grid place-items-center rounded-[22px] border border-dashed border-[#d2d2d7] py-24 text-center">
-            <p className="text-[#6e6e73]">No devices match those filters.</p>
+            <p className="font-semibold text-[#1d1d1f]">No phones match those filters.</p>
+            <p className="mt-1.5 text-[#6e6e73]">Try widening your price range or clearing a filter.</p>
             <button onClick={clearAll} className="link mt-3" style={{ fontSize: 15 }}>
               Clear filters
             </button>
@@ -370,6 +444,104 @@ export function ShopClient({
           </>
         )}
       </AnimatePresence>
+      </div>
+    </>
+  );
+}
+
+const ECO_STATS = [
+  { num: "~80kg", label: "CO₂ avoided per device" },
+  { num: "~12,000L", label: "water saved per device" },
+  { num: "0g", label: "new materials mined" },
+] as const;
+
+function EcoBand() {
+  return (
+    <div className="mx-auto max-w-[1280px] px-[22px] pb-2 pt-2">
+      <div
+        style={{
+          position: "relative",
+          overflow: "hidden",
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 36,
+          background: "#edf6f0",
+          border: "1px solid #d6e9df",
+          borderRadius: 22,
+          padding: "30px 34px",
+        }}
+      >
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            right: -50,
+            top: -60,
+            width: 220,
+            height: 220,
+            borderRadius: "50%",
+            background: "radial-gradient(circle,#d4ecdd,transparent 70%)",
+            pointerEvents: "none",
+          }}
+        />
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            right: 90,
+            bottom: -80,
+            width: 160,
+            height: 160,
+            borderRadius: "50%",
+            background: "radial-gradient(circle,#dcefe4,transparent 70%)",
+            pointerEvents: "none",
+          }}
+        />
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 560 }}>
+          <div
+            className="eyebrow"
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, marginBottom: 8 }}
+          >
+            <Leaf size={17} vein="#edf6f0" />
+            Why buy refurbished
+          </div>
+          <div
+            style={{
+              fontSize: "clamp(20px,2.3vw,28px)",
+              fontWeight: 700,
+              letterSpacing: "-.02em",
+              lineHeight: 1.14,
+            }}
+          >
+            Every phone you rehome is one that never had to be made.
+          </div>
+          <p style={{ marginTop: 10, maxWidth: 480, fontSize: 15, lineHeight: 1.5, color: "var(--text2)" }}>
+            Up to 80% of a phone&rsquo;s lifetime carbon comes from manufacturing. Choosing certified
+            pre-owned skips all of it &mdash; same device, a fraction of the footprint.
+          </p>
+        </div>
+        <div style={{ position: "relative", zIndex: 1, display: "flex", flexWrap: "wrap", gap: 30 }}>
+          {ECO_STATS.map((s) => (
+            <div key={s.label} style={{ minWidth: 92 }}>
+              <div
+                style={{
+                  fontSize: "clamp(23px,2.5vw,31px)",
+                  fontWeight: 700,
+                  letterSpacing: "-.02em",
+                  color: "var(--accent)",
+                }}
+              >
+                {s.num}
+              </div>
+              <div style={{ marginTop: 4, maxWidth: 118, fontSize: 12.5, lineHeight: 1.3, color: "var(--text2)" }}>
+                {s.label}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

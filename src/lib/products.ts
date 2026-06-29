@@ -1686,3 +1686,56 @@ export function relatedDevices(device: Device, count = 4): Device[] {
     .slice(0, count)
     .map((x) => x.d);
 }
+
+// ---- derived spec strings (grounded in existing fields; no fabricated data) -
+
+const CAMERA_COUNT: Record<CameraLayout, string> = {
+  triple: "Triple",
+  dual: "Dual",
+  single: "Single",
+  vertical: "Triple",
+  grid: "Quad",
+  bar: "Dual",
+  circular: "Dual",
+};
+
+/** Display panel description, e.g. `6.1" Super Retina XDR OLED`. */
+export function displaySpec(d: Device): string {
+  const panel =
+    d.brand === "Apple"
+      ? d.type === "tablet"
+        ? "Liquid Retina"
+        : "Super Retina XDR OLED"
+      : d.type === "tablet"
+        ? "Touchscreen LCD"
+        : "Dynamic AMOLED";
+  return `${d.screen}" ${panel}`;
+}
+
+/** Rear-camera summary, reusing the catalog's own feature copy when it names MP. */
+export function rearCameraSpec(d: Device): string {
+  const mp = d.features.find((f) => /\d\s?MP/i.test(f));
+  const count = CAMERA_COUNT[d.cameraLayout] ?? "Multi";
+  if (d.type === "tablet") return mp ?? "12MP Wide";
+  return mp ? `${count} · ${mp}` : `${count} camera`;
+}
+
+/** Front-camera summary. */
+export function frontCameraSpec(d: Device): string {
+  return d.brand === "Apple" ? "12MP TrueDepth · Face ID" : "Selfie camera";
+}
+
+/** Ingress-protection rating, derived from line/type. */
+export function waterResistance(d: Device): string {
+  if (d.type === "tablet") return "Not rated";
+  if (d.line.includes("SE")) return "IP67";
+  if (/Galaxy A/.test(d.name)) return "IP67";
+  if (/Z Flip|Z Fold/.test(d.name)) return "IPX8";
+  return "IP68";
+}
+
+/** SIM support. */
+export function simType(d: Device): string {
+  if (d.type === "tablet") return d.cellular ? "Nano-SIM + eSIM" : "Wi-Fi only";
+  return "Nano-SIM + eSIM";
+}

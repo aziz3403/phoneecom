@@ -1,5 +1,17 @@
+"use client";
+
+import { useState } from "react";
 import { BadgeCheck, ThumbsUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+type ReviewFilter = "all" | "5" | "4" | "3";
+
+const FILTERS: { value: ReviewFilter; label: string }[] = [
+  { value: "all", label: "All reviews" },
+  { value: "5", label: "5 star" },
+  { value: "4", label: "4 star" },
+  { value: "3", label: "3 star & below" },
+];
 
 const POOL = [
   {
@@ -71,6 +83,13 @@ export function Reviews({ rating, count, slug }: { rating: number; count: number
   const picks = [POOL[start], POOL[(start + 2) % POOL.length], POOL[(start + 4) % POOL.length]];
   const recommend = Math.round(Math.min(99, (rating / 5) * 100 + 4));
 
+  const [filter, setFilter] = useState<ReviewFilter>("all");
+  const visible = picks.filter((r) => {
+    if (filter === "all") return true;
+    if (filter === "3") return r.stars <= 3;
+    return r.stars === Number(filter);
+  });
+
   return (
     <div className="grid items-start gap-11 lg:grid-cols-[300px_1fr]">
       {/* summary */}
@@ -112,8 +131,31 @@ export function Reviews({ rating, count, slug }: { rating: number; count: number
           ))}
         </div>
 
-        <div className="mt-[22px] flex flex-col">
-          {picks.map((r, i) => (
+        {/* filter chips */}
+        <div className="mb-[22px] mt-[22px] flex flex-wrap gap-2.5">
+          {FILTERS.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => setFilter(f.value)}
+              className={cn(
+                "rounded-full border bg-white px-4 py-2 text-[13.5px] font-medium transition-colors",
+                filter === f.value
+                  ? "border-[#0a8f6e] text-[#1d1d1f]"
+                  : "border-[#d2d2d7] text-[#6e6e73] hover:border-[#bfbfc7]",
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-col">
+          {visible.length === 0 && (
+            <p className="py-9 text-center text-sm text-[#86868b]">
+              No reviews match this filter yet.
+            </p>
+          )}
+          {visible.map((r, i) => (
             <div
               key={i}
               className={cn("py-[22px]", i === 0 ? "pt-0" : "border-t border-[#d2d2d7]")}

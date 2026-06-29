@@ -1,7 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { DEVICES, getDevice, relatedDevices, startingPrice, renderSrc } from "@/lib/products";
+import {
+  DEVICES,
+  getDevice,
+  relatedDevices,
+  startingPrice,
+  renderSrc,
+  displaySpec,
+  rearCameraSpec,
+  frontCameraSpec,
+  waterResistance,
+  simType,
+} from "@/lib/products";
 import { GRADES } from "@/lib/grades";
 import { ProductExperience } from "@/components/product/ProductExperience";
 import { Reviews } from "@/components/product/Reviews";
@@ -45,16 +56,18 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
   const related = relatedDevices(device, 3);
   const specs: [string, string][] = [
-    ["Display", `${device.screen}" ${device.type === "tablet" ? "Liquid Retina" : "OLED"}`],
+    ["Display", displaySpec(device)],
     ["Chip", device.chip],
-    ["Memory", `${device.ram}GB RAM`],
-    ["Storage", device.storage.map((s) => `${s.gb}GB`).join(" · ")],
+    ["Rear camera", rearCameraSpec(device)],
+    ["Front camera", frontCameraSpec(device)],
     ["Battery health", "80%+ guaranteed"],
+    ["Water resistance", waterResistance(device)],
+    ["SIM", simType(device)],
     [
       "Connectivity",
-      device.fiveG ? "5G · Wi-Fi 6" : device.cellular ? "Wi-Fi + Cellular" : "Wi-Fi 6",
+      device.fiveG ? "5G · Wi-Fi 6 · unlocked" : device.cellular ? "Wi-Fi + Cellular" : "Wi-Fi 6",
     ],
-    ["Colors", `${device.colors.length} available`],
+    ["Storage", device.storage.map((s) => `${s.gb}GB`).join(" · ")],
     ["Released", String(device.releaseYear)],
   ];
 
@@ -110,13 +123,19 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       <JsonLd data={[productLd, breadcrumbLd]} />
       {/* breadcrumb */}
       <div className="shell">
-        <p className="crumb">
+        <p className="crumb flex items-center gap-2.5">
+          <Link href="/" className="hover:text-[#1d1d1f]">
+            Store
+          </Link>
+          <span className="opacity-50">/</span>
           <Link href="/shop" className="hover:text-[#1d1d1f]">
-            Shop
-          </Link>{" "}
-          <span className="opacity-50">/</span>{" "}
-          {device.type === "tablet" ? "iPad" : device.brand}{" "}
-          <span className="opacity-50">/</span>{" "}
+            {device.type === "tablet" ? "iPad" : "Phones"}
+          </Link>
+          <span className="opacity-50">/</span>
+          <Link href={`/shop?brand=${device.brand}`} className="hover:text-[#1d1d1f]">
+            {device.brand}
+          </Link>
+          <span className="opacity-50">/</span>
           <span className="text-[#6e6e73]">{device.name}</span>
         </p>
       </div>

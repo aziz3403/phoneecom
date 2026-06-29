@@ -6,7 +6,8 @@ import { Counter } from "@/components/ui/Counter";
 import { PricingTiers } from "@/components/wholesale/PricingTiers";
 import { SavingsCalculator } from "@/components/wholesale/SavingsCalculator";
 import { BulkOrderBuilder } from "@/components/wholesale/BulkOrderBuilder";
-import { ApplyForm } from "@/components/wholesale/ApplyForm";
+import { WholesaleGate } from "@/components/wholesale/WholesaleGate";
+import { WholesaleHeroCard } from "@/components/wholesale/WholesaleHeroCard";
 
 export const metadata: Metadata = {
   title: "Wholesale & trade pricing",
@@ -98,11 +99,11 @@ export default function WholesalePage() {
                     Apply for an account <ArrowRight className="h-[18px] w-[18px]" />
                   </ButtonLink>
                   <ButtonLink
-                    href="#builder"
+                    href="#apply"
                     size="lg"
                     className="border border-white/30 bg-transparent text-[#f5f5f7] hover:border-white/60 hover:bg-white/10"
                   >
-                    Build a sample order
+                    See live pricing
                   </ButtonLink>
                 </div>
                 <div className="mt-9 flex flex-wrap gap-x-10 gap-y-4">
@@ -123,31 +124,8 @@ export default function WholesalePage() {
                 </div>
               </div>
 
-              {/* sample-lot card */}
-              <div className="rounded-[22px] border border-white/10 bg-white/[0.05] p-6">
-                <p
-                  className="text-[13px] font-semibold uppercase tracking-[0.06em]"
-                  style={{ color: "#a1a1a6" }}
-                >
-                  Sample lot · live pricing
-                </p>
-                <div className="mt-3">
-                  {SAMPLE_LOT.map((row) => (
-                    <div
-                      key={row.k}
-                      className="flex items-center justify-between border-b border-white/10 py-3 text-sm last:border-b-0"
-                    >
-                      <span style={{ color: "#a1a1a6" }}>{row.k}</span>
-                      <span
-                        className="font-semibold"
-                        style={{ color: row.accent ? "#41d6a0" : "#f5f5f7" }}
-                      >
-                        {row.v}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              {/* sample-lot card — live numbers gated to approved accounts */}
+              <WholesaleHeroCard rows={SAMPLE_LOT} />
             </div>
           </div>
         </div>
@@ -187,6 +165,8 @@ export default function WholesalePage() {
         </div>
       </Section>
 
+      {/* ───────── gated tools — live pricing, quote & bulk ordering (approved accounts only) ───────── */}
+      <WholesaleGate>
       {/* ───────── pricing tiers ───────── */}
       <div className="bg-[#f5f5f7]">
         <Section id="pricing" className="py-20 sm:py-24">
@@ -227,6 +207,7 @@ export default function WholesalePage() {
           </div>
         </Section>
       </div>
+      </WholesaleGate>
 
       {/* ───────── flow ───────── */}
       <Section className="py-20 sm:py-24">
@@ -293,12 +274,6 @@ export default function WholesalePage() {
         </div>
       </Section>
 
-      {/* ───────── apply ───────── */}
-      <div className="bg-[#f5f5f7]">
-        <Section id="apply" className="py-20 sm:py-24">
-          <ApplyForm />
-        </Section>
-      </div>
     </div>
   );
 }

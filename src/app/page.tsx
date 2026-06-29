@@ -147,7 +147,7 @@ export default async function HomePage() {
               <h3 className="ttitle">Turn your old phone into credit.</h3>
               <p className="tsub">Get an instant quote and ship it free. Apply it to your next device.</p>
               <div className="tlinks">
-                <Link className="link" href="/sell">Get a quote <span className="chev">&rsaquo;</span></Link>
+                <Link className="link" href="/trade-in">Get a quote <span className="chev">&rsaquo;</span></Link>
               </div>
             </div>
             <PhImg src="/tradein.png" label="Trade in" className="timg" />

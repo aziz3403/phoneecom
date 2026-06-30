@@ -2164,6 +2164,7 @@ export const DEVICES: Device[] = [
     chip: "A13 Bionic",
     screen: 10.2,
     ram: 3,
+    image: "/photos/ipad-9th-gen.jpg",
     colors: [
       { name: "Space Gray", hex: "#52555a", accent: "#3c3e42", family: "Gray" },
       { name: "Silver", hex: "#e3e4e0", accent: "#c2c3bf", family: "Silver" },
@@ -2235,6 +2236,7 @@ export const DEVICES: Device[] = [
     chip: "A15 Bionic",
     screen: 8.3,
     ram: 4,
+    image: "/photos/ipad-mini-6.jpg",
     colors: [
       { name: "Space Gray", hex: "#52555a", accent: "#3c3e42", family: "Gray" },
       { name: "Pink", hex: "#eccdc8", accent: "#d3a8a2", family: "Pink" },
@@ -2271,6 +2273,7 @@ export const DEVICES: Device[] = [
     chip: "Apple M1",
     screen: 10.9,
     ram: 8,
+    image: "/photos/ipad-air-5-m1.jpg",
     colors: [
       { name: "Space Gray", hex: "#52555a", accent: "#3c3e42", family: "Gray" },
       { name: "Starlight", hex: "#f3efe6", accent: "#d9d3c4", family: "White" },
@@ -2422,7 +2425,7 @@ export const DEVICES: Device[] = [
     chip: "A12 Bionic",
     screen: 10.2,
     ram: 3,
-    image: "/renders/ipad-9th-gen.png",
+    image: "/photos/ipad-8th-gen.jpg",
     colors: [
       { name: "Space Gray", hex: "#52555a", accent: "#3c3e42", family: "Gray" },
       { name: "Silver", hex: "#e3e4e0", accent: "#c2c3bf", family: "Silver" },
@@ -2459,7 +2462,7 @@ export const DEVICES: Device[] = [
     chip: "A10 Fusion",
     screen: 10.2,
     ram: 3,
-    image: "/renders/ipad-9th-gen.png",
+    image: "/photos/ipad-7th-gen.jpg",
     colors: [
       { name: "Space Gray", hex: "#52555a", accent: "#3c3e42", family: "Gray" },
       { name: "Silver", hex: "#e3e4e0", accent: "#c2c3bf", family: "Silver" },
@@ -2496,7 +2499,7 @@ export const DEVICES: Device[] = [
     chip: "A10 Fusion",
     screen: 9.7,
     ram: 2,
-    image: "/renders/ipad-9th-gen.png",
+    image: "/photos/ipad-6th-gen.jpg",
     colors: [
       { name: "Space Gray", hex: "#52555a", accent: "#3c3e42", family: "Gray" },
       { name: "Silver", hex: "#e3e4e0", accent: "#c2c3bf", family: "Silver" },
@@ -2532,7 +2535,7 @@ export const DEVICES: Device[] = [
     chip: "A9",
     screen: 9.7,
     ram: 2,
-    image: "/renders/ipad-9th-gen.png",
+    image: "/photos/ipad-5th-gen.jpg",
     colors: [
       { name: "Space Gray", hex: "#52555a", accent: "#3c3e42", family: "Gray" },
       { name: "Silver", hex: "#e3e4e0", accent: "#c2c3bf", family: "Silver" },
@@ -2568,7 +2571,7 @@ export const DEVICES: Device[] = [
     chip: "A14 Bionic",
     screen: 10.9,
     ram: 4,
-    image: "/renders/ipad-air-5-m1.png",
+    image: "/photos/ipad-air-4.jpg",
     colors: [
       { name: "Space Gray", hex: "#52555a", accent: "#3c3e42", family: "Gray" },
       { name: "Silver", hex: "#e3e4e0", accent: "#c2c3bf", family: "Silver" },
@@ -2643,7 +2646,7 @@ export const DEVICES: Device[] = [
     chip: "A8X",
     screen: 9.7,
     ram: 2,
-    image: "/renders/ipad-9th-gen.png",
+    image: "/photos/ipad-air-2.jpg",
     colors: [
       { name: "Space Gray", hex: "#52555a", accent: "#3c3e42", family: "Gray" },
       { name: "Silver", hex: "#e3e4e0", accent: "#c2c3bf", family: "Silver" },
@@ -2715,7 +2718,7 @@ export const DEVICES: Device[] = [
     chip: "A12 Bionic",
     screen: 7.9,
     ram: 3,
-    image: "/renders/ipad-9th-gen.png",
+    image: "/photos/ipad-mini-5.jpg",
     colors: [
       { name: "Space Gray", hex: "#52555a", accent: "#3c3e42", family: "Gray" },
       { name: "Silver", hex: "#e3e4e0", accent: "#c2c3bf", family: "Silver" },
@@ -2752,7 +2755,7 @@ export const DEVICES: Device[] = [
     chip: "A8",
     screen: 7.9,
     ram: 2,
-    image: "/renders/ipad-9th-gen.png",
+    image: "/photos/ipad-mini-4.jpg",
     colors: [
       { name: "Space Gray", hex: "#52555a", accent: "#3c3e42", family: "Gray" },
       { name: "Silver", hex: "#e3e4e0", accent: "#c2c3bf", family: "Silver" },
@@ -2851,6 +2854,44 @@ export const DEVICES: Device[] = [
       "The first 9.7-inch iPad Pro with Pencil support",
       "True Tone display and four-speaker audio",
       "Compact Pro for notes and sketching",
+    ],
+  },
+  {
+    id: "ipadpro129",
+    slug: "ipad-pro-12-9",
+    brand: "Apple",
+    type: "tablet",
+    name: 'iPad Pro 12.9" (2020)',
+    line: "iPad Pro",
+    releaseYear: 2020,
+    chip: "A12Z Bionic",
+    screen: 12.9,
+    ram: 6,
+    image: "/photos/ipad-pro-12-9.jpg",
+    colors: [
+      { name: "Space Gray", hex: "#52555a", accent: "#3c3e42", family: "Gray" },
+      { name: "Silver", hex: "#e3e4e0", accent: "#c2c3bf", family: "Silver" },
+    ],
+    storage: [
+      { gb: 128, price: 430, original: 999, wholesale: 391 },
+      { gb: 256, price: 500, original: 1099, wholesale: 455 },
+      { gb: 512, price: 600, original: 1299, wholesale: 546 },
+      { gb: 1024, price: 720, original: 1499, wholesale: 655 },
+    ],
+    grade: "good",
+    batteryHealth: 89,
+    cameraLayout: "single",
+    fiveG: false,
+    cellular: true,
+    rating: 4.7,
+    reviews: 312,
+    stock: 58,
+    badge: "Pro display",
+    features: ["A12Z Bionic", '12.9" Liquid Retina', "LiDAR Scanner", "Face ID"],
+    highlights: [
+      "Big 12.9-inch Liquid Retina canvas for work and art",
+      "LiDAR Scanner and Pro cameras",
+      "Face ID and Apple Pencil 2 with USB-C",
     ],
   },
 ];

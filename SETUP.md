@@ -49,8 +49,24 @@ DATABASE_URL="postgres://…" npm run db:push
    - `https://YOUR_DOMAIN/api/auth/callback/google`
    - `http://localhost:3000/api/auth/callback/google` (local dev)
 3. Put the client ID/secret in `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET`.
+4. **Publish the consent screen** so any customer (not just test users) can sign in:
+   Google Cloud → **Google Auth Platform → Audience → Publish app**. With only the
+   basic `openid / email / profile` scopes, no verification review is required.
 
-The Google button appears automatically once those are set.
+The Google button appears automatically once the keys are set.
+
+## 4b. (Optional) Saved addresses / profile editor
+
+The account "Details" tab lets users save a shipping address (and prefills
+checkout from it). It uses a `userProfile` table — create it once:
+
+```bash
+DATABASE_URL="postgres://…" npm run db:push
+```
+
+…or paste `drizzle/0001_chubby_spiral.sql` into your DB's SQL editor. Until this
+runs, the rest of the account works fine — saving an address just shows a
+"not set up yet" message.
 
 ## 5. Deploy
 
@@ -63,8 +79,8 @@ migration (step 3) against the production database once.
 
 - **Sign up / sign in** — `/login` (email + password, bcrypt-hashed; Google when configured).
 - **Password reset** — "Forgot password?" → emailed (or demo) link → `/reset?token=…`.
-- **Account** — `/account` is protected (redirects to `/login`) and shows DB-backed order history.
-- **Checkout** — prefilled from your profile; orders placed while signed in are saved to your account.
+- **Account** — `/account` (protected) shows DB-backed order history with status, a saved-address editor, and per-order **shipment tracking** at `/account/orders/[id]` (timeline + carrier/tracking #). Orders placed as a guest are claimed onto the account on sign-in (matched by email). Sessions last 30 days.
+- **Checkout** — prefilled from your saved address; orders placed while signed in are saved to your account.
 - **Wholesale** — the trade-account application is tied to your signed-in account; approval is stored on your user record.
 
 ### Where it lives

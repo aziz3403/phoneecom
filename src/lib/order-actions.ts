@@ -18,14 +18,13 @@ export async function placeOrderAction(input: {
 }): Promise<{ ok: boolean }> {
   if (!isAuthConfigured()) return { ok: false };
   const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) return { ok: false };
-
+  // Persist for signed-in users AND guests. Guest orders (userId null) are
+  // keyed by email so they can be claimed when that person signs in later.
   const db = getDb();
   await db.insert(orders).values({
     id: input.id,
-    userId,
-    email: input.email,
+    userId: session?.user?.id ?? null,
+    email: input.email?.trim().toLowerCase(),
     total: input.total,
     status: input.status,
     data: input.data,

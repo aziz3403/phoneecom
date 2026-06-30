@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { auth, isAuthConfigured } from "./auth";
 import { getDb } from "./db";
 import { orders } from "./db/schema";
@@ -29,6 +29,11 @@ export interface OrderSnapshot {
   savings?: number;
   tax?: number;
   co2kg?: number;
+  /** shipment tracking (generated at checkout) */
+  trackingNumber?: string;
+  carrier?: string;
+  etaISO?: string;
+  express?: boolean;
 }
 
 export interface FullOrder extends OrderSnapshot {
@@ -68,5 +73,20 @@ export async function getOrder(id: string): Promise<FullOrder | null> {
   if (!isAuthConfigured()) return null;
   const db = getDb();
   const rows = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
+  return rows[0] ? toFull(rows[0]) : null;
+}
+
+/** A single order that belongs to the signed-in user (for the detail page). */
+export async function getMyOrder(id: string): Promise<FullOrder | null> {
+  if (!isAuthConfigured()) return null;
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return null;
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(orders)
+    .where(and(eq(orders.id, id), eq(orders.userId, userId)))
+    .limit(1);
   return rows[0] ? toFull(rows[0]) : null;
 }

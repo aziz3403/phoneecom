@@ -69,6 +69,22 @@ export const verificationTokens = pgTable(
   (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })],
 );
 
+/** Editable saved profile / shipping address (separate table → adding it never
+ * touches the auth tables or login queries). */
+export const userProfiles = pgTable("userProfile", {
+  userId: text("userId")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  fullName: text("fullName"),
+  phone: text("phone"),
+  line1: text("line1"),
+  city: text("city"),
+  state: text("state"),
+  zip: text("zip"),
+  country: text("country").default("United States"),
+  updatedAt: timestamp("updatedAt", { mode: "date" }).notNull().defaultNow(),
+});
+
 export const passwordResetTokens = pgTable("passwordResetToken", {
   id: text("id")
     .primaryKey()

@@ -54,7 +54,7 @@ export function VerifyClient({ token }: { token?: string }) {
           <p style={subStyle}>
             Thanks — your email address is verified and your account is fully secured.
           </p>
-          <div style={{ marginTop: 18, display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div style={{ marginTop: 22, display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
             <Link className="btn" href="/account">
               Go to your account
             </Link>
@@ -75,7 +75,7 @@ export function VerifyClient({ token }: { token?: string }) {
           <p style={{ ...subStyle, marginTop: 12 }}>
             Verification links expire after 24 hours. You can send a fresh one from your account.
           </p>
-          <div style={{ marginTop: 18, display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div style={{ marginTop: 22, display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
             <Link className="btn" href="/account">
               Go to your account
             </Link>
@@ -89,8 +89,8 @@ export function VerifyClient({ token }: { token?: string }) {
   );
 }
 
-const titleStyle: React.CSSProperties = { fontSize: 22, fontWeight: 700, letterSpacing: "-.02em" };
-const subStyle: React.CSSProperties = { fontSize: 14.5, color: "var(--text2)", marginTop: 8, lineHeight: 1.55 };
+const titleStyle: React.CSSProperties = { fontSize: 22, fontWeight: 700, letterSpacing: "-.02em", textAlign: "center" };
+const subStyle: React.CSSProperties = { fontSize: 14.5, color: "var(--text2)", marginTop: 8, lineHeight: 1.55, textAlign: "center" };
 function iconWrap(bg: string): React.CSSProperties {
   return {
     width: 48,
@@ -100,6 +100,6 @@ function iconWrap(bg: string): React.CSSProperties {
     color: "#fff",
     display: "grid",
     placeItems: "center",
-    marginBottom: 20,
+    margin: "0 auto 20px",
   };
 }

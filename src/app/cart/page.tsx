@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { CartClient } from "@/components/cart/CartClient";
 import { getProfile } from "@/lib/profile-actions";
+import { isStripeConfigured } from "@/lib/stripe";
 
 export const metadata: Metadata = {
   title: "Your bag & checkout",
@@ -17,7 +18,7 @@ export default async function CartPage() {
       <div className="shell" style={{ maxWidth: 1080, padding: "0 22px" }}>
         <h1 style={{ fontSize: 27, fontWeight: 700, letterSpacing: "-.02em" }}>Checkout</h1>
       </div>
-      <CartClient initialProfile={initialProfile} />
+      <CartClient initialProfile={initialProfile} stripeEnabled={isStripeConfigured()} />
     </div>
   );
 }

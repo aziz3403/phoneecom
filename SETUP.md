@@ -68,6 +68,30 @@ DATABASE_URL="postgres://…" npm run db:push
 runs, the rest of the account works fine — saving an address just shows a
 "not set up yet" message.
 
+## 4c. (Optional) Real payments with Stripe
+
+Checkout runs in **demo mode** (no charge) until Stripe is configured. To take
+real card payments — Apple Pay and Google Pay included automatically:
+
+1. Create a Stripe account → **Developers → API keys** → copy the **Secret key**.
+2. Add env vars (locally in `.env.local`, and on Vercel):
+
+   | Variable | What |
+   | --- | --- |
+   | `STRIPE_SECRET_KEY` | `sk_live_…` (or `sk_test_…` while testing) |
+   | `STRIPE_WEBHOOK_SECRET` | `whsec_…` from step 3 |
+
+3. **Add the webhook** so paid orders are confirmed: Stripe → **Developers →
+   Webhooks → Add endpoint** → URL `https://YOUR_DOMAIN/api/stripe/webhook`,
+   event **`checkout.session.completed`**. Copy the signing secret into
+   `STRIPE_WEBHOOK_SECRET`.
+4. Redeploy. Checkout now redirects to Stripe's hosted page; on success the
+   buyer returns to the order-confirmed page and the order flips to **Confirmed**
+   (via the webhook, re-verified on return).
+
+> With only `STRIPE_SECRET_KEY` set, payments work but order confirmation relies
+> on the success-page check; add the webhook for production-grade fulfilment.
+
 ## 5. Deploy
 
 On Vercel, set the env vars (step 2) **before** building, then deploy. Run the
@@ -81,7 +105,7 @@ migration (step 3) against the production database once.
 - **Email verification** — sign-up fires a confirmation link (Resend, or shown on-screen in demo mode). The account page nudges unconfirmed users with a "Resend" button; the link lands on `/verify?token=…`. Non-blocking — sign-in works either way, and Google accounts are pre-verified. Reuses the Auth.js `verificationToken` table (no extra migration).
 - **Password reset** — "Forgot password?" → emailed (or demo) link → `/reset?token=…`.
 - **Account** — `/account` (protected) shows DB-backed order history with status, a saved-address editor, and per-order **shipment tracking** at `/account/orders/[id]` (timeline + carrier/tracking #). Orders placed as a guest are claimed onto the account on sign-in (matched by email). Sessions last 30 days.
-- **Checkout** — prefilled from your saved address; orders placed while signed in are saved to your account.
+- **Checkout** — prefilled from your saved address; orders placed while signed in are saved to your account. **Payments** go through Stripe Checkout when configured (card + Apple/Google Pay), falling back to a demo checkout otherwise — see §4c.
 - **Wholesale** — the trade-account application is tied to your signed-in account; approval is stored on your user record.
 
 ### Where it lives

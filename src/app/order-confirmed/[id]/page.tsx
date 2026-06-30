@@ -4,6 +4,8 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { Leaf, Check } from "lucide-react";
 import { useAccount, type Order } from "@/lib/account-store";
+import { useCart } from "@/lib/cart-store";
+import { confirmCheckout } from "@/lib/payment-actions";
 import { GRADES } from "@/lib/grades";
 import { formatPrice, formatPriceDecimal } from "@/lib/utils";
 import { PhImg } from "@/components/home/PhImg";
@@ -12,9 +14,20 @@ import { imageFor } from "@/lib/products";
 export default function OrderConfirmedPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const orders = useAccount((s) => s.orders);
+  const clearCart = useCart((s) => s.clear);
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  // Returning from Stripe Checkout (?session_id=…): the payment went through,
+  // so empty the bag and re-verify/confirm the order server-side (best-effort —
+  // the webhook is the source of truth).
+  useEffect(() => {
+    const sid = new URLSearchParams(window.location.search).get("session_id");
+    if (!sid) return;
+    clearCart();
+    confirmCheckout(id, sid).catch(() => {});
+  }, [id, clearCart]);
 
   if (!mounted) {
     return (

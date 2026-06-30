@@ -372,6 +372,9 @@ body { background: #fff; color: #1d1d1f; }
 }
 @media (max-width: 560px) {
   .navlinks { display: none; } .hamb { display: flex; }
+  /* links are hidden on mobile, so push the icon cluster + menu to the right */
+  .navic { margin-left: auto; }
+  .navin { gap: 16px; }
   .hero { padding: 48px 18px 0; }
   .sechead { margin-bottom: 30px; }
   .thead { padding: 36px 26px 0; }

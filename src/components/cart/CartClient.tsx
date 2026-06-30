@@ -16,6 +16,7 @@ import {
 import { useAccount } from "@/lib/account-store";
 import { useSession } from "next-auth/react";
 import { placeOrderAction } from "@/lib/order-actions";
+import { createCheckoutSession } from "@/lib/payment-actions";
 import { makeShipment } from "@/lib/tracking";
 import { deliveryWindow, EXPRESS_FEE } from "@/lib/delivery";
 import { imageFor } from "@/lib/products";
@@ -50,7 +51,10 @@ function fmtShort(d: Date): string {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-export function CartClient({ initialProfile }: { initialProfile?: AddressPrefill | null } = {}) {
+export function CartClient({
+  initialProfile,
+  stripeEnabled = false,
+}: { initialProfile?: AddressPrefill | null; stripeEnabled?: boolean } = {}) {
   const items = useCart((s) => s.items);
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
@@ -73,6 +77,8 @@ export function CartClient({ initialProfile }: { initialProfile?: AddressPrefill
   const [sameBilling, setSameBilling] = useState(true);
   const [delivery, setDelivery] = useState<DeliveryId>("free");
   const [pay, setPay] = useState<PayId>("card");
+  const [processing, setProcessing] = useState(false);
+  const [payError, setPayError] = useState("");
 
   // Prefill shipping from the signed-in account (only into empty fields).
   useEffect(() => {
@@ -132,8 +138,9 @@ export function CartClient({ initialProfile }: { initialProfile?: AddressPrefill
     const id = "RM-" + Math.floor(100000 + Math.random() * 899999);
     const now = new Date();
     const deliveryLabel = delivery === "next" ? "2-day express" : "Standard shipping";
-    const paymentLabel =
-      pay === "apple" ? "Apple Pay" : pay === "paypal" ? "PayPal" : "Visa ···· 4242";
+    const paymentLabel = stripeEnabled
+      ? "Card / Apple Pay (Stripe)"
+      : pay === "apple" ? "Apple Pay" : pay === "paypal" ? "PayPal" : "Visa ···· 4242";
     const shipTo = [
       `${first || "Alex"} ${last || "Rivera"}`.trim(),
       street || "1 Market Street",
@@ -175,7 +182,29 @@ export function CartClient({ initialProfile }: { initialProfile?: AddressPrefill
       trackingNumber,
     };
 
-    // Local copy powers the receipt page (and guest history).
+    // Real card payment: open Stripe Checkout (Apple/Google Pay included). The
+    // order is held Pending until the webhook / success page confirms payment.
+    if (stripeEnabled) {
+      setPayError("");
+      setProcessing(true);
+      addOrder({ id, total, status: "Pending", ...snapshot });
+      const res = await createCheckoutSession({
+        id,
+        email: emailVal,
+        amountCents: Math.round(total * 100),
+        itemCount: count,
+        snapshot,
+      });
+      if (res.url) {
+        window.location.href = res.url;
+        return;
+      }
+      setProcessing(false);
+      setPayError(res.error ?? "Couldn't start secure checkout. Please try again.");
+      return;
+    }
+
+    // Demo flow: local copy powers the receipt page (and guest history).
     addOrder({ id, total, status: "Confirmed", ...snapshot });
 
     // Persist to the account for signed-in users (best-effort).
@@ -371,45 +400,73 @@ export function CartClient({ initialProfile }: { initialProfile?: AddressPrefill
               <span style={blkn}>4</span>
               Payment
             </div>
-            <p style={cardsub}>All transactions are encrypted and secure.</p>
-            <div style={opts}>
-              <OptionCard selected={pay === "card"} onSelect={() => setPay("card")}>
-                <div style={{ flex: 1 }}>
-                  <div style={oname}>Credit or debit card</div>
-                  <div style={odesc}>Visa, Mastercard, Amex, Discover</div>
-                </div>
-              </OptionCard>
-              {pay === "card" && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  <Field label="Card number">
-                    <input className="inpt" aria-label="Card number" placeholder="1234 5678 9012 3456" />
-                  </Field>
-                  <div className="co-frow3">
-                    <Field label="Expiry">
-                      <input className="inpt" aria-label="Card expiry" placeholder="MM / YY" />
-                    </Field>
-                    <Field label="CVC">
-                      <input className="inpt" aria-label="Card CVC" placeholder="123" />
-                    </Field>
-                    <Field label="ZIP">
-                      <input className="inpt" aria-label="Card billing ZIP" placeholder="94105" />
-                    </Field>
+            {stripeEnabled ? (
+              <>
+                <p style={cardsub}>
+                  You&apos;ll finish on Stripe&apos;s secure checkout — pay by card, Apple Pay or Google Pay.
+                </p>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 10,
+                    alignItems: "flex-start",
+                    border: "1px solid var(--line)",
+                    borderRadius: 13,
+                    padding: "14px 16px",
+                    background: "var(--gray)",
+                  }}
+                >
+                  <Lock className="h-[15px] w-[15px]" style={{ color: "var(--accent)", marginTop: 2, flex: "none" }} />
+                  <div style={{ fontSize: 13.5, color: "var(--text2)", lineHeight: 1.45 }}>
+                    Payments are processed by <b style={{ color: "var(--text)" }}>Stripe</b>. Your card details are
+                    encrypted and never touch our servers — tap <b style={{ color: "var(--text)" }}>Pay securely</b>{" "}
+                    to complete your order.
                   </div>
                 </div>
-              )}
-              <OptionCard selected={pay === "apple"} onSelect={() => setPay("apple")}>
-                <div style={{ flex: 1 }}>
-                  <div style={oname}>Apple Pay</div>
-                  <div style={odesc}>Pay with Face ID or Touch ID</div>
+              </>
+            ) : (
+              <>
+                <p style={cardsub}>All transactions are encrypted and secure.</p>
+                <div style={opts}>
+                  <OptionCard selected={pay === "card"} onSelect={() => setPay("card")}>
+                    <div style={{ flex: 1 }}>
+                      <div style={oname}>Credit or debit card</div>
+                      <div style={odesc}>Visa, Mastercard, Amex, Discover</div>
+                    </div>
+                  </OptionCard>
+                  {pay === "card" && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                      <Field label="Card number">
+                        <input className="inpt" aria-label="Card number" placeholder="1234 5678 9012 3456" />
+                      </Field>
+                      <div className="co-frow3">
+                        <Field label="Expiry">
+                          <input className="inpt" aria-label="Card expiry" placeholder="MM / YY" />
+                        </Field>
+                        <Field label="CVC">
+                          <input className="inpt" aria-label="Card CVC" placeholder="123" />
+                        </Field>
+                        <Field label="ZIP">
+                          <input className="inpt" aria-label="Card billing ZIP" placeholder="94105" />
+                        </Field>
+                      </div>
+                    </div>
+                  )}
+                  <OptionCard selected={pay === "apple"} onSelect={() => setPay("apple")}>
+                    <div style={{ flex: 1 }}>
+                      <div style={oname}>Apple Pay</div>
+                      <div style={odesc}>Pay with Face ID or Touch ID</div>
+                    </div>
+                  </OptionCard>
+                  <OptionCard selected={pay === "paypal"} onSelect={() => setPay("paypal")}>
+                    <div style={{ flex: 1 }}>
+                      <div style={oname}>PayPal</div>
+                      <div style={odesc}>Checkout with your PayPal balance</div>
+                    </div>
+                  </OptionCard>
                 </div>
-              </OptionCard>
-              <OptionCard selected={pay === "paypal"} onSelect={() => setPay("paypal")}>
-                <div style={{ flex: 1 }}>
-                  <div style={oname}>PayPal</div>
-                  <div style={odesc}>Checkout with your PayPal balance</div>
-                </div>
-              </OptionCard>
-            </div>
+              </>
+            )}
           </section>
         </div>
 
@@ -433,19 +490,28 @@ export function CartClient({ initialProfile }: { initialProfile?: AddressPrefill
             <div style={{ padding: "16px 24px 4px" }}>
               <button
                 onClick={placeOrder}
-                disabled={empty}
+                disabled={empty || processing}
                 className="btn"
                 style={{
                   width: "100%",
                   padding: "14px 20px",
                   fontSize: 16,
                   borderRadius: 13,
-                  opacity: empty ? 0.4 : 1,
-                  cursor: empty ? "not-allowed" : "pointer",
+                  opacity: empty || processing ? 0.55 : 1,
+                  cursor: empty || processing ? "not-allowed" : "pointer",
                 }}
               >
-                Place order — {formatPriceDecimal(total)}
+                {processing
+                  ? "Redirecting to secure checkout…"
+                  : stripeEnabled
+                    ? `Pay securely — ${formatPriceDecimal(total)}`
+                    : `Place order — ${formatPriceDecimal(total)}`}
               </button>
+              {payError && (
+                <p role="alert" style={{ color: "#b42318", fontSize: 13, marginTop: 8, textAlign: "center" }}>
+                  {payError}
+                </p>
+              )}
             </div>
             <div style={sumeta}>
               <Lock className="h-[11px] w-[11px]" /> Encrypted &amp; secure · 30-day returns

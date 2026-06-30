@@ -196,7 +196,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <div>
                 <h3 style={subhead}><Truck className="h-4 w-4" /> Delivery</h3>
                 <p style={addrp}>
-                  <b style={{ color: "var(--text)" }}>{order.deliveryLabel ?? "Carbon-neutral 2-day"}</b><br />
+                  <b style={{ color: "var(--text)" }}>{order.deliveryLabel ?? "Standard shipping"}</b><br />
                   {order.express ? "Express" : "Free · fully offset"}<br />
                   {t.delivered ? "Delivered" : `Arrives ${t.etaLabel}`}
                 </p>

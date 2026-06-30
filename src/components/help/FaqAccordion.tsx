@@ -14,7 +14,7 @@ const FAQ: FaqItem[] = [
   {
     cat: "orders",
     q: "How fast is shipping, and is it really free?",
-    a: "Every order ships free with carbon-neutral 2-day delivery in the contiguous US. Next-day express is available at checkout for $15. You'll get a tracking link by email as soon as your device leaves our lab.",
+    a: "Every order ships free with carbon-neutral delivery in the contiguous US, arriving in 5–7 business days. Need it faster? 2-day express is available at checkout for $15. You'll get a tracking link by email as soon as your device leaves our lab.",
   },
   {
     cat: "orders",
@@ -39,12 +39,12 @@ const FAQ: FaqItem[] = [
   {
     cat: "returns",
     q: "What is your return policy?",
-    a: "If it's not right, return it within 14 days for a full refund — no questions asked. Start a return from your order page and we'll email a free prepaid label.",
+    a: "If it's not right, return it within 30 days for a refund. Start a return from your order page and we'll email a free prepaid label. Just send it back in the condition it was sold in — a deduction may apply if the device is returned damaged or with missing parts or charger.",
   },
   {
     cat: "returns",
-    q: "What does the warranty cover?",
-    a: "Every device includes a 12-month warranty covering hardware faults and battery failure (below 80%). File a claim from the Help Center and we'll repair or replace it.",
+    q: "What's in the box — do you offer a warranty?",
+    a: "We don't offer a long-term warranty, but every device is 50-point tested and confirmed fully working before it ships, and comes with a free charging cable & adapter in the box. You're also covered by our 30-day returns, so if anything isn't right when it arrives you can send it back for a refund.",
   },
   {
     cat: "selling",
@@ -62,7 +62,7 @@ const CATEGORIES: { v: "all" | FaqCategory; label: string }[] = [
   { v: "all", label: "All" },
   { v: "orders", label: "Orders" },
   { v: "grading", label: "Grading" },
-  { v: "returns", label: "Returns & warranty" },
+  { v: "returns", label: "Returns & refunds" },
   { v: "selling", label: "Selling" },
 ];
 

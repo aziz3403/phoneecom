@@ -20,7 +20,7 @@ export default async function HomePage() {
     url: SITE_URL,
     logo: `${SITE_URL}/favicon.ico`,
     description:
-      "Certified pre-owned iPhone, Samsung Galaxy and iPad — retail and wholesale. Every device fully unlocked, 80%+ battery, 12-month warranty.",
+      "Certified pre-owned iPhone, Samsung Galaxy and iPad — retail and wholesale. Every device fully unlocked, 80%+ battery, free charger, 30-day returns.",
   };
   const websiteLd = {
     "@context": "https://schema.org",
@@ -46,7 +46,7 @@ export default async function HomePage() {
           Half the price.
         </h1>
         <p className="hsub">
-          Inspected on 50 points, graded honestly, and backed by a 12-month warranty. Buy one — or
+          Inspected on 50 points, graded honestly, and shipped with a free charger and 30-day returns. Buy one — or
           buy a thousand.
         </p>
         <div className="hlinks">
@@ -66,9 +66,9 @@ export default async function HomePage() {
           />
         </div>
         <div className="reassure">
-          <span><span className="gd" />Free 2-day shipping</span>
-          <span><span className="gd" />12-month warranty</span>
-          <span><span className="gd" />14-day returns</span>
+          <span><span className="gd" />Free US shipping</span>
+          <span><span className="gd" />Free charger included</span>
+          <span><span className="gd" />30-day returns</span>
           <span><span className="gd" />Fully unlocked</span>
         </div>
       </section>
@@ -163,12 +163,12 @@ export default async function HomePage() {
             <p className="featd">Battery, board, cameras, biometrics and radios — checked on every device.</p>
           </div>
           <div className="feat">
-            <div className="featt">12-month warranty</div>
-            <p className="featd">Every order, every grade. Plus a no-questions 14-day return window.</p>
+            <div className="featt">Free charger included</div>
+            <p className="featd">A charging cable &amp; adapter in every box, plus a no-questions 30-day return window.</p>
           </div>
           <div className="feat">
             <div className="featt">Carbon-neutral shipping</div>
-            <p className="featd">Free 2-day delivery that&apos;s offset end to end. Better for the planet.</p>
+            <p className="featd">Free US delivery that&apos;s offset end to end. Better for the planet.</p>
           </div>
           <div className="feat">
             <div className="featt">Honest grading</div>

@@ -52,7 +52,7 @@ export default function OpengraphImage() {
           Certified pre-owned · iPhone, Galaxy & iPad · retail & wholesale
         </div>
         <div style={{ display: "flex", gap: "14px", marginTop: 40 }}>
-          {["12-month warranty", "50-point inspection", "Free 2-day shipping"].map((t) => (
+          {["Free charger included", "50-point inspection", "Free US shipping"].map((t) => (
             <div
               key={t}
               style={{

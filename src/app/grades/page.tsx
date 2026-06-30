@@ -14,15 +14,15 @@ const GUARANTEES = [
   "100% functional — every button, sensor & radio tested",
   "Genuine battery at 80%+ health (most far higher)",
   "Data wiped & sanitized to factory standard",
-  "12-month warranty regardless of cosmetic grade",
+  "Free charging cable & adapter in every box",
   "Fully unlocked to all carriers",
-  "14-day RMA — return it if you're not satisfied",
+  "30-day returns — a deduction may apply if not returned as sold",
 ];
 
 const FAQ = [
   {
     q: "Does the grade affect how the phone works?",
-    a: "No. Grades describe cosmetic appearance only. Every device — New to Fair — passes the same 50-point functional inspection, works like new, and ships with a 12-month warranty.",
+    a: "No. Grades describe cosmetic appearance only. Every device — New to Fair — passes the same 50-point functional inspection, works like new, and ships with a free charger and 30-day returns.",
   },
   {
     q: "Will I get the exact unit in the photos?",
@@ -176,7 +176,7 @@ export default function GradesPage() {
         <div className="shell" style={{ textAlign: "center" }}>
           <h2 className="h2">Shop with total confidence.</h2>
           <p className="hsub" style={{ margin: "16px auto 0" }}>
-            Every device is certified, graded honestly, and backed by a 12-month warranty.
+            Every device is certified, graded honestly, and ships with a free charger and 30-day returns.
           </p>
           <div style={{ marginTop: 26 }}>
             <Link className="btn" href="/shop">

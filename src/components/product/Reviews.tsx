@@ -26,7 +26,7 @@ const POOL = [
     author: "Elena R.",
     days: 9,
     title: "Saved a fortune",
-    body: "Same phone my coworker paid full price for, for hundreds less. The 12-month warranty made it a no-brainer.",
+    body: "Same phone my coworker paid full price for, for hundreds less. Came with a free charger in the box and 30-day returns, so it was a no-brainer.",
   },
   {
     stars: 4,

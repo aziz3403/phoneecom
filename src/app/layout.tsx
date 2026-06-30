@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     template: "%s · reMint",
   },
   description:
-    "Buy certified pre-owned iPhone, Samsung Galaxy and iPad — every device fully unlocked, 80%+ battery, inspected on 50 points and backed by a 12-month warranty. Trade pricing for resellers and businesses.",
+    "Buy certified pre-owned iPhone, Samsung Galaxy and iPad — every device fully unlocked, 80%+ battery, inspected on 50 points and backed by a free charger in every box. Trade pricing for resellers and businesses.",
   keywords: [
     "used phones",
     "refurbished phones",

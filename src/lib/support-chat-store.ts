@@ -55,7 +55,7 @@ export function newId(): string {
 export const QUICK_REPLIES = [
   "Shipping",
   "Returns",
-  "Warranty",
+  "What's in the box",
   "Grades & battery",
   "Trade-in",
   "Wholesale",
@@ -63,7 +63,7 @@ export const QUICK_REPLIES = [
 
 export const GREETING: Omit<ChatMessage, "id"> = {
   role: "agent",
-  text: "Hey! 👋 I'm Remi, reMint's support assistant. Ask me about orders, shipping, returns, warranty, grading, trade-ins or wholesale — what can I help with?",
+  text: "Hey! 👋 I'm Remi, reMint's support assistant. Ask me about orders, shipping, returns, what's in the box, grading, trade-ins or wholesale — what can I help with?",
 };
 
 interface Reply {
@@ -102,20 +102,20 @@ export function botReply(input: string): Reply {
 
   if (word("ship", "shipping", "shipped", "delivery", "deliver", "arrive", "arrives", "postage") || phrase("how long", "when will"))
     return {
-      text: "We ship free across the US with tracked 2-day delivery, and most orders leave the warehouse the same or next business day. You'll get a tracking link by email the moment it ships.",
+      text: "We ship free across the US — standard delivery is tracked and arrives in 5–7 business days, and most orders leave the warehouse the same or next business day. Need it sooner? Add 2-day express at checkout. You'll get a tracking link by email the moment it ships.",
       actions: [{ label: "Track an order", href: "/account" }],
     };
 
   if (word("return", "returns", "refund", "refunds") || phrase("send back", "money back", "change my mind"))
     return {
-      text: "Changed your mind? You have 14 days to return any device for a full refund — no restocking fees. Start it from your account and we'll email you a prepaid label.",
+      text: "Changed your mind? You have 30 days to return any device for a refund — no restocking fees. Just send it back in the condition it was sold in; a deduction may apply if it comes back damaged or missing parts or the charger. Start it from your account and we'll email you a prepaid label.",
       actions: [{ label: "Start a return", href: "/account" }, { label: "Returns policy", href: "/help" }],
     };
 
   if (word("warranty", "guarantee", "defect", "defective", "repair", "faulty", "fault", "broken"))
     return {
-      text: "Every reMint device comes with a free 12-month warranty against defects. If something isn't right, we'll repair, replace or refund it. You can file a claim from your account.",
-      actions: [{ label: "Warranty info", href: "/help" }],
+      text: "We don't offer a long-term warranty, but every reMint device is 50-point tested and confirmed fully working, ships with a free charging cable & adapter, and is covered by our 30-day returns. If something isn't right when it arrives, send it back for a refund — no questions.",
+      actions: [{ label: "What's in the box", href: "/help" }],
     };
 
   if (word("grade", "grades", "grading", "condition", "scratch", "scratches", "scuff", "scuffs", "battery", "health", "cosmetic") || phrase("what does new mean"))
@@ -154,6 +154,6 @@ export function botReply(input: string): Reply {
 
   // fallback
   return {
-    text: "Great question — let me point you the right way. I can help with shipping, returns, warranty, grading & battery, trade-ins, payments or wholesale. Which is closest? (Or type “human” to reach a specialist.)",
+    text: "Great question — let me point you the right way. I can help with shipping, returns, what's in the box, grading & battery, trade-ins, payments or wholesale. Which is closest? (Or type “human” to reach a specialist.)",
   };
 }

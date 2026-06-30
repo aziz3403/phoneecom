@@ -8,6 +8,7 @@ import { type Device, baseStorage, storageFor, renderSrc } from "@/lib/products"
 import { useCart } from "@/lib/cart-store";
 import { useWishlist } from "@/lib/wishlist-store";
 import { useRecent } from "@/lib/recent-store";
+import { useStockFor } from "@/lib/stock-context";
 import { GRADES, GRADE_ORDER, GRADE_PHOTOS, type GradeId } from "@/lib/grades";
 import { unitPrice, MOQ } from "@/lib/wholesale";
 import { formatPrice, pct, cn } from "@/lib/utils";
@@ -86,8 +87,9 @@ export function ProductExperience({ device }: { device: Device }) {
   const price = priceFor(sOpt.price);
   const off = pct(price, sOpt.original);
   const bulkUnit = unitPrice(sOpt.wholesale, MOQ);
-  const outOfStock = device.stock <= 0;
-  const lowStock = !outOfStock && device.stock <= 10;
+  const stock = useStockFor(device.slug, device.stock);
+  const outOfStock = stock <= 0;
+  const lowStock = !outOfStock && stock <= 10;
 
   function buildItem() {
     return {
@@ -304,7 +306,7 @@ export function ProductExperience({ device }: { device: Device }) {
               lowStock ? "font-medium text-[#9a6a00]" : "text-[#86868b]",
             )}
           >
-            {outOfStock ? "Restocking soon" : lowStock ? `Only ${device.stock} left` : "In stock"}
+            {outOfStock ? "Restocking soon" : lowStock ? `Only ${stock} left` : "In stock"}
           </span>
         </div>
 

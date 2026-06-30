@@ -9,7 +9,29 @@ const NORM = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, "");
 const CATALOG_NORM = DEVICES.map((d) => ({ slug: d.slug, n: NORM(d.name) })).sort(
   (a, b) => b.n.length - a.n.length,
 );
+
+/**
+ * The warehouse sheet names some models differently from the catalog — most
+ * notably iPads ("IPAD 9 WIFI" / "IPAD MINI 6 CELLULAR" vs the catalog's
+ * "iPad (9th gen)" / "iPad mini (6th gen)"), which the normalize+prefix match
+ * below can't bridge. Map those sheet names to catalog slugs explicitly.
+ *
+ * Anchored at the start so "IPAD 9" never catches "IPAD PRO 9.7" or "IPAD AIR…",
+ * and only models the site actually lists are mapped — older iPads the catalog
+ * doesn't sell (iPad 5/6/7/8, Air 2-4, Pro 9.7/10.5, etc.) stay unmatched on
+ * purpose and simply don't roll up into a storefront product. Extend this list
+ * as the catalog grows.
+ */
+const MODEL_ALIASES: [RegExp, string][] = [
+  [/^IPAD\s*MINI\s*6\b/i, "ipad-mini-6"],
+  [/^IPAD\s*AIR\s*5\b/i, "ipad-air-5-m1"],
+  [/^IPAD\s*10\b/i, "ipad-10th-gen"],
+  [/^IPAD\s*9\b/i, "ipad-9th-gen"],
+];
+
 function catalogSlugForModel(model: string): string | undefined {
+  const trimmed = model.trim();
+  for (const [re, slug] of MODEL_ALIASES) if (re.test(trimmed)) return slug;
   const m = NORM(model);
   for (const c of CATALOG_NORM) if (m === c.n || m.startsWith(c.n)) return c.slug;
   return undefined;
@@ -187,6 +209,27 @@ function toItem(r: InvRecord, i: number): InventoryItem {
 
 export function snapshotItems(): InventoryItem[] {
   return (snapshot as InvRecord[]).filter((r) => r.total > 0).map(toItem);
+}
+
+/**
+ * Live stock for every catalog device, summed from the sheet feed and keyed by
+ * catalog slug. Each sheet row is matched to a catalog model (`renderSlug`) and
+ * quantities for the same model are added together. When the feed maps to at
+ * least one catalog model it becomes the source of truth — any catalog device
+ * with no matching rows reports 0 ("Restocking soon"). If the feed is
+ * unreachable and maps nothing at all, we fall back to the catalog's baked-in
+ * stock so the store never looks empty by accident.
+ */
+export async function catalogStock(): Promise<Record<string, number>> {
+  const { items } = await getInventory();
+  const summed: Record<string, number> = {};
+  for (const it of items) {
+    if (it.renderSlug) summed[it.renderSlug] = (summed[it.renderSlug] ?? 0) + it.stock;
+  }
+  const mappedAny = Object.keys(summed).length > 0;
+  const out: Record<string, number> = {};
+  for (const d of DEVICES) out[d.slug] = mappedAny ? summed[d.slug] ?? 0 : d.stock;
+  return out;
 }
 
 // ---- tiny CSV parser (handles quotes) --------------------------------------

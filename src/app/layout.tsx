@@ -6,6 +6,7 @@ import { CartDrawer } from "@/components/layout/CartDrawer";
 import { SearchCommand } from "@/components/layout/SearchCommand";
 import { SupportChat } from "@/components/support/SupportChat";
 import { Providers } from "@/components/Providers";
+import { catalogStock } from "@/lib/inventory";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -43,11 +44,14 @@ export const viewport: Viewport = {
   themeColor: "#ffffff",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // Resolve live warehouse stock once for the whole app (cached/ISR via the
+  // underlying sheet fetch) so every product surface reflects real availability.
+  const stock = await catalogStock();
   return (
     <html lang="en">
       <body>
-        <Providers>
+        <Providers stock={stock}>
           <div className="home">
             <Navbar />
             <CartDrawer />

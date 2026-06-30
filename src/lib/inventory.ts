@@ -37,6 +37,7 @@ const MODEL_ALIASES: [RegExp, string][] = [
   // iPad Pro (older home-button sizes the catalog now carries; "PRO 13" is the 2024 M4)
   [/^IPAD\s*PRO\s*9\.?7/i, "ipad-pro-9-7"],
   [/^IPAD\s*PRO\s*10\.?5/i, "ipad-pro-10-5"],
+  [/^IPAD\s*PRO\s*12\.?9/i, "ipad-pro-12-9"],
   [/^IPAD\s*PRO\s*13\b/i, "ipad-pro-13-m4"],
   // base iPad, newest first
   [/^IPAD\s*10\b/i, "ipad-10th-gen"],

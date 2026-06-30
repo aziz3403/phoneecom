@@ -23,10 +23,28 @@ const CATALOG_NORM = DEVICES.map((d) => ({ slug: d.slug, n: NORM(d.name) })).sor
  * as the catalog grows.
  */
 const MODEL_ALIASES: [RegExp, string][] = [
+  // iPad mini
   [/^IPAD\s*MINI\s*6\b/i, "ipad-mini-6"],
+  [/^IPAD\s*MINI\s*5\b/i, "ipad-mini-5"],
+  [/^IPAD\s*MINI\s*4\b/i, "ipad-mini-4"],
+  // iPad Air (numbered first; "AIR 6" is the 2024 M2; bare "IPAD AIR WIFI/CELLULAR" is the 1st gen)
+  [/^IPAD\s*AIR\s*6\b/i, "ipad-air-11-m2"],
   [/^IPAD\s*AIR\s*5\b/i, "ipad-air-5-m1"],
+  [/^IPAD\s*AIR\s*4\b/i, "ipad-air-4"],
+  [/^IPAD\s*AIR\s*3\b/i, "ipad-air-3"],
+  [/^IPAD\s*AIR\s*2\b/i, "ipad-air-2"],
+  [/^IPAD\s*AIR\s+(?:WIFI|CELLULAR)/i, "ipad-air"],
+  // iPad Pro (older home-button sizes the catalog now carries; "PRO 13" is the 2024 M4)
+  [/^IPAD\s*PRO\s*9\.?7/i, "ipad-pro-9-7"],
+  [/^IPAD\s*PRO\s*10\.?5/i, "ipad-pro-10-5"],
+  [/^IPAD\s*PRO\s*13\b/i, "ipad-pro-13-m4"],
+  // base iPad, newest first
   [/^IPAD\s*10\b/i, "ipad-10th-gen"],
   [/^IPAD\s*9\b/i, "ipad-9th-gen"],
+  [/^IPAD\s*8\b/i, "ipad-8th-gen"],
+  [/^IPAD\s*7\b/i, "ipad-7th-gen"],
+  [/^IPAD\s*6\b/i, "ipad-6th-gen"],
+  [/^IPAD\s*5\b/i, "ipad-5th-gen"],
 ];
 
 function catalogSlugForModel(model: string): string | undefined {

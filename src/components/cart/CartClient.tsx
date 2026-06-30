@@ -135,7 +135,7 @@ export function CartClient() {
   if (!mounted) {
     return (
       <div className="shell" style={{ padding: "30px 22px 0" }}>
-        <div style={skeletonGrid}>
+        <div className="co-grid">
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {[0, 1].map((i) => (
               <div key={i} style={{ height: 150, borderRadius: 18, background: "var(--gray)" }} />
@@ -153,7 +153,7 @@ export function CartClient() {
   return (
     <div className="shell" style={{ maxWidth: 1080, padding: "8px 22px 0" }}>
       {/* step tracker */}
-      <div style={stepsWrap}>
+      <div className="co-steps">
         <Step n="✓" label="Bag" state={empty ? "now" : "done"} />
         <StepBar />
         <Step n="2" label="Details" state={stepDetails} />
@@ -166,7 +166,7 @@ export function CartClient() {
         </span>
       </div>
 
-      <div style={cgrid}>
+      <div className="co-grid">
         {/* ============ main column ============ */}
         <div>
           {/* 1 · Your bag */}
@@ -234,7 +234,7 @@ export function CartClient() {
             <Field label="Street address">
               <input className="inpt" aria-label="Street address" placeholder="1 Market Street" value={street} onChange={(e) => setStreet(e.target.value)} />
             </Field>
-            <div style={frow3}>
+            <div className="co-frow3">
               <Field label="City">
                 <input className="inpt" aria-label="City" placeholder="San Francisco" value={city} onChange={(e) => setCity(e.target.value)} />
               </Field>
@@ -265,7 +265,7 @@ export function CartClient() {
                 <Field label="Billing address">
                   <input className="inpt" aria-label="Billing address" placeholder="1 Market Street" />
                 </Field>
-                <div style={frow3}>
+                <div className="co-frow3">
                   <Field label="City">
                     <input className="inpt" aria-label="Billing city" placeholder="San Francisco" />
                   </Field>
@@ -326,7 +326,7 @@ export function CartClient() {
                   <Field label="Card number">
                     <input className="inpt" aria-label="Card number" placeholder="1234 5678 9012 3456" />
                   </Field>
-                  <div style={frow3}>
+                  <div className="co-frow3">
                     <Field label="Expiry">
                       <input className="inpt" aria-label="Card expiry" placeholder="MM / YY" />
                     </Field>
@@ -356,8 +356,8 @@ export function CartClient() {
         </div>
 
         {/* ============ summary ============ */}
-        <aside>
-          <div style={summary}>
+        <aside className="co-aside">
+          <div className="co-summary">
             <div style={sumtop}>
               <div style={{ fontSize: 13, color: "var(--text2)", fontWeight: 500 }}>Order total</div>
               <div style={sumtotal}>
@@ -684,33 +684,11 @@ function Step({ n, label, state }: { n: string; label: string; state: "done" | "
 }
 
 function StepBar() {
-  return <span style={{ width: 30, height: 1.5, background: "var(--line)", margin: "0 12px" }} />;
+  return <span className="co-bar" style={{ width: 30, height: 1.5, background: "var(--line)", margin: "0 12px" }} />;
 }
 
 /* ============================ inline style tokens ============================ */
 
-const skeletonGrid: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr 384px",
-  gap: 40,
-  alignItems: "start",
-  marginTop: 22,
-};
-const stepsWrap: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 0,
-  fontSize: 13,
-  flexWrap: "wrap",
-  padding: "14px 0 4px",
-};
-const cgrid: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "minmax(0,1fr) minmax(0,384px)",
-  gap: 40,
-  alignItems: "start",
-  marginTop: 22,
-};
 const card: React.CSSProperties = {
   border: "1px solid var(--line)",
   borderRadius: 18,
@@ -745,7 +723,6 @@ const cardsub: React.CSSProperties = {
   margin: "0 0 16px 33px",
 };
 const frow: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 };
-const frow3: React.CSSProperties = { display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 12 };
 const chkrow: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
@@ -814,13 +791,6 @@ const benstrip: React.CSSProperties = {
   marginTop: 18,
   paddingTop: 16,
   borderTop: "1px solid var(--line)",
-};
-const summary: React.CSSProperties = {
-  position: "sticky",
-  top: 74,
-  border: "1px solid var(--line)",
-  borderRadius: 18,
-  overflow: "hidden",
 };
 const sumtop: React.CSSProperties = {
   background: "var(--gray)",

@@ -90,6 +90,7 @@ body { background: #fff; color: #1d1d1f; }
 .navic button, .navic a { background: none; border: none; cursor: pointer; color: inherit; display: flex; position: relative; opacity: .82; }
 .navic button:hover, .navic a:hover { opacity: 1; }
 .bagdot { position: absolute; top: -3px; right: -5px; width: 14px; height: 14px; background: var(--accent); color: #fff; border-radius: 50%; font-size: 9px; display: flex; align-items: center; justify-content: center; opacity: 1; }
+.navavatar { width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .02em; display: flex; align-items: center; justify-content: center; opacity: 1; }
 .hamb { display: none; background: none; border: none; cursor: pointer; padding: 6px; color: #1d1d1f; align-items: center; }
 .drawer { position: fixed; inset: 0; z-index: 200; }
 .drawerbg { position: absolute; inset: 0; background: rgba(10,20,16,.45); }
@@ -102,7 +103,7 @@ body { background: #fff; color: #1d1d1f; }
 
 /* hero */
 .orb { position: absolute; border-radius: 50%; filter: blur(40px); pointer-events: none; z-index: -1; }
-.hero { max-width: 1024px; margin: 0 auto; text-align: center; padding: 72px 22px 0; position: relative; }
+.hero { max-width: 1024px; margin: 0 auto; text-align: center; padding: 72px 22px 0; position: relative; overflow-x: clip; }
 .htitle { font-size: clamp(46px,7.4vw,92px); font-weight: 700; letter-spacing: -.035em; line-height: 1.03; }
 .hsub { font-size: clamp(19px,2.5vw,27px); color: var(--text2); font-weight: 400; max-width: 680px; margin: 20px auto 0; line-height: 1.32; }
 .hlinks { display: flex; gap: 30px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
@@ -337,6 +338,24 @@ body { background: #fff; color: #1d1d1f; }
 
 /* info note */
 .note2 { display: flex; gap: 10px; align-items: flex-start; background: #f1f7f3; border: 1px solid #d3e8dd; border-radius: 14px; padding: 14px 16px; font-size: 14px; color: var(--text); line-height: 1.45; }
+
+/* ---------- checkout ---------- */
+.co-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,384px); gap: 40px; align-items: start; margin-top: 22px; }
+.co-summary { position: sticky; top: 74px; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+.co-steps { display: flex; align-items: center; gap: 0; font-size: 13px; flex-wrap: wrap; padding: 14px 0 4px; }
+.co-frow3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
+/* full-height column so the sticky summary actually has room to stick */
+.co-aside { align-self: stretch; }
+@media (max-width: 980px) {
+  .co-grid { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  .co-summary { position: static; }
+}
+@media (max-width: 560px) {
+  .co-steps { gap: 9px 14px; }
+  .co-bar { display: none; }
+  .co-frow3 { grid-template-columns: 1fr 1fr; }
+  .co-frow3 > :first-child { grid-column: 1 / -1; }
+}
 
 @media (max-width: 900px) {
   .sec { padding: 80px 0; } .graysec { padding: 80px 0; }

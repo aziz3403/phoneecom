@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useCart, cartCount } from "@/lib/cart-store";
+import { useAccount } from "@/lib/account-store";
+import { User } from "lucide-react";
 import { Leaf } from "@/components/ui/Leaf";
 
 interface MenuCol {
@@ -76,6 +78,14 @@ export function Navbar() {
   const [mounted, setMounted] = useState(false);
   const setCartOpen = useCart((s) => s.setOpen);
   const count = useCart((s) => cartCount(s.items));
+  const accountUser = useAccount((s) => s.user);
+  const initials =
+    accountUser?.name
+      .split(" ")
+      .map((w) => w[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || "";
 
   useEffect(() => setMounted(true), []);
   useEffect(() => {
@@ -133,6 +143,16 @@ export function Navbar() {
             <Link href="/help">Support</Link>
           </div>
           <div className="navic">
+            <button
+              aria-label={mounted && accountUser ? "Your account" : "Sign in"}
+              onClick={() => router.push("/account")}
+            >
+              {mounted && accountUser ? (
+                <span className="navavatar">{initials || <User size={15} strokeWidth={1.6} />}</span>
+              ) : (
+                <User size={17} strokeWidth={1.5} />
+              )}
+            </button>
             <button aria-label="Search" onClick={() => router.push("/search")}>
               <svg width="17" height="17" viewBox="0 0 17 17">
                 <circle cx="7" cy="7" r="5.4" fill="none" stroke="currentColor" strokeWidth="1.4" />
@@ -199,6 +219,9 @@ export function Navbar() {
             </Link>
             <Link className="drawerlink" href="/help" onClick={() => setOpen(false)}>
               Support
+            </Link>
+            <Link className="drawerlink" href="/account" onClick={() => setOpen(false)}>
+              {mounted && accountUser ? `Account · ${accountUser.name.split(" ")[0]}` : "Sign in / Sign up"}
             </Link>
             <Link className="btn drawercta" href="/shop" onClick={() => setOpen(false)}>
               Shop all devices

@@ -53,6 +53,9 @@ const SCREEN_BUCKETS: { id: string; label: string; test: (n: number) => boolean 
 
 const TYPE_LABEL: Record<DeviceType, string> = { phone: "Phones", tablet: "iPads" };
 
+// How many cards to reveal per "Load more" page.
+const PAGE = 12;
+
 const SORTS = [
   { id: "featured", label: "Featured" },
   { id: "price-asc", label: "Price: low to high" },
@@ -121,6 +124,7 @@ export function ShopClient({
   );
   const [sort, setSort] = useState<SortId>("featured");
   const [mobileFilters, setMobileFilters] = useState(false);
+  const [visible, setVisible] = useState(PAGE);
 
   // Keep brand/type in sync with the URL (nav links like ?brand=Samsung) so
   // switching brand replaces the previous selection instead of stacking.
@@ -153,6 +157,12 @@ export function ShopClient({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, types, brands, storages, colors, screens, maxPrice, sort]);
+
+  // Collapse back to the first page whenever the result set changes (new
+  // filter, search, or sort) so "Load more" always starts fresh.
+  useEffect(() => {
+    setVisible(PAGE);
+  }, [filtered]);
 
   const count = (dim: Dim, pred: (d: (typeof DEVICES)[number]) => boolean) =>
     DEVICES.filter((d) => passes(d, filters, dim) && pred(d)).length;
@@ -409,11 +419,27 @@ export function ShopClient({
             </button>
           </div>
         ) : (
-          <div className="grid-cards">
-            {filtered.map((d, i) => (
-              <ProductCard key={d.id} device={d} index={i} />
-            ))}
-          </div>
+          <>
+            <div className="grid-cards">
+              {filtered.slice(0, visible).map((d, i) => (
+                <ProductCard key={d.id} device={d} index={i} />
+              ))}
+            </div>
+            {visible < filtered.length && (
+              <div className="mt-10 flex flex-col items-center gap-3">
+                <button
+                  onClick={() => setVisible((v) => v + PAGE)}
+                  className="btn"
+                  style={{ padding: "13px 28px" }}
+                >
+                  Load more
+                </button>
+                <p className="text-[13px] text-[#86868b]">
+                  Showing {Math.min(visible, filtered.length)} of {filtered.length}
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
 

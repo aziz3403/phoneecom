@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { signIn, signOut } from "./auth";
 import { getDb } from "./db";
 import { users, passwordResetTokens } from "./db/schema";
+import { issueVerification } from "./email-verify";
 
 /**
  * On success, Auth.js `signIn` throws a Next.js redirect (digest "NEXT_REDIRECT")
@@ -64,6 +65,9 @@ export async function signUpAction(
 
   const passwordHash = await bcrypt.hash(password, 10);
   await db.insert(users).values({ name: name.trim(), email: cleanEmail, passwordHash });
+
+  // Fire a confirmation email (best-effort — never blocks sign-up).
+  await issueVerification(cleanEmail);
 
   try {
     await signIn("credentials", { email: cleanEmail, password, redirectTo: callbackUrl || "/account" });

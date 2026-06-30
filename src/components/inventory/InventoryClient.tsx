@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, Check, Boxes } from "lucide-react";
 import type { InventoryItem } from "@/lib/inventory";
@@ -33,6 +33,11 @@ export function InventoryClient({ items }: { items: InventoryItem[] }) {
   }, [items, query, man]);
 
   const shown = filtered.slice(0, limit);
+
+  // Reset to the first page whenever the filtered set changes.
+  useEffect(() => {
+    setLimit(PAGE);
+  }, [filtered]);
 
   function addToCart(it: InventoryItem) {
     add({

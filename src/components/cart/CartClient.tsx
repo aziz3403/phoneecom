@@ -428,22 +428,23 @@ export function CartClient({ initialProfile }: { initialProfile?: AddressPrefill
               )}
             </div>
 
-            <button
-              onClick={placeOrder}
-              disabled={empty}
-              className="btn"
-              style={{
-                width: "calc(100% - 48px)",
-                margin: "16px auto 4px",
-                padding: "13px 20px",
-                fontSize: 16,
-                borderRadius: 13,
-                opacity: empty ? 0.4 : 1,
-                cursor: empty ? "not-allowed" : "pointer",
-              }}
-            >
-              Place order — {formatPriceDecimal(total)}
-            </button>
+            <div style={{ padding: "16px 24px 4px" }}>
+              <button
+                onClick={placeOrder}
+                disabled={empty}
+                className="btn"
+                style={{
+                  width: "100%",
+                  padding: "14px 20px",
+                  fontSize: 16,
+                  borderRadius: 13,
+                  opacity: empty ? 0.4 : 1,
+                  cursor: empty ? "not-allowed" : "pointer",
+                }}
+              >
+                Place order — {formatPriceDecimal(total)}
+              </button>
+            </div>
             <div style={sumeta}>
               <Lock className="h-[11px] w-[11px]" /> Encrypted &amp; secure · 14-day returns
             </div>

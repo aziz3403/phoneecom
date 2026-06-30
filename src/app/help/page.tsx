@@ -18,7 +18,7 @@ import { ChatLauncherButton } from "@/components/support/ChatLauncherButton";
 export const metadata: Metadata = {
   title: "Help & support",
   description:
-    "Shipping, returns, warranty and payment info, plus answers to common questions about buying certified pre-owned from reMint.",
+    "Shipping, returns and payment info, plus answers to common questions about buying certified pre-owned from reMint.",
 };
 
 const TOPICS = [
@@ -31,13 +31,13 @@ const TOPICS = [
   {
     icon: RefreshCw,
     title: "Returns & refunds",
-    body: "Our 14-day return window, how to start a return, and when refunds land.",
+    body: "Our 30-day return window, how to start a return, and when refunds land.",
     href: "/help",
   },
   {
     icon: ShieldCheck,
-    title: "Warranty & repairs",
-    body: "What the 12-month warranty covers and how to file a claim.",
+    title: "What's in the box",
+    body: "Every phone ships with a free charging cable & adapter, plus 30-day returns.",
     href: "/help",
   },
   {
@@ -63,7 +63,7 @@ const TOPICS = [
 const QUICKLINKS = [
   { label: "Track an order", href: "/account" },
   { label: "Start a return", href: "/help" },
-  { label: "Warranty claim", href: "/help" },
+  { label: "Returns & refunds", href: "/help" },
   { label: "What the grades mean", href: "/grades" },
   { label: "Trade-in status", href: "/sell" },
 ];
@@ -107,7 +107,7 @@ export default function HelpPage() {
         </p>
         <h1 className="ptitle">How can we help?</h1>
         <p className="psub">
-          Answers on orders, grading, warranty, returns and trade-ins — or reach a real human in
+          Answers on orders, grading, returns and trade-ins — or reach a real human in
           minutes.
         </p>
 

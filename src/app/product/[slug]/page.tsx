@@ -34,7 +34,7 @@ export async function generateMetadata({
   const device = getDevice(slug);
   if (!device) return { title: "Not found" };
   const title = `${device.name} — certified pre-owned`;
-  const description = `Certified pre-owned ${device.name} from $${startingPrice(device)}. Guaranteed 80%+ battery, fully unlocked, 12-month warranty, free 2-day shipping.`;
+  const description = `Certified pre-owned ${device.name} from $${startingPrice(device)}. Guaranteed 80%+ battery, fully unlocked, free charger, 30-day returns, free US shipping.`;
   return {
     title,
     description,
@@ -74,7 +74,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const included: [string, string][] = [
     ["Certified " + device.name, "Inspected, graded and sanitized to factory standard."],
     ["USB-C charge cable", "Brand-new, reMint-supplied."],
-    ["12-month warranty card", "Covers every grade, plus a 14-day return window."],
+    ["Free charger included", "A charging cable & adapter in every box, plus 30-day returns."],
   ];
 
   const url = `${SITE_URL}/product/${device.slug}`;
@@ -82,7 +82,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     "@context": "https://schema.org",
     "@type": "Product",
     name: `${device.name} (Certified Pre-Owned)`,
-    description: `Certified pre-owned ${device.name} — ${GRADES[device.grade].label} grade, 80%+ battery, fully unlocked, 12-month warranty.`,
+    description: `Certified pre-owned ${device.name} — ${GRADES[device.grade].label} grade, 80%+ battery, fully unlocked, free charger, 30-day returns.`,
     image: `${SITE_URL}${renderSrc(device.slug)}`,
     brand: { "@type": "Brand", name: device.brand },
     category: device.type === "tablet" ? "Tablet" : "Smartphone",

@@ -30,7 +30,7 @@ export default async function ShopPage({
         </p>
         <h1 className="ptitle">{title}</h1>
         <p className="psub">
-          Every {noun} is certified, graded honestly, and backed by a 12-month warranty. Find your
+          Every {noun} is certified, graded honestly, and ships with a free charger and 30-day returns. Find your
           next one below.
         </p>
       </header>

@@ -17,6 +17,7 @@ import { useAccount } from "@/lib/account-store";
 import { useSession } from "next-auth/react";
 import { placeOrderAction } from "@/lib/order-actions";
 import { makeShipment } from "@/lib/tracking";
+import { deliveryWindow, EXPRESS_FEE } from "@/lib/delivery";
 import { imageFor } from "@/lib/products";
 
 export interface AddressPrefill {
@@ -47,11 +48,6 @@ function fmtDate(d: Date): string {
 /** Short date e.g. "Jul 1" for the per-line shipping note. */
 function fmtShort(d: Date): string {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
-function addDays(base: Date, days: number): Date {
-  const d = new Date(base);
-  d.setDate(d.getDate() + days);
-  return d;
 }
 
 export function CartClient({ initialProfile }: { initialProfile?: AddressPrefill | null } = {}) {
@@ -106,9 +102,15 @@ export function CartClient({ initialProfile }: { initialProfile?: AddressPrefill
   }, []);
 
   // ---- dates (stable after mount) ----
-  const { etaFree, etaNext } = useMemo(() => {
-    const now = new Date();
-    return { etaFree: addDays(now, 2), etaNext: addDays(now, 1) };
+  const { etaFree, etaNext, freeRange, nextRange } = useMemo(() => {
+    const wf = deliveryWindow(false);
+    const wn = deliveryWindow(true);
+    return {
+      etaFree: new Date(wf.maxISO),
+      etaNext: new Date(wn.maxISO),
+      freeRange: wf.rangeLabel,
+      nextRange: wn.rangeLabel,
+    };
   }, []);
   const etaDate = delivery === "next" ? etaNext : etaFree;
 
@@ -120,7 +122,7 @@ export function CartClient({ initialProfile }: { initialProfile?: AddressPrefill
   );
   const savings = Math.max(0, retailSum - subtotal);
   const count = cartCount(items);
-  const deliveryCost = delivery === "next" ? 15 : 0;
+  const deliveryCost = delivery === "next" ? EXPRESS_FEE : 0;
   const tax = Math.round((subtotal + deliveryCost) * 0.0825);
   const total = subtotal + deliveryCost + tax;
   const co2 = count * 80;
@@ -129,7 +131,7 @@ export function CartClient({ initialProfile }: { initialProfile?: AddressPrefill
   async function placeOrder() {
     const id = "RM-" + Math.floor(100000 + Math.random() * 899999);
     const now = new Date();
-    const deliveryLabel = delivery === "next" ? "Next-day express" : "Carbon-neutral 2-day";
+    const deliveryLabel = delivery === "next" ? "2-day express" : "Standard shipping";
     const paymentLabel =
       pay === "apple" ? "Apple Pay" : pay === "paypal" ? "PayPal" : "Visa ···· 4242";
     const shipTo = [
@@ -260,8 +262,8 @@ export function CartClient({ initialProfile }: { initialProfile?: AddressPrefill
                 ))}
                 <div style={benstrip}>
                   <Benefit>50-point inspection</Benefit>
-                  <Benefit>12-month warranty</Benefit>
-                  <Benefit>14-day free returns</Benefit>
+                  <Benefit>Free charger in the box</Benefit>
+                  <Benefit>30-day returns</Benefit>
                   <Benefit>Data wiped to factory standard</Benefit>
                 </div>
               </>
@@ -347,18 +349,18 @@ export function CartClient({ initialProfile }: { initialProfile?: AddressPrefill
                 <div style={{ flex: 1 }}>
                   <div style={oname}>
                     <Leaf className="h-[15px] w-[15px]" style={{ color: "var(--accent)" }} />
-                    Carbon-neutral 2-day
+                    Standard shipping
                   </div>
-                  <div style={oeta}>Arrives {fmtDate(etaFree)} · fully offset</div>
+                  <div style={oeta}>Arrives {freeRange} · 5–7 business days, fully offset</div>
                 </div>
                 <div style={{ ...oprice, color: "var(--accent)", fontWeight: 600 }}>Free</div>
               </OptionCard>
               <OptionCard selected={delivery === "next"} onSelect={() => setDelivery("next")}>
                 <div style={{ flex: 1 }}>
-                  <div style={oname}>Next-day express</div>
-                  <div style={oeta}>Arrives {fmtDate(etaNext)} · order by 2pm</div>
+                  <div style={oname}>2-day express</div>
+                  <div style={oeta}>Arrives {nextRange} · order by 2pm ET</div>
                 </div>
-                <div style={oprice}>$15</div>
+                <div style={oprice}>{formatPrice(EXPRESS_FEE)}</div>
               </OptionCard>
             </div>
           </section>
@@ -446,7 +448,7 @@ export function CartClient({ initialProfile }: { initialProfile?: AddressPrefill
               </button>
             </div>
             <div style={sumeta}>
-              <Lock className="h-[11px] w-[11px]" /> Encrypted &amp; secure · 14-day returns
+              <Lock className="h-[11px] w-[11px]" /> Encrypted &amp; secure · 30-day returns
             </div>
 
             <div style={{ padding: "18px 24px 22px" }}>
@@ -463,7 +465,7 @@ export function CartClient({ initialProfile }: { initialProfile?: AddressPrefill
                 }
               />
               <SumRow label="Estimated tax" value={<b style={{ color: "var(--text)" }}>{formatPriceDecimal(tax)}</b>} />
-              <SumRow label="12-month warranty" value={<b style={{ color: "var(--accent)" }}>Included</b>} />
+              <SumRow label="Charger & cable" value={<b style={{ color: "var(--accent)" }}>Included</b>} />
 
               {!empty && (
                 <div style={sumitems}>
@@ -496,7 +498,7 @@ export function CartClient({ initialProfile }: { initialProfile?: AddressPrefill
 
             <div style={{ padding: "0 24px 22px", display: "flex", flexDirection: "column", gap: 8 }}>
               <Trust>Every device unlocked &amp; network-ready</Trust>
-              <Trust>Free returns within 14 days, no questions</Trust>
+              <Trust>Free 30-day returns — a deduction may apply if not returned as sold</Trust>
             </div>
           </div>
         </aside>

@@ -48,7 +48,7 @@ const COMPARE: { feature: string; retail: string; wholesale: string }[] = [
   { feature: "Dedicated account rep", retail: "—", wholesale: "Included" },
   { feature: "Bulk & API ordering", retail: "—", wholesale: "Included" },
   { feature: "Custom grading specs", retail: "—", wholesale: "Included" },
-  { feature: "12-month warranty", retail: "✓", wholesale: "✓" },
+  { feature: "30-day returns", retail: "✓", wholesale: "✓" },
 ];
 
 const FAQ = [

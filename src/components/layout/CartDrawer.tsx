@@ -103,7 +103,7 @@ export function CartDrawer() {
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, color: "var(--text2)", marginBottom: 14 }}>
                     <span>Shipping</span>
-                    <span style={{ color: "var(--accent)" }}>Free · 2-day</span>
+                    <span style={{ color: "var(--accent)" }}>Free · 5–7 days</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                     <span style={{ color: "var(--text2)" }}>Total</span>

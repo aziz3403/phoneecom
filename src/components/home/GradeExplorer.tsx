@@ -63,7 +63,7 @@ const GUARANTEES = [
   "100% functional — every button & sensor",
   "Genuine battery at 80%+ health",
   "Data wiped to factory standard",
-  "12-month warranty, any grade",
+  "Free charger, any grade",
 ];
 
 export function GradeExplorer() {

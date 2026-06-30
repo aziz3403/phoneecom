@@ -26,7 +26,7 @@ const COLS = [
     links: [
       { label: "How grading works", href: "/grades" },
       { label: "Shipping & returns", href: "/help" },
-      { label: "Warranty", href: "/help" },
+      { label: "Returns", href: "/help" },
       { label: "Compare devices", href: "/compare" },
     ],
   },
@@ -48,7 +48,7 @@ export function Footer() {
         <p className="footnote">
           Certified pre-owned smartphones for everyone — and serious volume pricing for resellers,
           repair shops and enterprises. Every device is fully unlocked, carries 80%+ battery health,
-          and is backed by a 12-month warranty. Demo storefront — not a real store.
+          and ships with a free charger and 30-day returns. Demo storefront — not a real store.
         </p>
         <div className="footcols">
           {COLS.map((col) => (

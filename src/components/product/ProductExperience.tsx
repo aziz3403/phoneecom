@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Star, ShieldCheck, Truck, ScanLine, Check, Boxes, Heart, Recycle } from "lucide-react";
+import { Star, RotateCcw, ScanLine, Check, Boxes, Heart, Recycle, Zap } from "lucide-react";
+import { DeliveryEstimate } from "./DeliveryEstimate";
 import { type Device, baseStorage, storageFor, renderSrc } from "@/lib/products";
 import { useCart } from "@/lib/cart-store";
 import { useWishlist } from "@/lib/wishlist-store";
@@ -176,8 +177,15 @@ export function ProductExperience({ device }: { device: Device }) {
           )}
         </div>
         <p className="mt-[9px] text-[13px] text-[#86868b]">
-          or {formatPrice(Math.round(price / 12))}/mo. for 12 mo. at 0% APR · free 2-day shipping
+          or {formatPrice(Math.round(price / 12))}/mo. for 12 mo. at 0% APR
         </p>
+        <div className="mt-3 flex flex-col gap-2 text-[13.5px] text-[#6e6e73]">
+          <DeliveryEstimate />
+          <span className="inline-flex items-center gap-[7px]">
+            <Zap className="h-4 w-4 shrink-0" style={{ color: "var(--accent)" }} />
+            <span>Free charging cable &amp; adapter in the box</span>
+          </span>
+        </div>
 
         {/* color */}
         <div className="mt-[26px]">
@@ -371,9 +379,9 @@ export function ProductExperience({ device }: { device: Device }) {
         {/* reassurance */}
         <div className="mt-[22px] flex flex-col gap-[11px]">
           {[
-            { icon: ShieldCheck, label: "12-month warranty & 14-day free returns on every order" },
-            { icon: ScanLine, label: "50-point inspection · data wiped to factory standard" },
-            { icon: Truck, label: "Free carbon-neutral 2-day shipping" },
+            { icon: RotateCcw, label: "30-day returns — a deduction may apply if not returned in the condition it was sold" },
+            { icon: ScanLine, label: "50-point inspection · tested & working · data wiped to factory standard" },
+            { icon: Zap, label: "Free charging cable & adapter included with every device" },
           ].map((r) => (
             <div key={r.label} className="flex items-start gap-[11px] text-[13.5px] leading-[1.4] text-[#6e6e73]">
               <r.icon className="h-[18px] w-[18px] flex-none text-[#0a8f6e]" />

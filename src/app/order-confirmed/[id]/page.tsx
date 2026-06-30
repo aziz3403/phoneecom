@@ -57,7 +57,7 @@ function Confirmation({ order }: { order: Order }) {
   const subtotal = order.subtotal ?? order.lines.reduce((s, l) => s + l.unit * l.qty, 0);
   const savings = order.savings ?? 0;
   const tax = order.tax ?? 0;
-  const deliveryLabel = order.deliveryLabel ?? "Carbon-neutral 2-day";
+  const deliveryLabel = order.deliveryLabel ?? "Standard shipping";
   const isFreeDelivery = !/express/i.test(deliveryLabel);
   const deliveryCost = isFreeDelivery ? 0 : 15;
   const eta = order.deliveryEta ?? "soon";
@@ -154,7 +154,7 @@ function Confirmation({ order }: { order: Order }) {
                     <Spec>Unlocked</Spec>
                   </div>
                   <div style={{ fontSize: 12, color: "var(--accent)", marginTop: 8 }}>
-                    ✓ 12-month warranty active on delivery
+                    ✓ Free charger included in the box
                   </div>
                 </div>
                 <div style={{ textAlign: "right", flex: "none" }}>

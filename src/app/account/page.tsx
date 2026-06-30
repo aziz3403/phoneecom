@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { auth, isAuthConfigured } from "@/lib/auth";
 import { getMyOrders } from "@/lib/orders";
 import { getProfile } from "@/lib/profile-actions";
+import { isEmailVerified } from "@/lib/verify-actions";
 import { computeTracking } from "@/lib/tracking";
 import { AccountDashboard } from "@/components/account/AccountDashboard";
 import { AuthNotConfigured } from "@/components/auth/AuthNotConfigured";
@@ -21,7 +22,11 @@ export default async function AccountPage() {
     const session = await auth();
     if (!session?.user) redirect("/login?callbackUrl=/account");
 
-    const [orders, profile] = await Promise.all([getMyOrders(), getProfile()]);
+    const [orders, profile, emailVerified] = await Promise.all([
+      getMyOrders(),
+      getProfile(),
+      isEmailVerified(),
+    ]);
     const now = new Date().toISOString();
     const enriched = orders.map((o) => {
       const t = computeTracking({ placedAtISO: o.createdAt, etaISO: o.etaISO, express: o.express, nowISO: now });
@@ -34,6 +39,7 @@ export default async function AccountPage() {
           name: session.user.name ?? "there",
           email: session.user.email ?? "",
           wholesaleApproved: session.user.wholesaleApproved,
+          emailVerified,
         }}
         orders={enriched}
         profile={profile}

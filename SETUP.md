@@ -78,6 +78,7 @@ migration (step 3) against the production database once.
 ### What's wired up
 
 - **Sign up / sign in** — `/login` (email + password, bcrypt-hashed; Google when configured).
+- **Email verification** — sign-up fires a confirmation link (Resend, or shown on-screen in demo mode). The account page nudges unconfirmed users with a "Resend" button; the link lands on `/verify?token=…`. Non-blocking — sign-in works either way, and Google accounts are pre-verified. Reuses the Auth.js `verificationToken` table (no extra migration).
 - **Password reset** — "Forgot password?" → emailed (or demo) link → `/reset?token=…`.
 - **Account** — `/account` (protected) shows DB-backed order history with status, a saved-address editor, and per-order **shipment tracking** at `/account/orders/[id]` (timeline + carrier/tracking #). Orders placed as a guest are claimed onto the account on sign-in (matched by email). Sessions last 30 days.
 - **Checkout** — prefilled from your saved address; orders placed while signed in are saved to your account.

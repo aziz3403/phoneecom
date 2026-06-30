@@ -20,6 +20,7 @@ import { imageFor } from "@/lib/products";
 import { formatPrice, cn } from "@/lib/utils";
 import { PhImg } from "@/components/home/PhImg";
 import { ProfileEditor } from "./ProfileEditor";
+import { VerifyBanner } from "./VerifyBanner";
 
 type DashOrder = FullOrder & { statusLabel: string; etaLabel: string; delivered: boolean };
 
@@ -27,6 +28,7 @@ interface DashUser {
   name: string;
   email: string;
   wholesaleApproved: boolean;
+  emailVerified: boolean;
 }
 
 export function AccountDashboard({
@@ -62,6 +64,8 @@ export function AccountDashboard({
           <LogOut className="h-4 w-4" /> {pending ? "Signing out…" : "Sign out"}
         </button>
       </div>
+
+      {!user.emailVerified && <VerifyBanner />}
 
       {/* stats */}
       {orders.length > 0 && (

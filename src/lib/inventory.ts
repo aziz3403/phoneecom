@@ -189,6 +189,27 @@ export function snapshotItems(): InventoryItem[] {
   return (snapshot as InvRecord[]).filter((r) => r.total > 0).map(toItem);
 }
 
+/**
+ * Live stock for every catalog device, summed from the sheet feed and keyed by
+ * catalog slug. Each sheet row is matched to a catalog model (`renderSlug`) and
+ * quantities for the same model are added together. When the feed maps to at
+ * least one catalog model it becomes the source of truth — any catalog device
+ * with no matching rows reports 0 ("Restocking soon"). If the feed is
+ * unreachable and maps nothing at all, we fall back to the catalog's baked-in
+ * stock so the store never looks empty by accident.
+ */
+export async function catalogStock(): Promise<Record<string, number>> {
+  const { items } = await getInventory();
+  const summed: Record<string, number> = {};
+  for (const it of items) {
+    if (it.renderSlug) summed[it.renderSlug] = (summed[it.renderSlug] ?? 0) + it.stock;
+  }
+  const mappedAny = Object.keys(summed).length > 0;
+  const out: Record<string, number> = {};
+  for (const d of DEVICES) out[d.slug] = mappedAny ? summed[d.slug] ?? 0 : d.stock;
+  return out;
+}
+
 // ---- tiny CSV parser (handles quotes) --------------------------------------
 function parseCsv(text: string): string[][] {
   const rows: string[][] = [];

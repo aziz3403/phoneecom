@@ -7,6 +7,7 @@ import { useState } from "react";
 import { type Device, baseStorage, fromPrice } from "@/lib/products";
 import { useCart } from "@/lib/cart-store";
 import { useWishlist } from "@/lib/wishlist-store";
+import { useStockFor } from "@/lib/stock-context";
 import { formatPrice, cn } from "@/lib/utils";
 import { PhImg } from "@/components/home/PhImg";
 
@@ -23,7 +24,8 @@ export function ProductCard({ device, index = 0 }: { device: Device; index?: num
   const color = device.colors[0];
   const minGb = Math.min(...device.storage.map((s) => s.gb));
   const maxGb = Math.max(...device.storage.map((s) => s.gb));
-  const outOfStock = device.stock <= 0;
+  const stock = useStockFor(device.slug, device.stock);
+  const outOfStock = stock <= 0;
 
   function handleAdd(e: React.MouseEvent) {
     e.preventDefault();

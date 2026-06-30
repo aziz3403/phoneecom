@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useCart, cartCount } from "@/lib/cart-store";
-import { useAccount } from "@/lib/account-store";
+import { useSession } from "next-auth/react";
 import { User } from "lucide-react";
 import { Leaf } from "@/components/ui/Leaf";
 
@@ -78,10 +78,11 @@ export function Navbar() {
   const [mounted, setMounted] = useState(false);
   const setCartOpen = useCart((s) => s.setOpen);
   const count = useCart((s) => cartCount(s.items));
-  const accountUser = useAccount((s) => s.user);
+  const { data: session } = useSession();
+  const accountUser = session?.user;
   const initials =
     accountUser?.name
-      .split(" ")
+      ?.split(" ")
       .map((w) => w[0])
       .slice(0, 2)
       .join("")
@@ -221,7 +222,7 @@ export function Navbar() {
               Support
             </Link>
             <Link className="drawerlink" href="/account" onClick={() => setOpen(false)}>
-              {mounted && accountUser ? `Account · ${accountUser.name.split(" ")[0]}` : "Sign in / Sign up"}
+              {mounted && accountUser ? `Account · ${accountUser.name?.split(" ")[0] ?? "you"}` : "Sign in / Sign up"}
             </Link>
             <Link className="btn drawercta" href="/shop" onClick={() => setOpen(false)}>
               Shop all devices

@@ -14,6 +14,8 @@ import {
   type CartItem,
 } from "@/lib/cart-store";
 import { useAccount } from "@/lib/account-store";
+import { useSession } from "next-auth/react";
+import { placeOrderAction } from "@/lib/order-actions";
 import { imageFor } from "@/lib/products";
 import { GRADES } from "@/lib/grades";
 import { formatPrice, formatPriceDecimal } from "@/lib/utils";
@@ -50,6 +52,7 @@ export function CartClient() {
   const clear = useCart((s) => s.clear);
   const addOrder = useAccount((s) => s.addOrder);
   const router = useRouter();
+  const { data: session } = useSession();
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -65,6 +68,18 @@ export function CartClient() {
   const [sameBilling, setSameBilling] = useState(true);
   const [delivery, setDelivery] = useState<DeliveryId>("free");
   const [pay, setPay] = useState<PayId>("card");
+
+  // Prefill shipping from the signed-in account (only into empty fields).
+  useEffect(() => {
+    const u = session?.user;
+    if (!u) return;
+    if (u.email) setEmail((v) => v || u.email!);
+    if (u.name) {
+      const [f, ...rest] = u.name.split(" ");
+      setFirst((v) => v || f || "");
+      setLast((v) => v || rest.join(" "));
+    }
+  }, [session]);
 
   // ---- dates (stable after mount) ----
   const { etaFree, etaNext } = useMemo(() => {
@@ -87,7 +102,7 @@ export function CartClient() {
   const co2 = count * 80;
   const savePct = retailSum > 0 ? Math.round((savings / retailSum) * 100) : 0;
 
-  function placeOrder() {
+  async function placeOrder() {
     const id = "RM-" + Math.floor(100000 + Math.random() * 899999);
     const now = new Date();
     const deliveryLabel = delivery === "next" ? "Next-day express" : "Carbon-neutral 2-day";
@@ -99,25 +114,24 @@ export function CartClient() {
       `${city || "San Francisco"}, ${stateCode || "CA"} ${zip || "94105"}`,
       "United States",
     ].join("\n");
-
-    addOrder({
-      id,
-      dateLabel: now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-      total,
-      status: "Confirmed",
-      lines: items.map((i) => ({
-        name: i.name,
-        qty: i.qty,
-        gb: i.gb,
-        colorName: i.colorName,
-        mode: i.mode,
-        unit: lineUnitPrice(i),
-        slug: i.slug,
-        colorHex: i.colorHex,
-        grade: i.grade,
-        original: i.original,
-      })),
-      email: email || "alex@email.com",
+    const dateLabel = now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    const emailVal = email || "alex@email.com";
+    const lines = items.map((i) => ({
+      name: i.name,
+      qty: i.qty,
+      gb: i.gb,
+      colorName: i.colorName,
+      mode: i.mode,
+      unit: lineUnitPrice(i),
+      slug: i.slug,
+      colorHex: i.colorHex,
+      grade: i.grade,
+      original: i.original,
+    }));
+    const snapshot = {
+      lines,
+      dateLabel,
+      email: emailVal,
       shipTo,
       deliveryLabel,
       deliveryEta: fmtDate(etaDate),
@@ -126,7 +140,18 @@ export function CartClient() {
       savings,
       tax,
       co2kg: co2,
-    });
+    };
+
+    // Local copy powers the receipt page (and guest history).
+    addOrder({ id, total, status: "Confirmed", ...snapshot });
+
+    // Persist to the account for signed-in users (best-effort).
+    try {
+      await placeOrderAction({ id, total, status: "Confirmed", email: emailVal, data: snapshot });
+    } catch {
+      /* ignore — receipt still works from the local copy */
+    }
+
     clear();
     router.push(`/order-confirmed/${id}`);
   }

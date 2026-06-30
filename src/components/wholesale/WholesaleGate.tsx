@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BadgeCheck, BarChart3, Boxes, Layers, Lock } from "lucide-react";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { BadgeCheck, BarChart3, Boxes, Layers, Lock, LogIn } from "lucide-react";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { useWholesaleAccount } from "@/lib/wholesale-account-store";
+import { approveWholesaleAction } from "@/lib/wholesale-actions";
 import { ApplyForm } from "./ApplyForm";
 
 const SHELL = "mx-auto w-full max-w-[1280px] px-[22px]";
@@ -15,21 +18,41 @@ const LOCKED_TOOLS = [
 ];
 
 /**
- * Gates the live wholesale pricing & ordering tools behind trade-account
- * approval. Marketing sections stay public; everything passed as children is
- * revealed only once the visitor has an approved account.
+ * Gates the live wholesale tools behind an approved trade account. When auth is
+ * configured, approval is tied to the signed-in user (persisted on their
+ * account); otherwise it falls back to a local demo flow so the site still works
+ * before the backend is set up.
  */
-export function WholesaleGate({ children }: { children: React.ReactNode }) {
+export function WholesaleGate({
+  children,
+  authConfigured,
+}: {
+  children: React.ReactNode;
+  authConfigured: boolean;
+}) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const status = useWholesaleAccount((s) => s.status);
-  const company = useWholesaleAccount((s) => s.company);
-  const approve = useWholesaleAccount((s) => s.approve);
-  const reset = useWholesaleAccount((s) => s.reset);
+  const { data: session, update } = useSession();
+  const signedIn = Boolean(session?.user);
+  const sessionApproved = Boolean(session?.user?.wholesaleApproved);
 
-  // First client render must match SSR (persisted store rehydrates sync).
-  const approved = mounted && status === "approved";
+  // demo fallback (used only when auth isn't configured)
+  const storeStatus = useWholesaleAccount((s) => s.status);
+  const storeCompany = useWholesaleAccount((s) => s.company);
+  const storeApprove = useWholesaleAccount((s) => s.approve);
+  const storeReset = useWholesaleAccount((s) => s.reset);
+
+  const approved = mounted && (authConfigured ? sessionApproved : storeStatus === "approved");
+
+  async function handleApprove(company: string) {
+    if (authConfigured && signedIn) {
+      await approveWholesaleAction(company);
+      await update({ wholesaleApproved: true });
+    } else {
+      storeApprove(company);
+    }
+  }
 
   if (approved) {
     return (
@@ -43,16 +66,22 @@ export function WholesaleGate({ children }: { children: React.ReactNode }) {
                 </div>
                 <div>
                   <div className="text-[15px] font-semibold text-[#1d1d1f]">
-                    Trade account active{company ? ` · ${company}` : ""}
+                    Trade account active{!authConfigured && storeCompany ? ` · ${storeCompany}` : ""}
                   </div>
                   <p className="text-[13.5px] text-[#6e6e73]">
                     Live pricing, the savings quote and bulk ordering are unlocked below.
                   </p>
                 </div>
               </div>
-              <button onClick={reset} className="link shrink-0 text-[14px]">
-                Sign out of portal
-              </button>
+              {authConfigured ? (
+                <Link href="/account" className="link shrink-0 text-[14px]">
+                  Manage account
+                </Link>
+              ) : (
+                <button onClick={storeReset} className="link shrink-0 text-[14px]">
+                  Sign out of portal
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -60,6 +89,8 @@ export function WholesaleGate({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
+
+  const needsSignIn = authConfigured && mounted && !signedIn;
 
   return (
     <div id="apply" className="scroll-mt-24 bg-[#f5f5f7]">
@@ -90,7 +121,26 @@ export function WholesaleGate({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="mt-16">
-          <ApplyForm onApprove={approve} />
+          {needsSignIn ? (
+            <div className="mx-auto max-w-[480px] rounded-[22px] border border-[#d2d2d7] bg-white p-8 text-center">
+              <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-full bg-[#f1f7f3] text-[#0a8f6e]">
+                <LogIn className="h-6 w-6" />
+              </div>
+              <h3 className="text-xl font-semibold tracking-tight text-[#1d1d1f]">Sign in to apply</h3>
+              <p className="mx-auto mt-2 max-w-sm text-[15px] leading-relaxed text-[#6e6e73]">
+                Trade accounts are tied to your reMint account. Sign in or create one, then apply —
+                most applications are approved in under a minute.
+              </p>
+              <Link
+                href="/login?callbackUrl=/wholesale"
+                className="mt-5 inline-flex h-11 items-center rounded-full bg-[#0a8f6e] px-5 text-[15px] font-semibold text-white transition hover:bg-[#0a7d61]"
+              >
+                Sign in to continue
+              </Link>
+            </div>
+          ) : (
+            <ApplyForm onApprove={handleApprove} />
+          )}
         </div>
       </Section>
     </div>

@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { SearchCommand } from "@/components/layout/SearchCommand";
 import { SupportChat } from "@/components/support/SupportChat";
+import { Providers } from "@/components/Providers";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -46,14 +47,16 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body>
-        <div className="home">
-          <Navbar />
-          <CartDrawer />
-          <SearchCommand />
-          <main>{children}</main>
-          <Footer />
-          <SupportChat />
-        </div>
+        <Providers>
+          <div className="home">
+            <Navbar />
+            <CartDrawer />
+            <SearchCommand />
+            <main>{children}</main>
+            <Footer />
+            <SupportChat />
+          </div>
+        </Providers>
       </body>
     </html>
   );

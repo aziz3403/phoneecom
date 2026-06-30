@@ -8,6 +8,7 @@ import { SavingsCalculator } from "@/components/wholesale/SavingsCalculator";
 import { BulkOrderBuilder } from "@/components/wholesale/BulkOrderBuilder";
 import { WholesaleGate } from "@/components/wholesale/WholesaleGate";
 import { WholesaleHeroCard } from "@/components/wholesale/WholesaleHeroCard";
+import { isAuthConfigured } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Wholesale & trade pricing",
@@ -166,7 +167,7 @@ export default function WholesalePage() {
       </Section>
 
       {/* ───────── gated tools — live pricing, quote & bulk ordering (approved accounts only) ───────── */}
-      <WholesaleGate>
+      <WholesaleGate authConfigured={isAuthConfigured()}>
       {/* ───────── pricing tiers ───────── */}
       <div className="bg-[#f5f5f7]">
         <Section id="pricing" className="py-20 sm:py-24">

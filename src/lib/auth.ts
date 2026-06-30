@@ -2,10 +2,10 @@ import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import { eq } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { getDb } from "./db";
-import { users, accounts, sessions, verificationTokens } from "./db/schema";
+import { users, accounts, sessions, verificationTokens, orders } from "./db/schema";
 
 /** Auth is "configured" once a session secret and a database are present. */
 export function isAuthConfigured(): boolean {
@@ -63,7 +63,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         verificationTokensTable: verificationTokens,
       })
     : undefined,
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 30 }, // stay signed in 30 days
   trustHost: true,
   pages: { signIn: "/login" },
   providers: [...googleProvider, credentialsProvider],
@@ -88,6 +88,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.wholesaleApproved = Boolean(token.wholesaleApproved);
       }
       return session;
+    },
+  },
+  events: {
+    // Attach any orders placed as a guest (same email) to the account on sign-in.
+    async signIn({ user }) {
+      if (!user?.id || !user.email) return;
+      try {
+        const db = getDb();
+        await db
+          .update(orders)
+          .set({ userId: user.id })
+          .where(and(eq(orders.email, user.email.toLowerCase()), isNull(orders.userId)));
+      } catch {
+        /* non-fatal */
+      }
     },
   },
 });

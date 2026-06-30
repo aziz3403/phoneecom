@@ -3,6 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, isAuthConfigured } from "@/lib/auth";
 import { getMyOrders } from "@/lib/orders";
+import { getProfile } from "@/lib/profile-actions";
+import { computeTracking } from "@/lib/tracking";
 import { AccountDashboard } from "@/components/account/AccountDashboard";
 import { AuthNotConfigured } from "@/components/auth/AuthNotConfigured";
 
@@ -18,7 +20,14 @@ export default async function AccountPage() {
   if (configured) {
     const session = await auth();
     if (!session?.user) redirect("/login?callbackUrl=/account");
-    const orders = await getMyOrders();
+
+    const [orders, profile] = await Promise.all([getMyOrders(), getProfile()]);
+    const now = new Date().toISOString();
+    const enriched = orders.map((o) => {
+      const t = computeTracking({ placedAtISO: o.createdAt, etaISO: o.etaISO, express: o.express, nowISO: now });
+      return { ...o, statusLabel: t.statusLabel, etaLabel: t.etaLabel, delivered: t.delivered };
+    });
+
     dashboard = (
       <AccountDashboard
         user={{
@@ -26,7 +35,8 @@ export default async function AccountPage() {
           email: session.user.email ?? "",
           wholesaleApproved: session.user.wholesaleApproved,
         }}
-        orders={orders}
+        orders={enriched}
+        profile={profile}
       />
     );
   }
@@ -39,7 +49,7 @@ export default async function AccountPage() {
         </p>
         <h1 className="ptitle">Account</h1>
       </div>
-      <section className="sec" style={{ paddingTop: 40 }}>
+      <section className="sec" style={{ paddingTop: 36 }}>
         <div className="shell-narrow">{dashboard}</div>
       </section>
     </>

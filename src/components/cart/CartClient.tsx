@@ -16,7 +16,16 @@ import {
 import { useAccount } from "@/lib/account-store";
 import { useSession } from "next-auth/react";
 import { placeOrderAction } from "@/lib/order-actions";
+import { makeShipment } from "@/lib/tracking";
 import { imageFor } from "@/lib/products";
+
+export interface AddressPrefill {
+  fullName?: string;
+  line1?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+}
 import { GRADES } from "@/lib/grades";
 import { formatPrice, formatPriceDecimal } from "@/lib/utils";
 import { PhImg } from "@/components/home/PhImg";
@@ -45,7 +54,7 @@ function addDays(base: Date, days: number): Date {
   return d;
 }
 
-export function CartClient() {
+export function CartClient({ initialProfile }: { initialProfile?: AddressPrefill | null } = {}) {
   const items = useCart((s) => s.items);
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
@@ -80,6 +89,21 @@ export function CartClient() {
       setLast((v) => v || rest.join(" "));
     }
   }, [session]);
+
+  // Prefill the saved shipping address (account → Details).
+  useEffect(() => {
+    if (!initialProfile) return;
+    if (initialProfile.fullName) {
+      const [f, ...rest] = initialProfile.fullName.split(" ");
+      setFirst((v) => v || f || "");
+      setLast((v) => v || rest.join(" "));
+    }
+    if (initialProfile.line1) setStreet((v) => v || initialProfile.line1!);
+    if (initialProfile.city) setCity((v) => v || initialProfile.city!);
+    if (initialProfile.state) setStateCode((v) => v || initialProfile.state!);
+    if (initialProfile.zip) setZip((v) => v || initialProfile.zip!);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ---- dates (stable after mount) ----
   const { etaFree, etaNext } = useMemo(() => {
@@ -128,6 +152,9 @@ export function CartClient() {
       grade: i.grade,
       original: i.original,
     }));
+    const express = delivery === "next";
+    const seed = parseInt(id.replace(/\D/g, ""), 10) || 1;
+    const { carrier, trackingNumber } = makeShipment(express, seed);
     const snapshot = {
       lines,
       dateLabel,
@@ -140,6 +167,10 @@ export function CartClient() {
       savings,
       tax,
       co2kg: co2,
+      express,
+      etaISO: etaDate.toISOString(),
+      carrier,
+      trackingNumber,
     };
 
     // Local copy powers the receipt page (and guest history).

@@ -87,7 +87,7 @@ function Confirmation({ order }: { order: Order }) {
         </div>
       </section>
 
-      <div style={wrap}>
+      <div className="oc-grid">
         {/* ============ main ============ */}
         <div>
           {/* what happens next */}
@@ -168,7 +168,7 @@ function Confirmation({ order }: { order: Order }) {
           {/* delivery & billing */}
           <section style={card}>
             <div style={cardh}>Delivery &amp; billing</div>
-            <div style={addgrid}>
+            <div className="oc-addgrid">
               <div>
                 <h4 style={addh4}>Shipping to</h4>
                 <p style={addp}>
@@ -198,7 +198,7 @@ function Confirmation({ order }: { order: Order }) {
 
         {/* ============ summary ============ */}
         <aside>
-          <div style={summary}>
+          <div className="oc-summary">
             <div style={sumh}>Payment summary</div>
             <div style={{ padding: "16px 22px" }}>
               <SumRow label={`Subtotal · ${itemCount} ${itemCount === 1 ? "item" : "items"}`} value={<b style={{ color: "var(--text)" }}>{formatPriceDecimal(subtotal)}</b>} />
@@ -420,15 +420,6 @@ const hmeta: React.CSSProperties = {
   padding: "15px 24px",
   boxShadow: "0 6px 20px rgba(20,60,45,.06)",
 };
-const wrap: React.CSSProperties = {
-  maxWidth: 1000,
-  margin: "0 auto",
-  padding: "40px 24px 0",
-  display: "grid",
-  gridTemplateColumns: "minmax(0,1fr) minmax(0,360px)",
-  gap: 36,
-  alignItems: "start",
-};
 const card: React.CSSProperties = {
   border: "1px solid var(--line)",
   borderRadius: 18,
@@ -462,7 +453,6 @@ const igrade: React.CSSProperties = {
   borderRadius: 980,
 };
 const ispecs: React.CSSProperties = { display: "flex", flexWrap: "wrap", gap: 6, marginTop: 7 };
-const addgrid: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 };
 const addh4: React.CSSProperties = {
   fontSize: 12,
   fontWeight: 600,
@@ -472,13 +462,6 @@ const addh4: React.CSSProperties = {
   marginBottom: 8,
 };
 const addp: React.CSSProperties = { fontSize: 14, color: "var(--text2)", lineHeight: 1.5 };
-const summary: React.CSSProperties = {
-  position: "sticky",
-  top: 24,
-  border: "1px solid var(--line)",
-  borderRadius: 18,
-  overflow: "hidden",
-};
 const sumh: React.CSSProperties = {
   padding: "18px 22px",
   borderBottom: "1px solid var(--line)",

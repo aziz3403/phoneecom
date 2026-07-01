@@ -48,7 +48,7 @@ const MODEL_ALIASES: [RegExp, string][] = [
   [/^IPAD\s*5\b/i, "ipad-5th-gen"],
 ];
 
-function catalogSlugForModel(model: string): string | undefined {
+export function catalogSlugForModel(model: string): string | undefined {
   const trimmed = model.trim();
   for (const [re, slug] of MODEL_ALIASES) if (re.test(trimmed)) return slug;
   const m = NORM(model);

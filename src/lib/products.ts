@@ -106,6 +106,7 @@ export const DEVICES: Device[] = [
       { name: "Blue", hex: "#a4d4e8", accent: "#7db0c8", family: "Blue" },
       { name: "Coral", hex: "#fa7d6b", accent: "#e0594a", family: "Pink" },
       { name: "Yellow", hex: "#f6d96b", accent: "#dcbf52", family: "Yellow" },
+      { name: "White", hex: "#f4f4f2", accent: "#d6d6d3", family: "White" },
       { name: "Red", hex: "#c5283d", accent: "#97202f", family: "Red" },
     ],
     storage: [
@@ -412,6 +413,7 @@ export const DEVICES: Device[] = [
     storage: [
       { gb: 128, price: 339, original: 699, wholesale: 308 },
       { gb: 256, price: 399, original: 799, wholesale: 363 },
+      { gb: 512, price: 479, original: 999, wholesale: 434 },
     ],
     grade: "excellent",
     batteryHealth: 88,
@@ -449,6 +451,7 @@ export const DEVICES: Device[] = [
     storage: [
       { gb: 128, price: 389, original: 699, wholesale: 349 },
       { gb: 256, price: 449, original: 799, wholesale: 405 },
+      { gb: 512, price: 529, original: 999, wholesale: 479 },
     ],
     grade: "good",
     batteryHealth: 87,
@@ -524,6 +527,7 @@ export const DEVICES: Device[] = [
       { gb: 128, price: 559, original: 1099, wholesale: 509 },
       { gb: 256, price: 629, original: 1199, wholesale: 572 },
       { gb: 512, price: 729, original: 1399, wholesale: 663 },
+      { gb: 1024, price: 829, original: 1599, wholesale: 754 },
     ],
     grade: "excellent",
     batteryHealth: 90,
@@ -787,6 +791,7 @@ export const DEVICES: Device[] = [
       { gb: 128, price: 879, original: 999, wholesale: 800 },
       { gb: 256, price: 949, original: 1099, wholesale: 864 },
       { gb: 512, price: 1059, original: 1299, wholesale: 964 },
+      { gb: 1024, price: 1169, original: 1499, wholesale: 1064 },
     ],
     grade: "pristine",
     batteryHealth: 94,
@@ -1618,6 +1623,8 @@ export const DEVICES: Device[] = [
     ram: 6,
     colors: [
       { name: "Graphite", hex: "#54565a", accent: "#3e4044", family: "Gray" },
+      { name: "Lavender", hex: "#c9bede", accent: "#a698c2", family: "Purple" },
+      { name: "White", hex: "#f0efeb", accent: "#d1d0cc", family: "White" },
     ],
     storage: [
       { gb: 128, price: 239, original: 699, wholesale: 218 },
@@ -1993,7 +2000,7 @@ export const DEVICES: Device[] = [
     screen: 6.4,
     ram: 8,
     colors: [
-      { name: "Awesome Graphite", hex: "#3a3b3e", accent: "#535458", family: "Black" },
+      { name: "Awesome Graphite", hex: "#3a3b3e", accent: "#535458", family: "Gray" },
       { name: "Awesome White", hex: "#edece7", accent: "#cbcac5", family: "White" },
       { name: "Awesome Violet", hex: "#b6aec9", accent: "#928aa6", family: "Purple" },
       { name: "Awesome Lime", hex: "#c3cf9f", accent: "#9faa7c", family: "Green" },
@@ -2655,6 +2662,7 @@ export const DEVICES: Device[] = [
     ],
     storage: [
       { gb: 16, price: 99, original: 499, wholesale: 90 },
+      { gb: 32, price: 115, original: 549, wholesale: 104 },
       { gb: 64, price: 129, original: 599, wholesale: 117 },
       { gb: 128, price: 155, original: 699, wholesale: 141 },
     ],
@@ -2691,6 +2699,7 @@ export const DEVICES: Device[] = [
     ],
     storage: [
       { gb: 16, price: 75, original: 499, wholesale: 68 },
+      { gb: 32, price: 87, original: 549, wholesale: 79 },
       { gb: 64, price: 99, original: 599, wholesale: 90 },
     ],
     grade: "fair",
@@ -2764,6 +2773,7 @@ export const DEVICES: Device[] = [
     ],
     storage: [
       { gb: 16, price: 105, original: 399, wholesale: 95 },
+      { gb: 32, price: 119, original: 449, wholesale: 108 },
       { gb: 128, price: 149, original: 549, wholesale: 135 },
     ],
     grade: "fair",
@@ -2872,8 +2882,11 @@ export const DEVICES: Device[] = [
     colors: [
       { name: "Space Gray", hex: "#52555a", accent: "#3c3e42", family: "Gray" },
       { name: "Silver", hex: "#e3e4e0", accent: "#c2c3bf", family: "Silver" },
+      { name: "Gold", hex: "#e6d2b5", accent: "#cdb389", family: "Gold" },
     ],
     storage: [
+      { gb: 32, price: 370, original: 799, wholesale: 335 },
+      { gb: 64, price: 400, original: 899, wholesale: 362 },
       { gb: 128, price: 430, original: 999, wholesale: 391 },
       { gb: 256, price: 500, original: 1099, wholesale: 455 },
       { gb: 512, price: 600, original: 1299, wholesale: 546 },

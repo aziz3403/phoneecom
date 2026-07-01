@@ -319,25 +319,35 @@ export function tradeInModelsFromSnapshot(): TradeInModel[] {
 }
 
 // ---- lookup + quote --------------------------------------------------------
+/** True when at least one grade column carries a positive price. */
+function priceable(r: PriceRow): boolean {
+  return [r.swap, r.new, r.a, r.b, r.c, r.d, r.doa].some((v) => v != null && v > 0);
+}
+
 export function findRow(model: TradeInModel, gb: number, lock: Lock): PriceRow | undefined {
   const rows = model.rows;
-  // Prefer the exact tier asked for, then fall back sensibly. AT&T-locked has its
-  // own (lower) price, so an AT&T request must try "att" before generic "locked".
+  // Prefer the exact tier asked for, then fall back sensibly. AT&T-locked has
+  // its own (lower) price, so an AT&T request must try "att" before generic
+  // "locked". Unlocked also falls back to the locked book — some brand-new
+  // models are only priced locked, and quoting the (lower) locked price is
+  // safe: we re-quote UP after inspection when the device turns out unlocked.
   const pref: Lock[] =
     lock === "unlocked"
-      ? ["unlocked"]
+      ? ["unlocked", "locked", "att"]
       : lock === "att"
         ? ["att", "locked", "unlocked"]
         : ["locked", "att", "unlocked"];
+  // Rows with every grade empty (placeholder book lines) are never candidates.
+  const usable = rows.filter(priceable);
   if (model.storages.length) {
-    for (const l of pref) { const hit = rows.find((r) => r.gb === gb && r.lock === l); if (hit) return hit; }
+    for (const l of pref) { const hit = usable.find((r) => r.gb === gb && r.lock === l); if (hit) return hit; }
     for (const l of pref) {
-      const same = rows.filter((r) => r.lock === l && r.gb > 0).sort((a, b) => a.gb - b.gb);
+      const same = usable.filter((r) => r.lock === l && r.gb > 0).sort((a, b) => a.gb - b.gb);
       if (same.length) return same.reduce((best, r) => (Math.abs(r.gb - gb) < Math.abs(best.gb - gb) ? r : best));
     }
   }
-  for (const l of pref) { const hit = rows.find((r) => r.lock === l); if (hit) return hit; }
-  return rows[0];
+  for (const l of pref) { const hit = usable.find((r) => r.lock === l); if (hit) return hit; }
+  return usable[0] ?? rows[0];
 }
 
 export interface QuoteInput {

@@ -99,6 +99,23 @@ describe("findRow()", () => {
   it("falls back to the nearest storage when the exact one is missing", () => {
     expect(findRow(model, 512, "unlocked")!.gb).toBe(256);
   });
+
+  it("skips all-null placeholder rows and lets unlocked fall back to the locked book", () => {
+    // Mirrors the real Samsung book: brand-new models priced locked-only,
+    // with an empty unlocked placeholder row.
+    const m = {
+      ...model,
+      storages: [],
+      rows: [
+        { ...row, gb: 0, lock: "unlocked", swap: null, new: null, a: null, b: null, c: null, d: null, doa: null },
+        { ...row, gb: 0, lock: "locked", a: 650 },
+      ],
+    } as unknown as TradeInModel;
+    const hit = findRow(m, 0, "unlocked");
+    expect(hit).toBeDefined();
+    expect(hit!.lock).toBe("locked");
+    expect(hit!.a).toBe(650);
+  });
 });
 
 describe("price book snapshot", () => {

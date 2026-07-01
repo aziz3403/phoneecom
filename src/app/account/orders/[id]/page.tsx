@@ -5,6 +5,7 @@ import { Check, Package, Truck, MapPin, CreditCard, Leaf, ArrowLeft, Copy } from
 import { auth, isAuthConfigured } from "@/lib/auth";
 import { getMyOrder } from "@/lib/orders";
 import { computeTracking, fmtDay } from "@/lib/tracking";
+import { EXPRESS_FEE } from "@/lib/delivery";
 import { GRADES } from "@/lib/grades";
 import { imageFor } from "@/lib/products";
 import { formatPrice, formatPriceDecimal } from "@/lib/utils";
@@ -53,7 +54,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   });
   const itemCount = order.lines.reduce((n, l) => n + l.qty, 0);
   const subtotal = order.subtotal ?? order.lines.reduce((s, l) => s + l.unit * l.qty, 0);
-  const deliveryCost = order.express ? 15 : 0;
+  const deliveryCost = order.express ? EXPRESS_FEE : 0;
 
   return (
     <div className="shell" style={{ maxWidth: 1080, padding: "26px 22px 60px" }}>

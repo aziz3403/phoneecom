@@ -8,10 +8,22 @@ describe("warehouse → catalog model matching", () => {
       ["IPHONE 14", "iphone-14"],
       ["IPHONE 14 PRO MAX", "iphone-14-pro-max"],
       ["GALAXY S23 (S911U)", "galaxy-s23"],
+      // the warehouse's biggest lines — SE generations are named by number
+      ["IPHONE SE 2", "iphone-se-2020"],
+      ["IPHONE SE 2 (A2275)", "iphone-se-2020"],
+      ["IPHONE SE 3", "iphone-se-2022"],
     ];
     for (const [sheet, slug] of cases) {
       expect(catalogSlugForModel(sheet), sheet).toBe(slug);
     }
+    // 1st-gen SE isn't in the catalog and must NOT hitch a ride on SE 2/3
+    expect(catalogSlugForModel("IPHONE SE")).toBeUndefined();
+  });
+
+  it("parses terabyte storage labels as 1024-multiples", () => {
+    const tb = snapshotItems().filter((i) => /TB/i.test(i.storageLabel));
+    expect(tb.length).toBeGreaterThan(0);
+    for (const i of tb) expect(i.gb, `${i.model} ${i.storageLabel}`).toBeGreaterThanOrEqual(1024);
   });
 
   it("every mapped render slug exists in the catalog", () => {

@@ -300,7 +300,7 @@ export function TradeInWizard({
         <div className="mt-5 grid gap-4 sm:grid-cols-3">
           {[
             { icon: Mail, t: "Check your email", b: `We're sending ${sellerEmail || "you"} ${freeShip ? "a free prepaid label" : "shipping details"} and your kit.` },
-            { icon: Truck, t: freeShip ? "Ship it free" : "Send it in", b: freeShip ? "Drop the labeled box — fully tracked & insured." : "Post it to us — inspection is always free." },
+            { icon: Truck, t: freeShip ? "Ship it free" : "Send it in", b: freeShip ? "Drop the labeled box — fully tracked & insured." : `Post it to ${SHIP_TO.name}, ${SHIP_TO.lines.join(", ")} — any tracked service. Inspection is always free.` },
             { icon: Banknote, t: "Get paid", b: isCredit ? "Store credit lands instantly after inspection." : payout === "bank" ? "Bank transfer within 5 business days." : "PayPal within ~2 business days." },
           ].map((s) => (
             <div key={s.t} className="scard-bord">

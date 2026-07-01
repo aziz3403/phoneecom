@@ -191,7 +191,6 @@ export function CartClient({
       const res = await createCheckoutSession({
         id,
         email: emailVal,
-        amountCents: Math.round(total * 100),
         itemCount: count,
         snapshot,
       });
@@ -209,7 +208,7 @@ export function CartClient({
 
     // Persist to the account for signed-in users (best-effort).
     try {
-      await placeOrderAction({ id, total, status: "Confirmed", email: emailVal, data: snapshot });
+      await placeOrderAction({ id, email: emailVal, data: snapshot });
     } catch {
       /* ignore — receipt still works from the local copy */
     }

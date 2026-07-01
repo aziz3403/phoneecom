@@ -25,7 +25,6 @@ const googleProvider = isGoogleConfigured()
       Google({
         clientId: process.env.AUTH_GOOGLE_ID ?? process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.AUTH_GOOGLE_SECRET ?? process.env.GOOGLE_CLIENT_SECRET,
-        allowDangerousEmailAccountLinking: true,
       }),
     ]
   : [];
@@ -75,10 +74,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           (user as { wholesaleApproved?: boolean }).wholesaleApproved,
         );
       }
-      // allow client `update()` to refresh wholesale state without re-login
-      const upd = session as { wholesaleApproved?: boolean } | undefined;
-      if (trigger === "update" && upd?.wholesaleApproved !== undefined) {
-        token.wholesaleApproved = Boolean(upd.wholesaleApproved);
+      // Client `update()` refreshes wholesale state without re-login — but the
+      // value comes from the DB, never the client (approval is owner-gated).
+      void session;
+      if (trigger === "update" && token.id) {
+        try {
+          const db = getDb();
+          const rows = await db
+            .select({ wholesaleApproved: users.wholesaleApproved })
+            .from(users)
+            .where(eq(users.id, token.id as string))
+            .limit(1);
+          if (rows[0]) token.wholesaleApproved = rows[0].wholesaleApproved;
+        } catch {
+          /* keep the existing token value */
+        }
       }
       return token;
     },

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, Send, Loader2 } from "lucide-react";
+import { CheckCircle2, Send, Loader2, Clock } from "lucide-react";
 
 const VOLUMES = ["5–25 / month", "25–100 / month", "100–250 / month", "250–500 / month", "500+ / month"];
 const TYPES = ["Repair shop", "Reseller / retailer", "Carrier / MVNO", "Enterprise / IT", "Refurbisher", "Other"];
@@ -17,9 +17,33 @@ const REGIONS = [
   "Other",
 ];
 
-export function ApplyForm({ onApprove }: { onApprove?: (company: string) => void }) {
+export interface ApplyFormData {
+  company: string;
+  name: string;
+  email: string;
+  volume: string;
+  type: string;
+  region: string;
+  message: string;
+}
+
+/**
+ * Wholesale trade-account application. `onSubmit` does the real work (files
+ * the application, or instantly unlocks the demo portal); while it runs the
+ * form shows a review beat. When `pendingReview` is true the success state
+ * says "under review" — real applications are decided by the owner, not
+ * self-approved.
+ */
+export function ApplyForm({
+  onSubmit,
+  pendingReview = false,
+}: {
+  onSubmit?: (form: ApplyFormData) => Promise<{ ok: boolean; error?: string }>;
+  pendingReview?: boolean;
+}) {
   const [phase, setPhase] = useState<"form" | "review" | "done">("form");
-  const [form, setForm] = useState({
+  const [error, setError] = useState("");
+  const [form, setForm] = useState<ApplyFormData>({
     company: "",
     name: "",
     email: "",
@@ -31,22 +55,30 @@ export function ApplyForm({ onApprove }: { onApprove?: (company: string) => void
 
   const valid = form.company.trim() && form.name.trim() && /\S+@\S+\.\S+/.test(form.email);
 
-  function set<K extends keyof typeof form>(key: K, value: string) {
+  function set<K extends keyof ApplyFormData>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
   }
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!valid) return;
-    // When wired into the wholesale gate, run a short "reviewing" beat and then
-    // unlock the portal (demo: instant approval). Otherwise fall back to the
-    // plain "we'll email you" confirmation.
-    if (onApprove) {
-      setPhase("review");
-      setTimeout(() => onApprove(form.company), 1500);
+    if (!valid || phase === "review") return;
+    setError("");
+    if (!onSubmit) {
+      setPhase("done");
       return;
     }
-    setPhase("done");
+    setPhase("review");
+    try {
+      const res = await onSubmit(form);
+      if (res.ok) setPhase("done");
+      else {
+        setPhase("form");
+        setError(res.error ?? "Something went wrong — please try again.");
+      }
+    } catch {
+      setPhase("form");
+      setError("Something went wrong — please try again.");
+    }
   }
 
   const submitted = phase === "done";
@@ -84,20 +116,25 @@ export function ApplyForm({ onApprove }: { onApprove?: (company: string) => void
               className="flex h-full flex-col items-center justify-center py-10 text-center"
             >
               <div className="grid h-16 w-16 place-items-center rounded-full bg-[#f1f7f3]">
-                <CheckCircle2 className="h-9 w-9 text-[#0a8f6e]" />
+                {pendingReview ? (
+                  <Clock className="h-9 w-9 text-[#0a8f6e]" />
+                ) : (
+                  <CheckCircle2 className="h-9 w-9 text-[#0a8f6e]" />
+                )}
               </div>
-              <h3 className="mt-5 text-2xl font-bold tracking-tight text-[#1d1d1f]">Application received</h3>
+              <h3 className="mt-5 text-2xl font-bold tracking-tight text-[#1d1d1f]">
+                {pendingReview ? "Application under review" : "Application received"}
+              </h3>
               <p className="mt-2 max-w-sm text-[#6e6e73]">
-                Thanks, {form.name.split(" ")[0] || "there"}! We&apos;ll email{" "}
-                <span className="text-[#1d1d1f]">{form.email}</span> within one business day. (This is a
-                demo — no data was sent.)
+                Thanks, {form.name.split(" ")[0] || "there"}!{" "}
+                {pendingReview ? (
+                  <>Our team is reviewing <span className="text-[#1d1d1f]">{form.company}</span> — we&apos;ll
+                  email <span className="text-[#1d1d1f]">{form.email}</span> the decision, usually within one
+                  business day. The portal unlocks automatically on approval.</>
+                ) : (
+                  <>We&apos;ll email <span className="text-[#1d1d1f]">{form.email}</span> within one business day.</>
+                )}
               </p>
-              <button
-                onClick={() => setPhase("form")}
-                className="link mt-6"
-              >
-                Submit another
-              </button>
             </motion.div>
           ) : phase === "review" ? (
             <motion.div
@@ -108,7 +145,7 @@ export function ApplyForm({ onApprove }: { onApprove?: (company: string) => void
               className="flex h-full flex-col items-center justify-center py-10 text-center"
             >
               <Loader2 className="h-9 w-9 animate-spin text-[#0a8f6e]" />
-              <h3 className="mt-5 text-2xl font-bold tracking-tight text-[#1d1d1f]">Reviewing your application…</h3>
+              <h3 className="mt-5 text-2xl font-bold tracking-tight text-[#1d1d1f]">Submitting your application…</h3>
               <p className="mt-2 max-w-sm text-[#6e6e73]">
                 Checking your details against our partner criteria. This only takes a moment.
               </p>
@@ -199,6 +236,9 @@ export function ApplyForm({ onApprove }: { onApprove?: (company: string) => void
               >
                 <Send className="h-[18px] w-[18px]" /> Submit application
               </button>
+              {error && (
+                <p role="alert" className="text-center text-[13px] text-[#b23b3b]">{error}</p>
+              )}
             </motion.form>
           )}
         </AnimatePresence>

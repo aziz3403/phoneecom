@@ -11,15 +11,10 @@ import {
   findRow, quote, GRADE_TAG, FREE_SHIP_MIN,
   type TradeInModel, type Grade, type Lock, type Deduction,
 } from "@/lib/trade-in-pricing";
+import { submitTradeInAction } from "@/lib/trade-in-actions";
+import { TRADE_IN_SHIP_TO as SHIP_TO } from "@/lib/trade-in-shipping";
 import { PhImg } from "@/components/home/PhImg";
 import { formatPrice, cn } from "@/lib/utils";
-
-// Where sellers ship trade-ins. TODO: owner to provide the real intake address —
-// a prepaid label is emailed on lock when the order qualifies for free shipping.
-const SHIP_TO = {
-  name: "reMint Trade-ins",
-  lines: ["[Street address — to be provided]", "[Unit / suite]", "[City, State ZIP]"],
-};
 
 const GROUP_ORDER: TradeInModel["group"][] = ["iPhone", "Galaxy", "iPad"];
 
@@ -72,6 +67,7 @@ interface Line {
   color: string;
   carrier: CarrierId;
   carrierLabel: string;
+  lock: Lock;
   grade: Grade;
   gradeTag: string;
   unit: number;
@@ -79,6 +75,12 @@ interface Line {
   deductions: Deduction[];
   notes: string[];
   qty: number;
+  /** raw condition answers — sent to the server so it can re-quote honestly */
+  crackedBack: boolean;
+  crackedLens: boolean;
+  badFaceId: boolean;
+  batteryLow: boolean;
+  repairMessage: boolean;
 }
 
 export function TradeInWizard({
@@ -124,6 +126,9 @@ export function TradeInWizard({
   const [routing, setRouting] = useState("");
   const [account, setAccount] = useState("");
   const [justAdded, setJustAdded] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [receipt, setReceipt] = useState<{ id?: string; demo?: boolean }>({});
 
   const carrierChoice = !!model && model.locks.some((l) => l !== "unlocked");
   const lock: Lock = carrier === "unlocked" ? "unlocked" : carrier === "att" && model?.locks.includes("att") ? "att" : "locked";
@@ -166,8 +171,9 @@ export function TradeInWizard({
       if (i >= 0) { const copy = [...b]; copy[i] = { ...copy[i], qty: copy[i].qty + qtyToAdd }; return copy; }
       return [...b, {
         sig, modelKey: model.key, name: model.name, image: colorImage, catalogSlug: model.catalogSlug,
-        gb, storageLabel, color: colorName, carrier, carrierLabel,
+        gb, storageLabel, color: colorName, carrier, carrierLabel, lock,
         grade: q.grade, gradeTag: GRADE_TAG[q.grade], unit, base: q.base, deductions: q.deductions, notes: q.notes, qty: qtyToAdd,
+        crackedBack: backCracked, crackedLens: lensCracked, badFaceId: !faceIdOk, batteryLow: !battery80, repairMessage: repairMsg,
       }];
     });
     setQtyToAdd(1);
@@ -186,6 +192,33 @@ export function TradeInWizard({
   const payoutOk = isCredit || (payout === "paypal" ? /.+@.+\..+/.test(paypalEmail) : !!(routing.trim() && account.trim()));
   const canLock = !!(count > 0 && firstName.trim() && lastName.trim() && phone.trim() && /.+@.+\..+/.test(sellerEmail) && payoutOk);
 
+  async function lockOffer() {
+    if (!canLock || submitting) return;
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      const res = await submitTradeInAction({
+        lines: basket.map((l) => ({
+          modelKey: l.modelKey, gb: l.gb, color: l.color, lock: l.lock, carrierLabel: l.carrierLabel,
+          grade: l.grade, crackedBack: l.crackedBack, crackedLens: l.crackedLens,
+          badFaceId: l.badFaceId, batteryLow: l.batteryLow, repairMessage: l.repairMessage, qty: l.qty,
+        })),
+        payout, firstName, lastName, phone, email: sellerEmail,
+        paypalEmail: paypalEmail || undefined, routing: routing || undefined, account: account || undefined,
+      });
+      if (res.ok) {
+        setReceipt({ id: res.id, demo: res.demo });
+        setPhase("done");
+      } else {
+        setSubmitError(res.error ?? "Something went wrong — please try again.");
+      }
+    } catch {
+      setSubmitError("Something went wrong — please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   if (!model) return null;
 
   // ================= DONE — full-width, money-forward celebration =================
@@ -201,7 +234,9 @@ export function TradeInWizard({
           <div className="mx-auto grid h-[70px] w-[70px] place-items-center rounded-full bg-[#0a8f6e] shadow-[0_12px_30px_rgba(10,143,110,.32)]">
             <PartyPopper className="h-9 w-9 text-white" />
           </div>
-          <p className="mt-6 text-[13px] font-semibold uppercase tracking-[.08em] text-[#0a8f6e]">Offer locked · held 7 days</p>
+          <p className="mt-6 text-[13px] font-semibold uppercase tracking-[.08em] text-[#0a8f6e]">
+            Offer locked · held 7 days{receipt.id ? ` · ref ${receipt.id}` : ""}
+          </p>
           <h1 className="mt-2 text-[clamp(32px,5.5vw,52px)] font-bold leading-[1.03] tracking-[-.03em] text-[#1d1d1f]">
             {firstName ? `Nice one, ${firstName}. ` : ""}You&apos;re getting
             <br />
@@ -262,9 +297,11 @@ export function TradeInWizard({
         <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
           {isCredit && <Link href="/shop" className="btn">Spend my {formatPrice(total)} credit</Link>}
           <Link href="/shop" className={cn(isCredit ? "btn btn-lt" : "btn")}>Keep shopping</Link>
-          <button onClick={() => { setBasket([]); setPhase("build"); }} className="link">Trade in more devices</button>
+          <button onClick={() => { setBasket([]); setReceipt({}); setPhase("build"); }} className="link">Trade in more devices</button>
         </div>
-        <p className="mt-5 text-center text-[12px] text-[#b0b0b6]">Demo — nothing was actually sent.</p>
+        {receipt.demo && (
+          <p className="mt-5 text-center text-[12px] text-[#b0b0b6]">Demo — the backend isn&apos;t configured yet, so nothing was actually sent.</p>
+        )}
       </div>
     );
   }
@@ -499,7 +536,12 @@ export function TradeInWizard({
                         ? <><b>Free prepaid shipping unlocked</b> — {count} devices. We email a label &amp; recycled box kit; drop it off, fully tracked &amp; insured.</>
                         : <><b>Add {FREE_SHIP_MIN - count} more device{FREE_SHIP_MIN - count === 1 ? "" : "s"}</b> to unlock free prepaid shipping ({FREE_SHIP_MIN}+). Under {FREE_SHIP_MIN}, you cover the label to send it in — inspection is still 100% free.</>}
                     </div>
-                    <p className="mt-2 text-[12px] leading-relaxed text-[#86868b]">Inspection is always free. Changed your mind or don&apos;t accept the final offer? We ship it straight back — you just cover return postage.</p>
+                    <p className="mt-2 text-[12px] leading-relaxed text-[#86868b]">
+                      Inspection is always free and your price is locked for 7 days. If we find a different
+                      condition than described, we email a revised offer <b>with photos of what we found</b> and
+                      you get a full 7 days to decide — no auto-accept. Decline (or change your mind) and we ship
+                      the device straight back; you cover the return postage.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -600,10 +642,11 @@ export function TradeInWizard({
                 </button>
               ) : (
                 <>
-                  <button onClick={() => canLock && setPhase("done")} disabled={!canLock} className={cn("btn mt-5 w-full", !canLock && "opacity-50")}>
-                    Lock this offer <ArrowRight className="h-[18px] w-[18px]" />
+                  <button onClick={lockOffer} disabled={!canLock || submitting} className={cn("btn mt-5 w-full", (!canLock || submitting) && "opacity-50")}>
+                    {submitting ? "Locking your offer…" : <>Lock this offer <ArrowRight className="h-[18px] w-[18px]" /></>}
                   </button>
                   {!canLock && <p className="mt-2 text-center text-[12px] text-[#86868b]">Add your name, email and payout details to lock it.</p>}
+                  {submitError && <p role="alert" className="mt-2 text-center text-[12px] text-[#b23b3b]">{submitError}</p>}
                 </>
               )}
               <p className="note2 mt-3 text-center">No obligation. Final value confirmed after our free inspection — if it&apos;s higher, you keep the difference.</p>

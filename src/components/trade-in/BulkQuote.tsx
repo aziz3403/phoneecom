@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, Boxes, Truck, Zap, BadgeDollarSign } from "lucide-react";
+import { submitBulkQuoteAction } from "@/lib/trade-in-actions";
 import { cn } from "@/lib/utils";
 
 const PERKS = [
@@ -21,8 +22,28 @@ export function BulkQuote() {
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [sent, setSent] = useState(false);
+  const [demo, setDemo] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
 
   const canSend = firstName.trim() && lastName.trim() && /.+@.+\..+/.test(email) && phone.trim();
+
+  async function send() {
+    if (!canSend || sending) return;
+    setSending(true);
+    setError("");
+    try {
+      const res = await submitBulkQuoteAction({
+        firstName, lastName, company: company || undefined, email, phone, batchSize: size, notes: notes || undefined,
+      });
+      if (res.ok) { setDemo(Boolean(res.demo)); setSent(true); }
+      else setError(res.error ?? "Something went wrong — please try again.");
+    } catch {
+      setError("Something went wrong — please try again.");
+    } finally {
+      setSending(false);
+    }
+  }
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr]">
@@ -58,7 +79,7 @@ export function BulkQuote() {
             <h3 className="mt-5 text-[22px] font-bold tracking-[-.02em] text-[#1d1d1f]">Request received</h3>
             <p className="mx-auto mt-2 max-w-xs text-[14px] leading-relaxed text-[#6e6e73]">
               Thanks{firstName ? `, ${firstName}` : ""} — our buyback team will email {email || "you"} a firm bulk quote,
-              usually within a business day. (Demo — nothing was sent.)
+              usually within a business day.{demo ? " (Demo — the backend isn't configured, so nothing was sent.)" : ""}
             </p>
             <button onClick={() => setSent(false)} className="link mt-5">Send another</button>
           </div>
@@ -101,9 +122,10 @@ export function BulkQuote() {
               </div>
             </div>
 
-            <button onClick={() => canSend && setSent(true)} disabled={!canSend} className={cn("btn mt-5 w-full", !canSend && "opacity-50")}>
-              Get my bulk quote
+            <button onClick={send} disabled={!canSend || sending} className={cn("btn mt-5 w-full", (!canSend || sending) && "opacity-50")}>
+              {sending ? "Sending…" : "Get my bulk quote"}
             </button>
+            {error && <p role="alert" className="mt-2 text-center text-[12px] text-[#b23b3b]">{error}</p>}
             <p className="mt-2 text-center text-[12px] text-[#86868b]">No obligation. We reply with a firm price, usually within a business day.</p>
           </>
         )}

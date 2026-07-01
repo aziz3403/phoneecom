@@ -27,6 +27,7 @@ export const users = pgTable("user", {
   passwordHash: text("passwordHash"),
   wholesaleApproved: boolean("wholesaleApproved").notNull().default(false),
   wholesaleCompany: text("wholesaleCompany"),
+  isAdmin: boolean("isAdmin").notNull().default(false),
 });
 
 export const accounts = pgTable(
@@ -108,3 +109,64 @@ export const orders = pgTable("order", {
 });
 
 export type DbOrder = typeof orders.$inferSelect;
+
+/** Trade-in submissions from the wizard. Prices are re-derived from the price
+ * book server-side, so a tampered client can't inflate its own payout. */
+export const tradeIns = pgTable("tradeIn", {
+  id: text("id").primaryKey(), // human-facing TI-XXXXXX
+  userId: text("userId").references(() => users.id, { onDelete: "set null" }),
+  email: text("email").notNull(),
+  firstName: text("firstName").notNull(),
+  lastName: text("lastName").notNull(),
+  phone: text("phone").notNull(),
+  payoutMethod: text("payoutMethod").notNull(), // paypal | bank | credit
+  total: integer("total").notNull(),
+  deviceCount: integer("deviceCount").notNull(),
+  status: text("status").notNull().default("Submitted"),
+  createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
+  /** full submission snapshot (lines, payout details, shipping eligibility) */
+  data: jsonb("data").notNull(),
+});
+
+export type DbTradeIn = typeof tradeIns.$inferSelect;
+
+/** Bulk buyback quote requests from vendors (resellers, repair shops…). */
+export const bulkQuotes = pgTable("bulkQuote", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  firstName: text("firstName").notNull(),
+  lastName: text("lastName").notNull(),
+  company: text("company"),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  batchSize: text("batchSize").notNull(),
+  notes: text("notes"),
+  status: text("status").notNull().default("New"),
+  createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
+});
+
+export type DbBulkQuote = typeof bulkQuotes.$inferSelect;
+
+/** Wholesale trade-account applications — reviewed by the owner in /admin
+ * (approval is no longer self-serve). */
+export const wholesaleApplications = pgTable("wholesaleApplication", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  company: text("company").notNull(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  volume: text("volume"),
+  businessType: text("businessType"),
+  region: text("region"),
+  message: text("message"),
+  status: text("status").notNull().default("Pending"),
+  createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
+  decidedAt: timestamp("decidedAt", { mode: "date" }),
+});
+
+export type DbWholesaleApplication = typeof wholesaleApplications.$inferSelect;

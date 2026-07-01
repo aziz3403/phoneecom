@@ -1,8 +1,6 @@
-import { eq } from "drizzle-orm";
 import { isStripeConfigured, getStripe } from "@/lib/stripe";
 import { isAuthConfigured } from "@/lib/auth";
-import { getDb } from "@/lib/db";
-import { orders } from "@/lib/db/schema";
+import { markOrderConfirmed } from "@/lib/order-confirm";
 
 // Stripe needs the raw request body for signature verification, so this must
 // run on the Node runtime (the default for route handlers).
@@ -35,10 +33,11 @@ export async function POST(req: Request): Promise<Response> {
     const orderId = session.metadata?.orderId;
     if (orderId && session.payment_status === "paid" && isAuthConfigured()) {
       try {
-        const db = getDb();
-        await db.update(orders).set({ status: "Confirmed" }).where(eq(orders.id, orderId));
-      } catch {
-        /* ignore — success page also re-verifies */
+        await markOrderConfirmed(orderId);
+      } catch (err) {
+        // Surface in logs but still 200 — the success page re-verifies, and a
+        // 5xx would make Stripe retry against the same broken DB.
+        console.error("[stripe-webhook] failed to confirm order", orderId, err);
       }
     }
   }

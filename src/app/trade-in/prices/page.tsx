@@ -35,7 +35,7 @@ export default async function PricesPage() {
         <PriceList models={models} />
       </div>
 
-      <section className="graysec mt-20">
+      <section id="bulk" className="graysec mt-20 scroll-mt-[74px]">
         <div className="shell">
           <BulkQuote />
         </div>

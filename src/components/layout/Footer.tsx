@@ -13,12 +13,12 @@ const COLS = [
     ],
   },
   {
-    title: "Business",
+    title: "Sell to us",
     links: [
+      { label: "Trade in your phone", href: "/trade-in" },
+      { label: "Buyback price list", href: "/trade-in/prices" },
+      { label: "Sell in bulk", href: "/trade-in/prices#bulk" },
       { label: "Wholesale portal", href: "/wholesale" },
-      { label: "Volume pricing", href: "/wholesale#pricing" },
-      { label: "Bulk order builder", href: "/wholesale#builder" },
-      { label: "Become a partner", href: "/wholesale#apply" },
     ],
   },
   {

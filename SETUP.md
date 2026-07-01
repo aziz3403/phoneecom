@@ -108,6 +108,15 @@ no code change needed; Stripe shows them to eligible customers automatically.
   seller), approve/reject wholesale applications, and triage bulk quotes.
   You can also flip `isAdmin` directly on a user row.
 
+## 4e. (Optional) Analytics & monitoring
+
+- **Analytics** — set `NEXT_PUBLIC_PLAUSIBLE_DOMAIN=yourdomain.com` to load
+  Plausible (cookieless, GDPR-friendly). Nothing loads when unset.
+- **Error visibility** — server-side failures (Stripe sessions, webhooks,
+  submission persistence) are logged with `[checkout]` / `[stripe-webhook]` /
+  `[trade-in]` prefixes; surface them via your host's log drain. Wiring a
+  dedicated tracker (e.g. Sentry) is a good next step for production traffic.
+
 ## 5. Deploy
 
 On Vercel, set the env vars (step 2) **before** building, then deploy. Run the

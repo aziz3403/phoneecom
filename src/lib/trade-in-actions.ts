@@ -108,7 +108,9 @@ export async function submitTradeInAction(input: TradeInSubmitInput): Promise<Tr
       repairMessage: l.repairMessage,
     });
     if (!q.hasPrice) return { ok: false, error: `We can't price the ${model.name} in that condition right now.` };
-    lines.push({ ...l, qty, name: model.name, unit: Math.max(5, q.total) });
+    // $5 floor only for devices with positive value — negative book prices
+    // (recycling-cost models) quote to $0, matching the wizard.
+    lines.push({ ...l, qty, name: model.name, unit: q.total > 0 ? Math.max(5, q.total) : 0 });
   }
 
   const deviceCount = lines.reduce((n, l) => n + l.qty, 0);

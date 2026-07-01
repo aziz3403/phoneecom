@@ -153,7 +153,9 @@ export function TradeInWizard({
     return quote(row, { grade, crackedBack: backCracked, crackedLens: lensCracked, badFaceId: !faceIdOk, batteryLow: !battery80, repairMessage: repairMsg });
   }, [model, gb, lock, grade, backCracked, lensCracked, faceIdOk, battery80, repairMsg]);
 
-  const unit = q?.hasPrice ? Math.max(5, q.total) : 0;
+  // $5 marketing floor for working devices only — the price book carries
+  // negative values for some dead models (recycling cost), which quote to $0.
+  const unit = q?.hasPrice && q.total > 0 ? Math.max(5, q.total) : 0;
   const storageLabel = gb >= 1024 ? `${gb / 1024}TB` : gb > 0 ? `${gb}GB` : "";
   // Photo follows the chosen colour when we have one, else the model's base shot.
   const colorImage = model?.colors.find((c) => c.name === colorName)?.image ?? model?.image;

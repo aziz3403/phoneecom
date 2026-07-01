@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Check, ArrowRight, ArrowLeft, Truck, ShieldCheck, Recycle, Info, MapPin,
-  Plus, Minus, Trash2, PackageCheck, Sparkles,
+  Plus, Minus, Trash2, PackageCheck,
 } from "lucide-react";
 import {
   findRow, quote, GRADE_TAG, FREE_SHIP_MIN,
@@ -111,13 +111,18 @@ export function TradeInWizard({
   const [faceIdOk, setFaceIdOk] = useState(true);
   const [battery80, setBattery80] = useState(true);
   const [repairMsg, setRepairMsg] = useState(false);
+  const [qtyToAdd, setQtyToAdd] = useState(1);
 
   // ---- basket + checkout ----
   const [basket, setBasket] = useState<Line[]>([]);
   const [payout, setPayout] = useState<PayoutId>("paypal");
-  const [sellerName, setSellerName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
   const [sellerEmail, setSellerEmail] = useState("");
-  const [payoutDetail, setPayoutDetail] = useState("");
+  const [paypalEmail, setPaypalEmail] = useState("");
+  const [routing, setRouting] = useState("");
+  const [account, setAccount] = useState("");
   const [justAdded, setJustAdded] = useState(false);
 
   const carrierChoice = !!model && model.locks.some((l) => l !== "unlocked");
@@ -145,6 +150,9 @@ export function TradeInWizard({
 
   const unit = q?.hasPrice ? Math.max(5, q.total) : 0;
   const storageLabel = gb >= 1024 ? `${gb / 1024}TB` : gb > 0 ? `${gb}GB` : "";
+  // Photo follows the chosen colour when we have one, else the model's base shot.
+  const colorImage = model?.colors.find((c) => c.name === colorName)?.image ?? model?.image;
+  const carrierLabel = carrierChoice ? (CARRIERS.find((c) => c.id === carrier)?.label ?? "Unlocked") : "Unlocked";
   const topOffer = useMemo(() => {
     const row = model ? findRow(model, gb, lock) : undefined;
     return row?.a ?? row?.new ?? row?.swap ?? 0;
@@ -152,17 +160,17 @@ export function TradeInWizard({
 
   function addToTrade() {
     if (!q?.hasPrice || !model) return;
-    const carrierLabel = carrierChoice ? (CARRIERS.find((c) => c.id === carrier)?.label ?? "Unlocked") : "Unlocked";
     const sig = [model.key, gb, colorName, carrier, grade, backCracked, lensCracked, faceIdOk, battery80, repairMsg].join("~");
     setBasket((b) => {
       const i = b.findIndex((l) => l.sig === sig);
-      if (i >= 0) { const copy = [...b]; copy[i] = { ...copy[i], qty: copy[i].qty + 1 }; return copy; }
+      if (i >= 0) { const copy = [...b]; copy[i] = { ...copy[i], qty: copy[i].qty + qtyToAdd }; return copy; }
       return [...b, {
-        sig, modelKey: model.key, name: model.name, image: model.image, catalogSlug: model.catalogSlug,
+        sig, modelKey: model.key, name: model.name, image: colorImage, catalogSlug: model.catalogSlug,
         gb, storageLabel, color: colorName, carrier, carrierLabel,
-        grade: q.grade, gradeTag: GRADE_TAG[q.grade], unit, base: q.base, deductions: q.deductions, notes: q.notes, qty: 1,
+        grade: q.grade, gradeTag: GRADE_TAG[q.grade], unit, base: q.base, deductions: q.deductions, notes: q.notes, qty: qtyToAdd,
       }];
     });
+    setQtyToAdd(1);
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1400);
   }
@@ -175,7 +183,8 @@ export function TradeInWizard({
   const isCredit = payout === "credit";
   const total = isCredit ? Math.round(subtotal * 1.1) : subtotal;
   const freeShip = count >= FREE_SHIP_MIN;
-  const canLock = count > 0 && sellerName.trim() && /.+@.+\..+/.test(sellerEmail) && (isCredit || payoutDetail.trim());
+  const payoutOk = isCredit || (payout === "paypal" ? /.+@.+\..+/.test(paypalEmail) : !!(routing.trim() && account.trim()));
+  const canLock = !!(count > 0 && firstName.trim() && lastName.trim() && phone.trim() && /.+@.+\..+/.test(sellerEmail) && payoutOk);
 
   if (!model) return null;
 
@@ -310,15 +319,24 @@ export function TradeInWizard({
                   </>
                 )}
 
-                {/* live value for the current device */}
+                {/* live value + quantity for the current device */}
                 <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[14px] bg-[#edf6f0] px-5 py-4">
                   <div>
                     <p className="text-[12.5px] font-medium text-[#0a7d61]">This {model.name} — {GRADE_TAG[grade]}</p>
-                    <p className="text-[26px] font-bold leading-none tracking-[-.02em] text-[#0a7d61]">{formatPrice(unit)}</p>
+                    <p className="text-[26px] font-bold leading-none tracking-[-.02em] text-[#0a7d61]">
+                      {formatPrice(unit)}{qtyToAdd > 1 && <span className="text-[15px] font-semibold"> × {qtyToAdd}</span>}
+                    </p>
                   </div>
-                  <button onClick={addToTrade} className="btn !bg-[#0a8f6e]">
-                    {justAdded ? (<><Check className="h-[18px] w-[18px]" /> Added</>) : (<><Plus className="h-[18px] w-[18px]" /> Add to trade-in</>)}
-                  </button>
+                  <div className="flex items-center gap-2.5">
+                    <div className="inline-flex items-center rounded-full border border-[#bfe0d3] bg-white">
+                      <button onClick={() => setQtyToAdd((n) => Math.max(1, n - 1))} className="grid h-8 w-8 place-items-center text-[#0a7d61]" aria-label="Decrease quantity"><Minus className="h-3.5 w-3.5" /></button>
+                      <span className="min-w-[22px] text-center text-[14px] font-semibold text-[#0a7d61]">{qtyToAdd}</span>
+                      <button onClick={() => setQtyToAdd((n) => n + 1)} className="grid h-8 w-8 place-items-center text-[#0a7d61]" aria-label="Increase quantity"><Plus className="h-3.5 w-3.5" /></button>
+                    </div>
+                    <button onClick={addToTrade} className="btn !bg-[#0a8f6e]">
+                      {justAdded ? (<><Check className="h-[18px] w-[18px]" /> Added</>) : (<><Plus className="h-[18px] w-[18px]" /> Add</>)}
+                    </button>
+                  </div>
                 </div>
                 {(q?.deductions.length || q?.notes.length) ? (
                   <div className="mt-2.5 flex flex-col gap-1">
@@ -352,18 +370,38 @@ export function TradeInWizard({
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <div>
-                    <label className="flabel" htmlFor="ti-name">Full name</label>
-                    <input id="ti-name" value={sellerName} onChange={(e) => setSellerName(e.target.value)} className="inpt" placeholder="Jane Doe" />
+                    <label className="flabel" htmlFor="ti-first">First name</label>
+                    <input id="ti-first" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="inpt" placeholder="Jane" />
+                  </div>
+                  <div>
+                    <label className="flabel" htmlFor="ti-last">Last name</label>
+                    <input id="ti-last" value={lastName} onChange={(e) => setLastName(e.target.value)} className="inpt" placeholder="Doe" />
+                  </div>
+                  <div>
+                    <label className="flabel" htmlFor="ti-phone">Phone number</label>
+                    <input id="ti-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="inpt" placeholder="(555) 123-4567" />
                   </div>
                   <div>
                     <label className="flabel" htmlFor="ti-email">Email</label>
                     <input id="ti-email" type="email" value={sellerEmail} onChange={(e) => setSellerEmail(e.target.value)} className="inpt" placeholder="you@email.com" />
                   </div>
-                  {!isCredit && (
+                  {payout === "paypal" && (
                     <div className="sm:col-span-2">
-                      <label className="flabel" htmlFor="ti-payout">{payout === "paypal" ? "PayPal email" : "Bank details"}</label>
-                      <input id="ti-payout" value={payoutDetail} onChange={(e) => setPayoutDetail(e.target.value)} className="inpt" placeholder={PAYOUTS.find((p) => p.id === payout)?.detail} />
+                      <label className="flabel" htmlFor="ti-paypal">PayPal email</label>
+                      <input id="ti-paypal" type="email" value={paypalEmail} onChange={(e) => setPaypalEmail(e.target.value)} className="inpt" placeholder="paypal@email.com" />
                     </div>
+                  )}
+                  {payout === "bank" && (
+                    <>
+                      <div>
+                        <label className="flabel" htmlFor="ti-routing">Routing number</label>
+                        <input id="ti-routing" inputMode="numeric" value={routing} onChange={(e) => setRouting(e.target.value)} className="inpt" placeholder="9 digits" />
+                      </div>
+                      <div>
+                        <label className="flabel" htmlFor="ti-account">Account number</label>
+                        <input id="ti-account" inputMode="numeric" value={account} onChange={(e) => setAccount(e.target.value)} className="inpt" placeholder="Account number" />
+                      </div>
+                    </>
                   )}
                 </div>
               </div>
@@ -442,13 +480,23 @@ export function TradeInWizard({
             </div>
 
             <div className="px-5 py-4">
-              {basket.length === 0 ? (
-                <div className="flex flex-col items-center gap-2 py-6 text-center">
-                  <Sparkles className="h-7 w-7 text-[#c9cdd3]" />
-                  <p className="text-[13.5px] text-[#86868b]">No devices yet.<br />Configure one on the left and hit <b>Add to trade-in</b>.</p>
+              {/* live preview of the device being built — appears the moment one is picked */}
+              {phase === "build" && (
+                <div className="flex items-center gap-3.5 pb-4">
+                  <PhImg slug={model.catalogSlug ?? model.key} src={colorImage} label={`${model.name} ${colorName}`} className="h-[92px] w-[62px] shrink-0 rounded-[12px]" style={{ ["--ph-a" as string]: "#fcfdff", ["--ph-b" as string]: "#e7e9ee" }} />
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-[#86868b]">Currently building</p>
+                    <p className="text-[16px] font-bold leading-tight text-[#1d1d1f]">{model.name}</p>
+                    <p className="mt-0.5 text-[12px] text-[#86868b]">{[storageLabel, colorName, carrierChoice ? carrierLabel : null, GRADE_TAG[grade]].filter(Boolean).join(" · ")}</p>
+                    <p className="mt-1 text-[16px] font-bold text-[#0a8f6e]">{formatPrice(unit)}{qtyToAdd > 1 && <span className="text-[12px]"> × {qtyToAdd}</span>}</p>
+                  </div>
                 </div>
-              ) : (
-                <div className="flex flex-col divide-y divide-[#eee]">
+              )}
+
+              {basket.length > 0 && (
+                <div className={cn(phase === "build" && "border-t border-[#eee] pt-3")}>
+                  {phase === "build" && <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[#86868b]">In your trade-in · {count} device{count === 1 ? "" : "s"}</p>}
+                  <div className="flex flex-col divide-y divide-[#eee]">
                   {basket.map((l) => (
                     <div key={l.sig} className="flex items-start gap-3 py-3 first:pt-0">
                       <PhImg slug={l.catalogSlug ?? l.modelKey} src={l.image} label={l.name} className="h-14 w-10 shrink-0 rounded-[8px]" style={{ ["--ph-a" as string]: "#fcfdff", ["--ph-b" as string]: "#e7e9ee" }} />
@@ -467,6 +515,7 @@ export function TradeInWizard({
                       <span className="text-[13.5px] font-semibold text-[#1d1d1f]">{formatPrice(l.unit * l.qty)}</span>
                     </div>
                   ))}
+                  </div>
                 </div>
               )}
 

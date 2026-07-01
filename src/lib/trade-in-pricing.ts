@@ -43,7 +43,7 @@ export interface TradeInModel {
   name: string;
   storages: number[];
   locks: Lock[];
-  colors: { name: string; hex: string }[];
+  colors: { name: string; hex: string; image?: string }[];
   catalogSlug?: string;
   image?: string;
   rows: PriceRow[];
@@ -246,7 +246,7 @@ function buildModels(rows: PriceRow[]): TradeInModel[] {
     const catalogSlug = slugFor(first.model);
     const dev = catalogSlug ? DEVICES.find((d) => d.slug === catalogSlug) : undefined;
     const colors = dev?.colors?.length
-      ? dev.colors.map((c) => ({ name: c.name, hex: c.hex }))
+      ? dev.colors.map((c) => ({ name: c.name, hex: c.hex, image: c.image }))
       : DEFAULT_COLORS;
     return {
       key: `${first.cat}:${NORM(first.model)}`,

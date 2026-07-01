@@ -23,4 +23,12 @@ Key conventions:
 - Anything using the cart store or framer-motion must be a client component, and
   cart-dependent UI must guard first render with a `mounted` flag to avoid hydration
   mismatches (persisted store rehydrates synchronously on the client).
-- `npm run build` must stay green (type-check + lint run during build).
+- `npm run build` must stay green (type-check + lint run during build), and so must
+  `npm test` (Vitest — pricing math, trade-in quotes, checkout re-pricing, inventory
+  parsing). CI (.github/workflows/ci.yml) enforces both.
+- Backend: optional Postgres via Drizzle (`src/lib/db/schema.ts`) — orders, trade-ins,
+  bulk quotes, wholesale applications. Server actions re-derive ALL money amounts
+  server-side (`src/lib/order-pricing.ts`, trade-in re-quoting in
+  `src/lib/trade-in-actions.ts`) — never trust client prices. Transactional email
+  lives in `src/lib/email.ts` (Resend, best-effort). The owner back office is
+  `/admin` (gate: `ADMIN_EMAILS` env or `users.isAdmin`).

@@ -25,8 +25,9 @@ const COLS = [
     title: "Trust",
     links: [
       { label: "How grading works", href: "/grades" },
-      { label: "Shipping & returns", href: "/help" },
-      { label: "Returns", href: "/help" },
+      { label: "12-month warranty", href: "/warranty" },
+      { label: "Returns & refunds", href: "/returns" },
+      { label: "Free IMEI check", href: "/imei-check" },
       { label: "Compare devices", href: "/compare" },
     ],
   },
@@ -47,8 +48,9 @@ export function Footer() {
       <div className="footin">
         <p className="footnote">
           Certified pre-owned smartphones for everyone — and serious volume pricing for resellers,
-          repair shops and enterprises. Every device is fully unlocked, carries 80%+ battery health,
-          and ships with a free charger and 30-day returns. Demo storefront — not a real store.
+          repair shops and enterprises. Every device is IMEI-verified clean, fully unlocked, carries
+          80%+ battery health, and ships with a free charger, 30-day returns and a 12-month
+          functional warranty. Demo storefront — not a real store.
         </p>
         <div className="footcols">
           {COLS.map((col) => (
@@ -65,9 +67,10 @@ export function Footer() {
         <div className="footbar">
           <span>© 2026 reMint Commerce. Certified pre-owned.</span>
           <div className="lk">
-            <Link href="/help">Privacy</Link>
-            <Link href="/help">Terms</Link>
-            <Link href="/help">Accessibility</Link>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
+            <Link href="/warranty">Warranty</Link>
+            <Link href="/accessibility">Accessibility</Link>
           </div>
         </div>
       </div>

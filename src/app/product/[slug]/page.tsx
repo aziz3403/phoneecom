@@ -98,12 +98,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       availability: "https://schema.org/InStock",
       url,
     },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: device.rating,
-      reviewCount: device.reviews,
-      bestRating: 5,
-    },
+    // No aggregateRating here on purpose: on-site ratings are sample data, and
+    // publishing them as structured data would push fabricated stars into
+    // search results (FTC fake-review territory). Re-add once real collected
+    // reviews back the numbers.
   };
   const breadcrumbLd = {
     "@context": "https://schema.org",

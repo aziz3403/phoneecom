@@ -292,6 +292,7 @@ export function CartClient({
                   <Benefit>50-point inspection</Benefit>
                   <Benefit>Free charger in the box</Benefit>
                   <Benefit>30-day returns</Benefit>
+                  <Benefit>12-month functional warranty</Benefit>
                   <Benefit>Data wiped to factory standard</Benefit>
                 </div>
               </>
@@ -402,7 +403,8 @@ export function CartClient({
             {stripeEnabled ? (
               <>
                 <p style={cardsub}>
-                  You&apos;ll finish on Stripe&apos;s secure checkout — pay by card, Apple Pay or Google Pay.
+                  You&apos;ll finish on Stripe&apos;s secure checkout — pay by card, Apple Pay, Google Pay,
+                  or split it with Klarna / Affirm where available.
                 </p>
                 <div
                   style={{

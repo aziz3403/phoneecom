@@ -108,14 +108,14 @@ export function botReply(input: string): Reply {
 
   if (word("return", "returns", "refund", "refunds") || phrase("send back", "money back", "change my mind"))
     return {
-      text: "Changed your mind? You have 30 days to return any device for a refund — no restocking fees. Just send it back in the condition it was sold in; a deduction may apply if it comes back damaged or missing parts or the charger. Start it from your account and we'll email you a prepaid label.",
-      actions: [{ label: "Start a return", href: "/account" }, { label: "Returns policy", href: "/help" }],
+      text: "Changed your mind? You have 30 days to return any device for a refund — no restocking fees. Just send it back in the condition it was sold in; a deduction may apply if it comes back damaged or missing parts or the charger. Start it from your account — you cover return postage unless the device arrived not as described (then the label's on us).",
+      actions: [{ label: "Start a return", href: "/account" }, { label: "Returns policy", href: "/returns" }],
     };
 
   if (word("warranty", "guarantee", "defect", "defective", "repair", "faulty", "fault", "broken"))
     return {
-      text: "We don't offer a long-term warranty, but every reMint device is 50-point tested and confirmed fully working, ships with a free charging cable & adapter, and is covered by our 30-day returns. If something isn't right when it arrives, send it back for a refund — no questions.",
-      actions: [{ label: "What's in the box", href: "/help" }],
+      text: "Every reMint device carries a 12-month limited warranty on functional defects — if the hardware stops working under normal use we repair, replace or refund it. Accidental damage, liquid damage, cosmetic wear and normal battery ageing aren't covered. You've also got 30-day returns if something isn't right on arrival.",
+      actions: [{ label: "Warranty terms", href: "/warranty" }],
     };
 
   if (word("grade", "grades", "grading", "condition", "scratch", "scratches", "scuff", "scuffs", "battery", "health", "cosmetic") || phrase("what does new mean"))

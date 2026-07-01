@@ -44,7 +44,7 @@ const FAQ: FaqItem[] = [
   {
     cat: "returns",
     q: "What's in the box — do you offer a warranty?",
-    a: "We don't offer a long-term warranty, but every device is 50-point tested and confirmed fully working before it ships, and comes with a free charging cable & adapter in the box. You're also covered by our 30-day returns, so if anything isn't right when it arrives you can send it back for a refund.",
+    a: "Every device ships with a free charging cable & adapter and is covered by a 12-month limited warranty on functional defects — if the hardware stops working under normal use, we repair, replace or refund it. Accidental damage, liquid damage, cosmetic wear and normal battery ageing aren't covered (full terms on the Warranty page). You're also covered by 30-day returns if anything isn't right when it arrives.",
   },
   {
     cat: "selling",

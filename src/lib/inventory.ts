@@ -42,7 +42,9 @@ const MODEL_ALIASES: [RegExp, string][] = [
   // iPad Pro (older home-button sizes the catalog now carries; "PRO 13" is the 2024 M4)
   [/^IPAD\s*PRO\s*9\.?7/i, "ipad-pro-9-7"],
   [/^IPAD\s*PRO\s*10\.?5/i, "ipad-pro-10-5"],
-  [/^IPAD\s*PRO\s*12\.?9/i, "ipad-pro-12-9"],
+  // Only the 2020 generation — the catalog listing is the 2020 A12Z model;
+  // 2015–2018/2021+ 12.9" stock stays wholesale-only until listed separately.
+  [/^IPAD\s*PRO\s*12\.?9.*\(2020\)/i, "ipad-pro-12-9"],
   [/^IPAD\s*PRO\s*13\b/i, "ipad-pro-13-m4"],
   // base iPad, newest first
   [/^IPAD\s*10\b/i, "ipad-10th-gen"],

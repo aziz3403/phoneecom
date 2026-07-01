@@ -39,7 +39,7 @@ const FAQ: FaqItem[] = [
   {
     cat: "returns",
     q: "What is your return policy?",
-    a: "If it's not right, return it within 30 days for a refund. Start a return from your order page and we'll email a free prepaid label. Just send it back in the condition it was sold in — a deduction may apply if the device is returned damaged or with missing parts or charger.",
+    a: "If it's not right, return it within 30 days for a refund — any reason. Send it back in the condition it was sold in; you cover return postage unless the device arrived not as described (then the label's on us). A deduction may apply if it comes back damaged or missing parts or the charger.",
   },
   {
     cat: "returns",
@@ -49,7 +49,7 @@ const FAQ: FaqItem[] = [
   {
     cat: "selling",
     q: "How does trade-in payment work?",
-    a: "Get an instant quote, ship your device free with our prepaid label, and once we verify it you're paid within 48 hours by cash, PayPal, or store credit (credit pays 10% more).",
+    a: "Get an instant quote — the price is locked for 7 days. Ship it to us (5+ devices get a free prepaid label; under 5 you cover the postage), and once it's verified you're paid by PayPal or bank transfer — or store credit, which pays 10% more.",
   },
   {
     cat: "selling",

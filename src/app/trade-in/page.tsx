@@ -7,7 +7,7 @@ import { getTradeInModels } from "@/lib/trade-in-pricing";
 export const metadata: Metadata = {
   title: "Trade in your phone for instant credit",
   description:
-    "Trade in your old iPhone, Galaxy or iPad in three quick steps. Instant offer, free prepaid shipping, paid in 2 business days — or take 10% more in store credit.",
+    "Trade in your old iPhone, Galaxy or iPad in three quick steps. Instant offer locked for 7 days, free shipping at 5+ devices, paid fast by PayPal or bank — or take 10% more in store credit.",
 };
 
 const STEPS = [

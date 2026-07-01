@@ -5,6 +5,7 @@ import {
   DEVICES,
   getDevice,
   relatedDevices,
+  stockedDevices,
   startingPrice,
   renderSrc,
   displaySpec,
@@ -16,6 +17,7 @@ import {
 import { GRADES } from "@/lib/grades";
 import { ProductExperience } from "@/components/product/ProductExperience";
 import { getAvailability } from "@/lib/availability";
+import { catalogStock } from "@/lib/inventory";
 import { Reviews } from "@/components/product/Reviews";
 import { RecentlyViewed } from "@/components/product/RecentlyViewed";
 import { ProductCard } from "@/components/ui/ProductCard";
@@ -55,9 +57,13 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const device = getDevice(slug);
   if (!device) notFound();
 
-  const related = relatedDevices(device, 3);
+  const stock = await catalogStock();
+  const stocked = new Set(stockedDevices(stock).map((d) => d.slug));
+  const relatedPool = relatedDevices(device, 12).filter((d) => stocked.has(d.slug));
+  const related = (relatedPool.length ? relatedPool : relatedDevices(device, 3)).slice(0, 3);
   const availability = await getAvailability(device.slug);
   const specs: [string, string][] = [
+    ...(device.modelNumbers ? ([["Model number", device.modelNumbers]] as [string, string][]) : []),
     ["Display", displaySpec(device)],
     ["Chip", device.chip],
     ["Rear camera", rearCameraSpec(device)],

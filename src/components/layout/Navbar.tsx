@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useCart, cartCount } from "@/lib/cart-store";
 import { useSession } from "next-auth/react";
 import { User } from "lucide-react";
 import { Leaf } from "@/components/ui/Leaf";
+import { stockedDevices } from "@/lib/products";
+import { useStockMap } from "@/lib/stock-context";
 
 interface MenuCol {
   head: string;
@@ -18,61 +20,44 @@ interface Menu {
   foot: [string, string];
 }
 
-const PHONES_MENU: Menu = {
-  cols: [
-    {
-      head: "Apple — iPhone",
-      href: "/shop?type=phone&brand=Apple",
-      items: [
-        ["iPhone 17 Pro Max", "/product/iphone-17-pro-max"],
-        ["iPhone 17 Pro", "/product/iphone-17-pro"],
-        ["iPhone 17", "/product/iphone-17"],
-        ["iPhone Air", "/product/iphone-air"],
-        ["iPhone 16 Pro Max", "/product/iphone-16-pro-max"],
-        ["iPhone 16", "/product/iphone-16"],
-        ["iPhone 15", "/product/iphone-15"],
-        ["iPhone 13", "/product/iphone-13"],
-      ],
-    },
-    {
-      head: "Samsung — Galaxy",
-      href: "/shop?type=phone&brand=Samsung",
-      items: [
-        ["Galaxy S24 Ultra", "/product/galaxy-s24-ultra"],
-        ["Galaxy S24", "/product/galaxy-s24"],
-        ["Galaxy S23", "/product/galaxy-s23"],
-        ["Galaxy Z Flip5", "/product/galaxy-z-flip5"],
-        ["Galaxy A54 5G", "/product/galaxy-a54-5g"],
-      ],
-    },
-  ],
-  foot: ["See all phones", "/shop?type=phone"],
-};
+/**
+ * Mega-menus are built from devices that actually have warehouse stock —
+ * newest first — so the nav can never point at a "Restocking soon" page.
+ * Falls back to the full catalog when the stock feed is unavailable.
+ */
+function buildDropdowns(stock: Record<string, number> | null): { label: string; menu: Menu }[] {
+  const catalog = stockedDevices(stock);
+  const pick = (type: "phone" | "tablet", brand?: "Apple" | "Samsung", n = 8) =>
+    catalog
+      .filter((d) => d.type === type && (!brand || d.brand === brand))
+      .sort((a, b) => b.releaseYear - a.releaseYear || b.rating - a.rating)
+      .slice(0, n)
+      .map((d): [string, string] => [d.name, `/product/${d.slug}`]);
 
-const TABLETS_MENU: Menu = {
-  cols: [
-    {
-      head: "Apple — iPad",
-      href: "/shop?type=tablet&brand=Apple",
-      items: [
-        ['iPad Pro 13" (M4)', "/product/ipad-pro-13-m4"],
-        ['iPad Air 11" (M2)', "/product/ipad-air-11-m2"],
-        ["iPad mini 6", "/product/ipad-mini-6"],
-        ["iPad (10th gen)", "/product/ipad-10th-gen"],
-      ],
-    },
-  ],
-  foot: ["See all tablets", "/shop?type=tablet"],
-};
-
-const DROPDOWNS: { label: string; menu: Menu }[] = [
-  { label: "Phones", menu: PHONES_MENU },
-  { label: "Tablets", menu: TABLETS_MENU },
-];
+  const phones: Menu = {
+    cols: [
+      { head: "Apple — iPhone", href: "/shop?type=phone&brand=Apple", items: pick("phone", "Apple", 8) },
+      { head: "Samsung — Galaxy", href: "/shop?type=phone&brand=Samsung", items: pick("phone", "Samsung", 5) },
+    ],
+    foot: ["See all phones", "/shop?type=phone"],
+  };
+  const tablets: Menu = {
+    cols: [
+      { head: "Apple — iPad", href: "/shop?type=tablet&brand=Apple", items: pick("tablet", "Apple", 8) },
+    ],
+    foot: ["See all tablets", "/shop?type=tablet"],
+  };
+  return [
+    { label: "Phones", menu: phones },
+    { label: "Tablets", menu: tablets },
+  ];
+}
 
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
+  const stockMap = useStockMap();
+  const DROPDOWNS = useMemo(() => buildDropdowns(stockMap), [stockMap]);
   const [open, setOpen] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);

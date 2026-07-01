@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function PricesPage() {
-  const { models } = await getTradeInModels();
+  const { models, live } = await getTradeInModels();
 
   return (
     <div className="pt-12">
@@ -20,8 +20,12 @@ export default async function PricesPage() {
         <p className="crumb">
           <Link href="/">Home</Link> · <Link href="/trade-in">Trade-in</Link> · Price list
         </p>
-        <span className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-[#edf6f0] px-3.5 py-1.5 text-[12.5px] font-semibold text-[#0a7d61]">
+        <span className="mb-3 mr-2 inline-flex items-center gap-1.5 rounded-full bg-[#edf6f0] px-3.5 py-1.5 text-[12.5px] font-semibold text-[#0a7d61]">
           <Trophy className="h-3.5 w-3.5" /> The prices we pay — matched &amp; beaten
+        </span>
+        <span className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-[#eef2fb] px-3.5 py-1.5 text-[12.5px] font-semibold text-[#3b5bb8]">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#3b5bb8]" />
+          {live ? "Synced live with our price book — refreshed hourly" : "From our current price book"}
         </span>
         <h1 className="ptitle">Our buyback price list.</h1>
         <p className="psub">

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
+import { TopBar } from "@/components/layout/TopBar";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { SearchCommand } from "@/components/layout/SearchCommand";
@@ -60,6 +61,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <body>
         <Providers stock={stock}>
           <div className="home">
+            <TopBar />
             <Navbar />
             <CartDrawer />
             <SearchCommand />

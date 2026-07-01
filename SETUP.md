@@ -108,6 +108,19 @@ no code change needed; Stripe shows them to eligible customers automatically.
   seller), approve/reject wholesale applications, and triage bulk quotes.
   You can also flip `isAdmin` directly on a user row.
 
+## 4f. Trade-in price sheet (live sync)
+
+Buyback quotes track the shared Google Sheet
+(`1pu4Adxq4MGB6Qour0k__4gBdgnggWRoSVYnJUKgxzEw` — tabs "iPhone Used",
+"Samsung", "iPad Used") and refresh **hourly**. Keep the sheet shared as
+"anyone with the link can view" or the fetch gets a login page and the site
+falls back to the committed snapshot. A structural validator rejects renamed
+tabs / moved columns / half-edited books, so a broken sheet can never
+mis-price a payout — it just pins to the last good snapshot. Set
+`TRADEIN_LIVE=0` to force snapshot-only; `TRADEIN_SHEET_ID` overrides the
+sheet. After big price-book changes, refresh the committed snapshot with
+`python3 scripts/extract-trade-in-prices.py <book.xlsx> src/data/trade-in-prices.json`.
+
 ## 4e. (Optional) Analytics & monitoring
 
 - **Analytics** — set `NEXT_PUBLIC_PLAUSIBLE_DOMAIN=yourdomain.com` to load

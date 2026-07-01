@@ -4,7 +4,8 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
-import { DEVICES, startingPrice, type Device } from "@/lib/products";
+import { startingPrice, stockedDevices, type Device } from "@/lib/products";
+import { useStockMap } from "@/lib/stock-context";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { ButtonLink } from "@/components/ui/Button";
 
@@ -33,15 +34,16 @@ function matches(d: Device, q: string): boolean {
 export function SearchPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const stockMap = useStockMap();
   const raw = searchParams.get("q") ?? "";
   const q = raw.trim().toLowerCase();
 
   const results = useMemo(() => {
     if (!q) return [];
-    return DEVICES.filter((d) => matches(d, q)).sort(
+    return stockedDevices(stockMap).filter((d) => matches(d, q)).sort(
       (a, b) => startingPrice(a) - startingPrice(b),
     );
-  }, [q]);
+  }, [q, stockMap]);
 
   function setQuery(next: string) {
     router.push(`/search?q=${encodeURIComponent(next)}`);

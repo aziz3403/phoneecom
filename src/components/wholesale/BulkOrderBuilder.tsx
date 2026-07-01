@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus, Minus, Trash2, ShoppingCart, Check } from "lucide-react";
-import { DEVICES, getDevice, baseStorage, storageFor } from "@/lib/products";
+import { getDevice, baseStorage, storageFor, stockedDevices } from "@/lib/products";
+import { useStockMap } from "@/lib/stock-context";
 import { tierForQty, unitPrice, MOQ } from "@/lib/wholesale";
 import { useCart } from "@/lib/cart-store";
 import { PhImg } from "@/components/home/PhImg";
@@ -54,7 +55,8 @@ export function BulkOrderBuilder() {
     return { units, total, retail, savings: retail - total };
   }, [computed]);
 
-  const available = DEVICES.filter((p) => !lines.some((l) => l.slug === p.slug));
+  const stockMap = useStockMap();
+  const available = stockedDevices(stockMap).filter((p) => !lines.some((l) => l.slug === p.slug));
 
   function addLine(slug: string) {
     if (!slug) return;

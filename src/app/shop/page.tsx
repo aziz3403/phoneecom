@@ -33,6 +33,20 @@ export default async function ShopPage({
           Every {noun} is certified, graded honestly, and ships with a free charger and 30-day returns. Find your
           next one below.
         </p>
+        <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-[#6e6e73]">
+          {[
+            "Save up to 40% vs new",
+            "12-month functional warranty",
+            "30-day free-return window",
+            "IMEI verified clean",
+            "80%+ battery guaranteed",
+          ].map((t) => (
+            <span key={t} className="inline-flex items-center gap-1.5">
+              <span className="inline-block h-[5px] w-[5px] rounded-full bg-[#0a8f6e]" />
+              {t}
+            </span>
+          ))}
+        </div>
       </header>
 
       <ShopClient

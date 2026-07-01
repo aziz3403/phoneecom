@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import {
   DEVICES,
+  stockedDevices,
   BRANDS,
   COLOR_FAMILIES,
   fromPrice,
@@ -15,6 +16,7 @@ import {
 import { ProductCard } from "@/components/ui/ProductCard";
 import { Leaf } from "@/components/ui/Leaf";
 import { formatPrice, cn } from "@/lib/utils";
+import { useStockMap } from "@/lib/stock-context";
 
 const PRICES = DEVICES.map(fromPrice);
 const MIN_PRICE = Math.min(...PRICES);
@@ -137,8 +139,9 @@ export function ShopClient({
 
   const filters: Filters = { query, types, brands, storages, colors, screens, maxPrice };
 
+  const stockMap = useStockMap();
   const filtered = useMemo(() => {
-    const list = DEVICES.filter((d) => passes(d, filters));
+    const list = stockedDevices(stockMap).filter((d) => passes(d, filters));
     return [...list].sort((a, b) => {
       switch (sort) {
         case "price-asc":

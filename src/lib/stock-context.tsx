@@ -26,3 +26,8 @@ export function useStockFor(slug: string, fallback: number): number {
   if (!map) return fallback;
   return slug in map ? map[slug] : fallback;
 }
+
+/** The whole slug → units map (null when no provider), for list filtering. */
+export function useStockMap(): Record<string, number> | null {
+  return useContext(StockContext);
+}

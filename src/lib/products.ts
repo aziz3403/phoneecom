@@ -58,6 +58,8 @@ export interface Device {
   storage: StorageOption[];
   grade: GradeId;
   batteryHealth: number;
+  /** manufacturer model number(s) for the US variant, e.g. "A2649" / "SM-S911U" */
+  modelNumbers?: string;
   cameraLayout: CameraLayout;
   fiveG: boolean;
   cellular?: boolean;
@@ -2964,6 +2966,17 @@ export function bestDiscount(d: Device): number {
   return Math.max(
     ...d.storage.map((s) => (s.original > 0 ? Math.round((1 - s.price / s.original) * 100) : 0)),
   );
+}
+
+/**
+ * Devices that actually have warehouse stock — the storefront only lists
+ * these. A missing/empty stock map (feed unavailable) fails open to the full
+ * catalog so the shop can never render empty by accident.
+ */
+export function stockedDevices(stock: Record<string, number> | null | undefined): Device[] {
+  if (!stock || Object.keys(stock).length === 0) return DEVICES;
+  const visible = DEVICES.filter((d) => (stock[d.slug] ?? 0) > 0);
+  return visible.length > 0 ? visible : DEVICES;
 }
 
 export function popularDevices(): Device[] {

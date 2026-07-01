@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { TrendingDown, ChevronRight } from "lucide-react";
-import { DEVICES, baseStorage, storageFor } from "@/lib/products";
+import { DEVICES, baseStorage, storageFor, stockedDevices } from "@/lib/products";
+import { useStockMap } from "@/lib/stock-context";
 import { tierForQty, nextTier, MOQ, WHOLESALE_TIERS } from "@/lib/wholesale";
 import { PhImg } from "@/components/home/PhImg";
 import { formatPrice, cn } from "@/lib/utils";
@@ -19,7 +20,9 @@ const GRADES = [
 ] as const;
 
 export function SavingsCalculator() {
-  const [slug, setSlug] = useState(DEVICES[0].slug);
+  const stockMap = useStockMap();
+  const catalog = stockedDevices(stockMap);
+  const [slug, setSlug] = useState(catalog[0].slug);
   const device = useMemo(() => DEVICES.find((d) => d.slug === slug)!, [slug]);
   const [gb, setGb] = useState(baseStorage(device).gb);
   const [qty, setQty] = useState(100);
@@ -62,7 +65,7 @@ export function SavingsCalculator() {
               onChange={(e) => changeDevice(e.target.value)}
               className="sel mt-1.5"
             >
-              {DEVICES.map((d) => (
+              {catalog.map((d) => (
                 <option key={d.slug} value={d.slug}>
                   {d.name}
                 </option>

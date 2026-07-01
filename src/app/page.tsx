@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { getInventory } from "@/lib/inventory";
-import { popularDevices, startingPrice, bestDiscount } from "@/lib/products";
+import { getInventory, catalogStock } from "@/lib/inventory";
+import { popularDevices, startingPrice, bestDiscount, stockedDevices } from "@/lib/products";
 import { WHOLESALE_TIERS } from "@/lib/wholesale";
 import { PhImg } from "@/components/home/PhImg";
 import { GradeExplorer } from "@/components/home/GradeExplorer";
@@ -11,7 +11,14 @@ import { SITE_URL } from "@/lib/site";
 export default async function HomePage() {
   const { items, units } = await getInventory();
   const listings = items.length;
-  const rail = popularDevices();
+  const stock = await catalogStock();
+  const catalog = stockedDevices(stock);
+  const popular = popularDevices().filter((d) => catalog.includes(d));
+  // keep the rail full even if some "popular" models are out of stock
+  const rail = [...popular, ...catalog.filter((d) => !popular.includes(d))].slice(
+    0,
+    Math.max(popular.length, 8),
+  );
 
   const orgLd = {
     "@context": "https://schema.org",
@@ -146,7 +153,7 @@ export default async function HomePage() {
             <div className="thead">
               <p className="teyebrow">Trade in</p>
               <h3 className="ttitle">Turn your old phone into credit.</h3>
-              <p className="tsub">Get an instant quote and ship it free. Apply it to your next device.</p>
+              <p className="tsub">Instant quote, locked for 7 days — take cash or 10% extra as credit toward your next device.</p>
               <div className="tlinks">
                 <Link className="link" href="/trade-in">Get a quote <span className="chev">&rsaquo;</span></Link>
               </div>

@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { create } from "zustand";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, X, CornerDownLeft } from "lucide-react";
-import { DEVICES, startingPrice, popularDevices, renderSrc } from "@/lib/products";
+import { startingPrice, popularDevices, renderSrc, stockedDevices } from "@/lib/products";
+import { useStockMap } from "@/lib/stock-context";
 import { formatPrice } from "@/lib/utils";
 
 interface SearchUI {
@@ -47,15 +48,20 @@ export function SearchCommand() {
     }
   }, [open]);
 
+  const stockMap = useStockMap();
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return popularDevices().slice(0, 6);
-    return DEVICES.filter((d) =>
+    const catalog = stockedDevices(stockMap);
+    if (!q) {
+      const popular = popularDevices().filter((d) => catalog.includes(d));
+      return (popular.length ? popular : catalog).slice(0, 6);
+    }
+    return catalog.filter((d) =>
       `${d.brand} ${d.name} ${d.line} ${d.chip} ${d.colors.map((c) => c.name).join(" ")}`
         .toLowerCase()
         .includes(q),
     ).slice(0, 7);
-  }, [query]);
+  }, [query, stockMap]);
 
   function go(slug: string) {
     setOpen(false);

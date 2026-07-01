@@ -263,10 +263,10 @@ function buildModels(rows: PriceRow[]): TradeInModel[] {
   });
 }
 
-// ---- live fetch (daily) + snapshot fallback --------------------------------
+// ---- live fetch (hourly) + snapshot fallback --------------------------------
 async function fetchTab(sheet: string): Promise<string[][] | null> {
   try {
-    const res = await fetch(TAB_URL(sheet), { next: { revalidate: 86400 } });
+    const res = await fetch(TAB_URL(sheet), { next: { revalidate: 3600 } });
     if (!res.ok) return null;
     const text = await res.text();
     if (/^\s*</.test(text)) return null; // private sheet → HTML login page
@@ -294,10 +294,12 @@ function validLive(rows: PriceRow[]): boolean {
 }
 
 async function liveRows(): Promise<PriceRow[] | null> {
-  // Opt-in: the committed snapshot (built from the owner's price book) is the
-  // trusted source. Set TRADEIN_LIVE=1 only once the live sheet is confirmed to
-  // match the book's tab layout, so a mismatched sheet can never mis-price.
-  if (process.env.TRADEIN_LIVE !== "1") return null;
+  // Live-by-default: quotes track the owner's shared price sheet, refreshed
+  // hourly. validLive() rejects anything structurally off (renamed tabs, moved
+  // columns, a half-edited sheet) and we fall back to the committed snapshot —
+  // so a broken sheet can never mis-price a payout. Set TRADEIN_LIVE=0 to pin
+  // to the snapshot.
+  if (process.env.TRADEIN_LIVE === "0") return null;
   const [ip, sm, ip2] = await Promise.all([
     fetchTab("iPhone Used"), fetchTab("Samsung"), fetchTab("iPad Used"),
   ]);
@@ -306,7 +308,7 @@ async function liveRows(): Promise<PriceRow[] | null> {
   return validLive(rows) ? rows : null;
 }
 
-/** All tradeable models, live when possible and current within a day. */
+/** All tradeable models, live when possible and current within the hour. */
 export async function getTradeInModels(): Promise<{ models: TradeInModel[]; live: boolean }> {
   const live = await liveRows();
   const rows = (live ?? (SNAPSHOT as PriceRow[])) as PriceRow[];

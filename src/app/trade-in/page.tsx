@@ -11,16 +11,16 @@ export const metadata: Metadata = {
 };
 
 const STEPS = [
-  { icon: Search, title: "Tell us about it", body: "Pick your device and answer a few condition questions for an instant offer." },
-  { icon: Truck, title: "Ship it free", body: "We email a prepaid label and a recycled box kit. Drop it off — on us." },
-  { icon: Tag, title: "We inspect it", body: "Our lab verifies the condition against your quote within a day." },
+  { icon: Search, title: "Build your offer", body: "Add one device or a whole batch — answer a few questions each for an instant price." },
+  { icon: Truck, title: "Ship it in", body: "5+ devices ship free on a prepaid label. Fewer? You cover the label — inspection is always free." },
+  { icon: Tag, title: "We inspect it", body: "Our lab verifies the condition against your quote within a day, at no cost to you." },
   { icon: Banknote, title: "Get paid", body: "PayPal in ~2 business days or bank transfer in up to 5 — or take 10% more as instant store credit." },
 ];
 
 // What our inspectors check — straight from our grading standard, so there are
 // no surprises. Being upfront on these keeps your quote accurate.
 const CHECKS = [
-  { icon: BatteryWarning, title: "Battery health", body: "A “Service” message or health under 80% is subject to a deduction." },
+  { icon: BatteryWarning, title: "Battery health", body: "A “Service” message or health under 80% is a flat $15 deduction — nothing hidden." },
   { icon: ScanFace, title: "Face ID / Touch ID", body: "Must fully register and unlock — a faulty sensor is priced as parts." },
   { icon: ScanFace, title: "Screen & LCD", body: "We check for lines, spots, burn-in and aftermarket screens (no True Tone is a tell)." },
   { icon: Camera, title: "Camera & lens", body: "Cracked lens or camera spotting (common on 12/13) means an extra deduction." },
@@ -31,6 +31,7 @@ const CHECKS = [
 const TERMS = [
   "We only buy devices you legally own — nothing reported lost or stolen. Every device is checked against CheckMEND (carrier, law-enforcement and insurance data) and data-wiped on arrival.",
   "Your quote is locked for 7 days and honored as long as the device matches what you told us. If we find it in better shape, you keep the difference. We pay by PayPal (about 2 business days) or bank transfer (up to 5) — or store credit for 10% more.",
+  "Shipping is free on trade-ins of 5 or more devices; for smaller batches you cover the label to send it in. Inspection is always free — and if you change your mind or decline our final offer, we ship it straight back and you just cover return postage.",
   "Final grade, deductions and returns are confirmed after our free inspection. If a device relocks or shows a carrier/KG lock after sale, the seller remains responsible.",
 ];
 

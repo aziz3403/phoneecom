@@ -43,10 +43,30 @@ export interface TradeInModel {
   name: string;
   storages: number[];
   locks: Lock[];
+  colors: { name: string; hex: string }[];
   catalogSlug?: string;
   image?: string;
   rows: PriceRow[];
 }
+
+/** Flat deduction for a battery under 80% health. */
+export const BATTERY_DEDUCTION = 15;
+/** Free prepaid shipping kicks in at this many devices in one trade-in. */
+export const FREE_SHIP_MIN = 5;
+
+// Fallback colour palette for models the catalog doesn't carry a swatch for.
+const DEFAULT_COLORS = [
+  { name: "Black", hex: "#26282d" },
+  { name: "White", hex: "#e8e8e6" },
+  { name: "Silver", hex: "#d9dbdd" },
+  { name: "Blue", hex: "#3f5f8c" },
+  { name: "Green", hex: "#3f6b52" },
+  { name: "Gold", hex: "#d4b878" },
+  { name: "Purple", hex: "#8a7fc4" },
+  { name: "Red", hex: "#b3303a" },
+  { name: "Pink", hex: "#e6b8c2" },
+  { name: "Other", hex: "#8b9099" },
+];
 
 // ---- live sheet config -----------------------------------------------------
 // Owner's buyback sheet. Override the id via env without a code change; the tab
@@ -225,6 +245,9 @@ function buildModels(rows: PriceRow[]): TradeInModel[] {
     const first = rs[0];
     const catalogSlug = slugFor(first.model);
     const dev = catalogSlug ? DEVICES.find((d) => d.slug === catalogSlug) : undefined;
+    const colors = dev?.colors?.length
+      ? dev.colors.map((c) => ({ name: c.name, hex: c.hex }))
+      : DEFAULT_COLORS;
     return {
       key: `${first.cat}:${NORM(first.model)}`,
       cat: first.cat,
@@ -232,6 +255,7 @@ function buildModels(rows: PriceRow[]): TradeInModel[] {
       name: first.model,
       storages: [...new Set(rs.filter((r) => r.gb > 0).map((r) => r.gb))].sort((a, b) => a - b),
       locks: [...new Set(rs.map((r) => r.lock))].filter(isLock),
+      colors,
       catalogSlug,
       image: dev?.image,
       rows: rs,
@@ -344,12 +368,12 @@ export function quote(r: PriceRow, input: QuoteInput): Quote {
     const rule = (r.faceId ?? "").toLowerCase();
     if (rule.includes("part")) {
       base = r.doa ?? base; grade = "doa";
-      notes.push("Face ID fault — priced as parts; final value confirmed on inspection.");
+      notes.push("Face ID fault — priced at our parts rate. We confirm it free when we inspect, so there are no surprises.");
     } else if (rule.includes("d")) {
       base = r.d ?? base; grade = "d";
-      notes.push("Face ID fault — regraded to D.");
+      notes.push("Face ID fault — regraded to D. We confirm it free when we inspect.");
     } else {
-      notes.push("Face ID fault — subject to deduction, confirmed on inspection.");
+      notes.push("Face ID fault — a deduction applies; we confirm the exact amount free when we inspect it.");
     }
   }
 
@@ -357,8 +381,8 @@ export function quote(r: PriceRow, input: QuoteInput): Quote {
 
   if (input.crackedBack && r.crackedBack) deductions.push({ label: "Cracked back glass", amount: r.crackedBack });
   if (input.crackedLens && r.crackedLens) deductions.push({ label: "Cracked camera lens", amount: r.crackedLens });
-  if (input.batteryLow) notes.push("Battery health under 80% — subject to deduction, confirmed on inspection.");
-  if (input.repairMessage) notes.push("Prior repair / non-genuine part message — subject to deduction.");
+  if (input.batteryLow) deductions.push({ label: "Battery under 80%", amount: BATTERY_DEDUCTION });
+  if (input.repairMessage) notes.push("Prior repair / non-genuine part message — a deduction may apply; we confirm it free when we inspect it.");
 
   const total = Math.max(0, base - deductions.reduce((s, d) => s + d.amount, 0));
   return { hasPrice: true, grade, base, deductions, notes, total };

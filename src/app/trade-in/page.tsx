@@ -66,6 +66,14 @@ export default async function TradeInPage({
             </span>
           ))}
         </div>
+        <div className="mt-5 flex flex-wrap gap-2.5">
+          <Link href="/trade-in/prices" className="inline-flex items-center gap-1.5 rounded-full border border-[#d2d2d7] bg-white px-4 py-2 text-[13.5px] font-semibold text-[#1d1d1f] transition-colors hover:border-[#0a8f6e]">
+            <Tag className="h-4 w-4 text-[#0a8f6e]" /> See the full price list
+          </Link>
+          <Link href="/trade-in/prices#bulk" className="inline-flex items-center gap-1.5 rounded-full border border-[#d2d2d7] bg-white px-4 py-2 text-[13.5px] font-semibold text-[#1d1d1f] transition-colors hover:border-[#0a8f6e]">
+            <Banknote className="h-4 w-4 text-[#0a8f6e]" /> Selling a whole batch?
+          </Link>
+        </div>
       </header>
 
       <div className="shell pt-10">

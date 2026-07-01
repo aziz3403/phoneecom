@@ -5,10 +5,15 @@ import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ArrowRight, ArrowLeft, Truck, ShieldCheck, Recycle } from "lucide-react";
 import { DEVICES, baseStorage, storageFor, BRANDS, type Brand } from "@/lib/products";
+import type { TradeInPricing } from "@/lib/trade-in-pricing";
 import { PhImg } from "@/components/home/PhImg";
 import { formatPrice, cn } from "@/lib/utils";
 
 const STEPS = ["Your device", "Its condition", "Your offer"] as const;
+
+/** Best-case condition factor (flawless + unlocked) — the sheet's payout is the
+ *  price we pay in exactly that state, so it anchors the top of the scale. */
+const MAX_FACTOR = 0.85;
 
 const SCREEN_OPTS = [
   { id: "flawless", label: "Flawless", desc: "No scratches at all", rank: 0 },
@@ -53,7 +58,13 @@ function conditionFactor(works: boolean, screen: ScreenId, body: BodyId, unlocke
   return factor * (unlocked ? 1 : 0.9);
 }
 
-export function TradeInWizard({ initialSlug }: { initialSlug?: string }) {
+export function TradeInWizard({
+  initialSlug,
+  pricing,
+}: {
+  initialSlug?: string;
+  pricing?: TradeInPricing;
+}) {
   const initial = initialSlug ? DEVICES.find((d) => d.slug === initialSlug) : undefined;
   const [step, setStep] = useState(0);
   const [brand, setBrand] = useState<Brand>(initial?.brand ?? "Apple");
@@ -71,8 +82,18 @@ export function TradeInWizard({ initialSlug }: { initialSlug?: string }) {
 
   const sOpt = storageFor(device, gb);
   const factor = conditionFactor(works, screen, body, unlocked);
-  const cash = Math.max(15, Math.round(sOpt.wholesale * factor));
+  // Real payout we pay for this exact model/capacity, from the owner's sheet
+  // (top = flawless & unlocked). Fall back to the catalog estimate if the sheet
+  // has no price for it. `top / MAX_FACTOR` re-bases so a flawless unit pays the
+  // sheet price exactly, and lesser conditions scale down from there.
+  const devicePricing = pricing?.[device.slug];
+  const sheetTop = devicePricing?.byGb?.[gb] ?? devicePricing?.top;
+  const base = sheetTop ? sheetTop / MAX_FACTOR : sOpt.wholesale;
+  const cash = Math.max(15, Math.round(base * factor));
   const credit = Math.round(cash * 1.1);
+  // Headline "we pay up to" for the selected model/capacity (flawless + unlocked).
+  const topOffer = Math.round(base * MAX_FACTOR);
+  const livePrice = sheetTop != null;
   const isCredit = payout === "credit";
   const payoutVal = isCredit ? credit : cash;
   const storageLabel = gb >= 1024 ? `${gb / 1024}TB` : `${gb}GB`;
@@ -153,7 +174,22 @@ export function TradeInWizard({ initialSlug }: { initialSlug?: string }) {
                 ))}
               </div>
 
-              <div className="mt-7 flex justify-end">
+              <div className="mt-6 flex items-center justify-between gap-4 rounded-[14px] bg-[#edf6f0] px-5 py-4">
+                <div>
+                  <p className="text-[13px] font-medium text-[#0a7d61]">
+                    We pay up to{livePrice ? "" : " an estimated"}
+                  </p>
+                  <p className="text-[26px] font-bold leading-none tracking-[-.02em] text-[#0a7d61]">
+                    {formatPrice(topOffer)}
+                  </p>
+                </div>
+                <p className="max-w-[190px] text-right text-[12px] leading-snug text-[#5c8a78]">
+                  for a flawless, unlocked {device.name} {storageLabel}. Answer a few questions for
+                  your exact offer.
+                </p>
+              </div>
+
+              <div className="mt-6 flex justify-end">
                 <button onClick={() => setStep(1)} className="btn">
                   Continue <ArrowRight className="h-[18px] w-[18px]" />
                 </button>

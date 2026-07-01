@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Search, Tag, Truck, Banknote } from "lucide-react";
+import { Search, Tag, Truck, Banknote, ShieldCheck, BatteryWarning, ScanFace, Wrench, Camera, Lock } from "lucide-react";
 import { TradeInWizard } from "@/components/trade-in/TradeInWizard";
+import { getTradeInModels } from "@/lib/trade-in-pricing";
 
 export const metadata: Metadata = {
   title: "Trade in your phone for instant credit",
@@ -16,12 +17,30 @@ const STEPS = [
   { icon: Banknote, title: "Get paid fast", body: "Cash or PayPal in 2 business days — or take 10% more as instant store credit." },
 ];
 
+// What our inspectors check — straight from our grading standard, so there are
+// no surprises. Being upfront on these keeps your quote accurate.
+const CHECKS = [
+  { icon: BatteryWarning, title: "Battery health", body: "A “Service” message or health under 80% is subject to a deduction." },
+  { icon: ScanFace, title: "Face ID / Touch ID", body: "Must fully register and unlock — a faulty sensor is priced as parts." },
+  { icon: ScanFace, title: "Screen & LCD", body: "We check for lines, spots, burn-in and aftermarket screens (no True Tone is a tell)." },
+  { icon: Camera, title: "Camera & lens", body: "Cracked lens or camera spotting (common on 12/13) means an extra deduction." },
+  { icon: Wrench, title: "Repair messages", body: "“Genuine/Used” or unknown part messages (display, battery, camera) are deducted." },
+  { icon: Lock, title: "Locks & ESN", body: "Bad ESN is fine if not lost/stolen; carrier-locked, iCloud-locked or KG-locked is priced lower." },
+];
+
+const TERMS = [
+  "We only buy devices you legally own — nothing reported lost or stolen. Every device is checked against CheckMEND (carrier, law-enforcement and insurance data) and data-wiped on arrival.",
+  "Your quote is locked for 14 days and honored as long as the device matches what you told us. If we find it in better shape, you keep the difference.",
+  "Final grade, deductions and returns are confirmed after our free inspection. If a device relocks or shows a carrier/KG lock after sale, the seller remains responsible.",
+];
+
 export default async function TradeInPage({
   searchParams,
 }: {
   searchParams: Promise<{ device?: string }>;
 }) {
   const { device } = await searchParams;
+  const { models } = await getTradeInModels();
 
   return (
     <div className="pt-12">
@@ -31,8 +50,9 @@ export default async function TradeInPage({
         </p>
         <h1 className="ptitle">Trade in. Trade up. Waste nothing.</h1>
         <p className="psub">
-          Three quick questions for an instant offer on your old phone or tablet. Ship it free, get
-          paid in two days — or take 10% more as store credit toward your next one.
+          A few quick questions for an instant offer on your old phone or tablet — we buy the full
+          range, at real market prices. Ship it free, get paid in two days, or take 10% more as store
+          credit toward your next one.
         </p>
         <div className="mt-6 flex flex-wrap gap-x-7 gap-y-2 text-sm text-[#6e6e73]">
           {["Instant offer", "Free prepaid shipping", "Paid in 48 hours", "Price-lock 14 days"].map((t) => (
@@ -45,7 +65,7 @@ export default async function TradeInPage({
       </header>
 
       <div className="shell pt-10">
-        <TradeInWizard initialSlug={device} />
+        <TradeInWizard initialSlug={device} models={models} />
       </div>
 
       <section className="graysec mt-24">
@@ -65,6 +85,45 @@ export default async function TradeInPage({
               <p className="mt-2 text-sm leading-relaxed text-[#6e6e73]">{s.body}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* what we check */}
+      <section className="shell mt-24">
+        <div className="mb-9 max-w-[640px]">
+          <p className="eyebrow">What we check</p>
+          <h2 className="h2 mt-2">No surprises — here&apos;s exactly what affects your price.</h2>
+          <p className="mt-3 text-[16px] leading-relaxed text-[#6e6e73]">
+            Tell us about these up front and your instant offer will match the final one. Every
+            device is inspected against the same standard.
+          </p>
+        </div>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {CHECKS.map((c) => (
+            <div key={c.title} className="scard-bord h-full">
+              <div className="mb-3.5 grid h-10 w-10 place-items-center rounded-[11px] bg-[#edf6f0] text-[#0a8f6e]">
+                <c.icon className="h-[19px] w-[19px]" />
+              </div>
+              <h3 className="text-[16px] font-semibold tracking-[-.01em] text-[#1d1d1f]">{c.title}</h3>
+              <p className="mt-1.5 text-[13.5px] leading-relaxed text-[#6e6e73]">{c.body}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* terms */}
+        <div className="mt-8 rounded-[18px] border border-[#e2e2e6] bg-[#fafafa] p-6">
+          <div className="flex items-center gap-2.5">
+            <ShieldCheck className="h-5 w-5 text-[#0a8f6e]" />
+            <h3 className="text-[16px] font-semibold text-[#1d1d1f]">The fine print, in plain English</h3>
+          </div>
+          <ul className="mt-4 flex flex-col gap-3">
+            {TERMS.map((t) => (
+              <li key={t} className="flex items-start gap-2.5 text-[13.5px] leading-relaxed text-[#6e6e73]">
+                <span className="mt-[7px] inline-block h-[5px] w-[5px] flex-none rounded-full bg-[#0a8f6e]" />
+                {t}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
     </div>

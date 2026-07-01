@@ -75,8 +75,11 @@ for r in range(1, ws.max_row+1):
     b = ws.cell(r,2).value; c = ws.cell(r,3).value
     bs = str(b).strip() if b else ""
     cs = str(c).strip() if c else ""
-    if bs.lower().startswith("galaxy"):
-        cur_model = bs
+    # Model lives in col B on the section-title AND data rows, but older models
+    # drop the "Galaxy" prefix ("S22 Ultra") — take col B whenever present and
+    # normalise. The NEW|A|B|C|D|DOA header row has an empty col B (skipped).
+    if bs:
+        cur_model = bs if bs.lower().startswith("galaxy") else f"Galaxy {bs}"
     lock = lock_of(cs)
     if lock is None or cur_model is None: continue
     black = 0

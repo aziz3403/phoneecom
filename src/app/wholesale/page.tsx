@@ -68,6 +68,46 @@ const FAQ = [
     q: "Do you ship internationally?",
     a: "We ship across North America and to select international partners. Your account rep will confirm options and lead times for your region.",
   },
+  {
+    q: "What if units arrive out of spec?",
+    a: "Every wholesale shipment carries a 30-day functional RMA: units dead on arrival or failing our published grade standard come back for credit or replacement, matched by IMEI to your manifest. Cosmetic disputes are settled against the CTIA grade mapping below — no \"whose Grade A?\" arguments.",
+  },
+];
+
+/** Our consumer grades mapped to the CTIA Wireless Device Grading Scales —
+ * the wholesale industry's shared grading language. */
+const CTIA_MAP = [
+  { ours: "New", ctia: "Grade A+ / unused", desc: "Open-box or unused stock. No wear, 90%+ battery, full functionality." },
+  { ours: "Excellent", ctia: "Grade A", desc: "Minimal signs of handling invisible at arm's length. Flawless glass." },
+  { ours: "Good", ctia: "Grade B", desc: "Light scratches visible on close inspection, no cracks or dents. Flawless screen." },
+  { ours: "Fair", ctia: "Grade C", desc: "Clear cosmetic wear — scratches/scuffs, possible small dents. Fully functional." },
+];
+
+const ASSURANCE = [
+  {
+    t: "IMEI-level manifests",
+    b: "Every shipment includes a CSV manifest — one row per unit with model, capacity, color, grade and IMEI — downloadable from your order page and emailed with dispatch. Reconcile stock the hour it lands.",
+  },
+  {
+    t: "Verified clean, every unit",
+    b: "Each IMEI is checked against the GSMA lost/stolen registry (via the CTIA Stolen Phone Checker) before it enters stock and again before dispatch. Financing status verified on buyback intake.",
+  },
+  {
+    t: "Data sanitization to NIST 800-88",
+    b: "Every device is wiped to NIST SP 800-88 media-sanitization guidelines and factory reset before resale — the same standard R2v3-certified refurbishers operate to.",
+  },
+  {
+    t: "30-day functional RMA",
+    b: "DOA or out-of-spec units come back within 30 days for credit or replacement. Returns are IMEI-matched to your manifest; freight on valid RMAs is on us.",
+  },
+  {
+    t: "Net terms as you scale",
+    b: "Start on prepay, graduate to net-7 → net-30 with order history. Larger programs can run embedded trade credit through our financing partner at checkout.",
+  },
+  {
+    t: "Standing spec & allocation",
+    b: "Lock a standing spec (grade floor, capacities, lock status) and reserve a share of incoming stock before it hits the public inventory feed.",
+  },
 ];
 
 export default function WholesalePage() {
@@ -251,6 +291,44 @@ export default function WholesalePage() {
                   {row.retail}
                 </div>
                 <div className="px-5 py-4 font-semibold text-[#0a8f6e]">{row.wholesale}</div>
+              </div>
+            ))}
+          </div>
+        </Section>
+      </div>
+
+      {/* ───────── standards & assurance ───────── */}
+      <div className="bg-[#f5f5f7]">
+        <Section id="standards" className="py-20 sm:py-24">
+          <SectionHeading
+            title="Graded to the industry standard. Documented to the unit."
+            subtitle="Wholesale buying lives or dies on trust in the grade sheet. Ours maps straight onto the CTIA Wireless Device Grading Scales, and every shipment is documented IMEI by IMEI."
+          />
+          <div className="mx-auto mt-12 max-w-[880px] overflow-hidden rounded-[20px] border border-[#d2d2d7] bg-white">
+            <table className="w-full border-collapse text-left">
+              <thead>
+                <tr className="border-b border-[#e2e2e6] bg-[#fafafa] text-[12.5px] uppercase tracking-wide text-[#86868b]">
+                  <th className="px-5 py-3.5 font-semibold">reMint grade</th>
+                  <th className="px-5 py-3.5 font-semibold">CTIA equivalent</th>
+                  <th className="hidden px-5 py-3.5 font-semibold sm:table-cell">Standard</th>
+                </tr>
+              </thead>
+              <tbody>
+                {CTIA_MAP.map((r) => (
+                  <tr key={r.ours} className="border-b border-[#f0f0f2] last:border-0">
+                    <td className="px-5 py-4 text-[14.5px] font-semibold text-[#1d1d1f]">{r.ours}</td>
+                    <td className="px-5 py-4 text-[14px] text-[#0a7d61]">{r.ctia}</td>
+                    <td className="hidden px-5 py-4 text-[13.5px] leading-relaxed text-[#6e6e73] sm:table-cell">{r.desc}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mx-auto mt-8 grid max-w-[1080px] gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {ASSURANCE.map((a) => (
+              <div key={a.t} className="rounded-[20px] border border-[#d2d2d7] bg-white p-6">
+                <h3 className="text-[16px] font-semibold tracking-tight text-[#1d1d1f]">{a.t}</h3>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-[#6e6e73]">{a.b}</p>
               </div>
             ))}
           </div>

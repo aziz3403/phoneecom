@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Check, ArrowRight, ArrowLeft, Truck, ShieldCheck, Recycle, Info, MapPin,
-  Plus, Minus, Trash2, PackageCheck,
+  Plus, Minus, Trash2, PartyPopper, Mail, Banknote, Trophy,
 } from "lucide-react";
 import {
   findRow, quote, GRADE_TAG, FREE_SHIP_MIN,
@@ -188,6 +188,87 @@ export function TradeInWizard({
 
   if (!model) return null;
 
+  // ================= DONE — full-width, money-forward celebration =================
+  if (phase === "done") {
+    const paidBy = isCredit
+      ? "as store credit, with your +10% bonus"
+      : payout === "bank"
+        ? "by bank transfer, in up to 5 business days"
+        : "to PayPal, in about 2 business days";
+    return (
+      <div className="mx-auto max-w-[760px] py-4">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-center">
+          <div className="mx-auto grid h-[70px] w-[70px] place-items-center rounded-full bg-[#0a8f6e] shadow-[0_12px_30px_rgba(10,143,110,.32)]">
+            <PartyPopper className="h-9 w-9 text-white" />
+          </div>
+          <p className="mt-6 text-[13px] font-semibold uppercase tracking-[.08em] text-[#0a8f6e]">Offer locked · held 7 days</p>
+          <h1 className="mt-2 text-[clamp(32px,5.5vw,52px)] font-bold leading-[1.03] tracking-[-.03em] text-[#1d1d1f]">
+            {firstName ? `Nice one, ${firstName}. ` : ""}You&apos;re getting
+            <br />
+            <span className="text-gradient">{formatPrice(total)}</span>
+          </h1>
+          <p className="mx-auto mt-4 max-w-[480px] text-[16px] leading-relaxed text-[#6e6e73]">
+            for {count} device{count === 1 ? "" : "s"} — paid {paidBy}, the moment we&apos;ve inspected{" "}
+            {count === 1 ? "it" : "them"}. That&apos;s real money in your pocket, from among the highest
+            payouts in the US.
+          </p>
+        </motion.div>
+
+        {/* what you're sending + payout */}
+        <div className="scard-bord mt-9">
+          <div className="flex items-center justify-between">
+            <h3 className="text-[15px] font-semibold text-[#1d1d1f]">What you&apos;re sending</h3>
+            <span className="text-[13px] text-[#86868b]">{count} device{count === 1 ? "" : "s"}</span>
+          </div>
+          <div className="mt-3 flex flex-col divide-y divide-[#eee]">
+            {basket.map((l) => (
+              <div key={l.sig} className="flex items-center gap-3 py-2.5 first:pt-0">
+                <PhImg slug={l.catalogSlug ?? l.modelKey} src={l.image} label={l.name} className="h-14 w-10 shrink-0 rounded-[8px]" style={{ ["--ph-a" as string]: "#fcfdff", ["--ph-b" as string]: "#e7e9ee" }} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13.5px] font-semibold text-[#1d1d1f]">{l.name}{l.qty > 1 ? ` · ×${l.qty}` : ""}</p>
+                  <p className="truncate text-[11.5px] text-[#86868b]">{[l.storageLabel, l.color, l.carrierLabel, l.gradeTag].filter(Boolean).join(" · ")}</p>
+                </div>
+                <span className="text-[13.5px] font-semibold text-[#1d1d1f]">{formatPrice(l.unit * l.qty)}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 flex items-center justify-between border-t border-[#eee] pt-3">
+            <span className="text-[15px] font-semibold text-[#1d1d1f]">You get</span>
+            <span className="text-[20px] font-bold text-[#0a8f6e]">{formatPrice(total)}</span>
+          </div>
+        </div>
+
+        {/* next steps */}
+        <div className="mt-5 grid gap-4 sm:grid-cols-3">
+          {[
+            { icon: Mail, t: "Check your email", b: `We're sending ${sellerEmail || "you"} ${freeShip ? "a free prepaid label" : "shipping details"} and your kit.` },
+            { icon: Truck, t: freeShip ? "Ship it free" : "Send it in", b: freeShip ? "Drop the labeled box — fully tracked & insured." : "Post it to us — inspection is always free." },
+            { icon: Banknote, t: "Get paid", b: isCredit ? "Store credit lands instantly after inspection." : payout === "bank" ? "Bank transfer within 5 business days." : "PayPal within ~2 business days." },
+          ].map((s) => (
+            <div key={s.t} className="scard-bord">
+              <div className="mb-3 grid h-10 w-10 place-items-center rounded-[11px] bg-[#edf6f0] text-[#0a8f6e]"><s.icon className="h-[19px] w-[19px]" /></div>
+              <p className="text-[15px] font-semibold text-[#1d1d1f]">{s.t}</p>
+              <p className="mt-1 text-[13px] leading-relaxed text-[#6e6e73]">{s.b}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* price-beat reassurance */}
+        <div className="mt-5 flex items-center justify-center gap-2.5 rounded-[14px] bg-[#edf6f0] px-5 py-3.5 text-center">
+          <Trophy className="h-[18px] w-[18px] shrink-0 text-[#0a8f6e]" />
+          <p className="text-[13.5px] text-[#0a7d61]">Found a higher quote elsewhere? We price-match <b>and beat</b> it — just reply to your email.</p>
+        </div>
+
+        <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+          {isCredit && <Link href="/shop" className="btn">Spend my {formatPrice(total)} credit</Link>}
+          <Link href="/shop" className={cn(isCredit ? "btn btn-lt" : "btn")}>Keep shopping</Link>
+          <button onClick={() => { setBasket([]); setPhase("build"); }} className="link">Trade in more devices</button>
+        </div>
+        <p className="mt-5 text-center text-[12px] text-[#b0b0b6]">Demo — nothing was actually sent.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-8 lg:grid-cols-[1.25fr_0.75fr]">
       {/* ── main column ── */}
@@ -195,8 +276,8 @@ export function TradeInWizard({
         {/* progress */}
         <div className="mb-7 flex items-center gap-2">
           {(["Add your devices", "Your details", "Done"] as const).map((s, i) => {
-            const active = (phase === "build" && i === 0) || (phase === "checkout" && i === 1) || (phase === "done" && i === 2);
-            const doneStep = (phase === "checkout" && i === 0) || (phase === "done" && i < 2);
+            const active = (phase === "build" && i === 0) || (phase === "checkout" && i === 1);
+            const doneStep = phase === "checkout" && i === 0;
             return (
               <div key={s} className="flex flex-1 items-center gap-2">
                 <button
@@ -430,26 +511,10 @@ export function TradeInWizard({
           )}
 
           {/* ================= DONE ================= */}
-          {phase === "done" && (
-            <motion.div key="done" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} className="scard-bord text-center">
-              <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#edf6f0]"><PackageCheck className="h-9 w-9 text-[#0a8f6e]" /></div>
-              <h2 className="mt-5 text-2xl font-bold tracking-[-.02em] text-[#1d1d1f]">Offer locked for 7 days</h2>
-              <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-[#6e6e73]">
-                We&apos;ll email {sellerEmail || "you"} {freeShip ? "a free prepaid label" : "shipping instructions"} for your {count} device{count === 1 ? "" : "s"}.
-                Ship to {SHIP_TO.name}; once inspected you&apos;re paid {isCredit ? "as store credit" : payout === "bank" ? "by bank transfer (up to 5 business days)" : "to PayPal (~2 business days)"}. (Demo — nothing was sent.)
-              </p>
-              <p className="mt-3 text-lg font-bold text-[#0a8f6e]">Total offer: {formatPrice(total)}</p>
-              <div className="mt-6 flex items-center justify-center gap-3">
-                {isCredit && <Link href="/shop" className="btn">Shop with my credit</Link>}
-                <button onClick={() => { setBasket([]); setPhase("build"); }} className="link">Start a new trade-in</button>
-              </div>
-            </motion.div>
-          )}
         </AnimatePresence>
 
         {/* trust row */}
-        {phase !== "done" && (
-          <div className="mt-8 grid gap-5 sm:grid-cols-3">
+        <div className="mt-8 grid gap-5 sm:grid-cols-3">
             {[
               { icon: ShieldCheck, title: "Price-lock for 7 days", body: "Your quote is held for a week — we honor it as long as the device matches." },
               { icon: Truck, title: "Free shipping at 5+", body: "Five or more devices ship free, fully tracked and insured. Inspection is always free." },
@@ -462,12 +527,10 @@ export function TradeInWizard({
               </div>
             ))}
           </div>
-        )}
       </div>
 
       {/* ── basket sidebar ── */}
-      {phase !== "done" && (
-        <aside>
+      <aside>
           <div className="sticky top-[74px] overflow-hidden rounded-[20px] border border-[#d2d2d7]">
             <div className="px-6 pb-5 pt-5 text-white" style={{ background: "linear-gradient(165deg,#0f9d78,#0a7d61)" }}>
               <p className="text-[13px] font-medium opacity-90">Your trade-in {count > 0 ? `· ${count} device${count === 1 ? "" : "s"}` : ""}</p>
@@ -547,7 +610,6 @@ export function TradeInWizard({
             </div>
           </div>
         </aside>
-      )}
     </div>
   );
 }

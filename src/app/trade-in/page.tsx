@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Search, Tag, Truck, Banknote, ShieldCheck, BatteryWarning, ScanFace, Wrench, Camera, Lock } from "lucide-react";
+import { Search, Tag, Truck, Banknote, ShieldCheck, BatteryWarning, ScanFace, Wrench, Camera, Lock, Trophy } from "lucide-react";
 import { TradeInWizard } from "@/components/trade-in/TradeInWizard";
 import { getTradeInModels } from "@/lib/trade-in-pricing";
 
@@ -49,7 +49,10 @@ export default async function TradeInPage({
         <p className="crumb">
           <Link href="/">Home</Link> · Trade-in
         </p>
-        <h1 className="ptitle">Trade in. Trade up. Waste nothing.</h1>
+        <span className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-[#edf6f0] px-3.5 py-1.5 text-[12.5px] font-semibold text-[#0a7d61]">
+          <Trophy className="h-3.5 w-3.5" /> Among the highest payouts in the US — we price-match &amp; beat
+        </span>
+        <h1 className="ptitle">Turn your old phone into cash. Get paid the most.</h1>
         <p className="psub">
           A few quick questions for an instant offer on your old phone or tablet — we buy the full
           range, at real market prices. Ship it free and get paid by PayPal or bank transfer, or take

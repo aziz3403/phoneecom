@@ -91,7 +91,8 @@ export function orderConfirmationEmail(o: {
       ${linesTable(o.lines)}
       <p style="font-size:15px;margin-top:10px;text-align:right"><b>Total ${formatPrice(o.total)}</b></p>
       ${o.shipTo ? `<p style="font-size:13.5px;color:#6e6e73;white-space:pre-line"><b style="color:#1d1d1f">Shipping to</b><br/>${esc(o.shipTo)}</p>` : ""}
-      <p style="font-size:13.5px;color:#6e6e73">We'll email your tracking number the moment it ships. Every device is covered by our 12-month functional warranty and 30-day returns.</p>`,
+      <p style="font-size:13.5px;color:#6e6e73">We'll email your tracking number the moment it ships. Every device is covered by our 12-month functional warranty and 30-day returns.</p>
+      <p style="font-size:13.5px;color:#6e6e73">Check this order anytime — no account needed — with reference <b style="font-family:ui-monospace,monospace">${esc(o.id)}</b> and this email address on our <b>Track</b> page.</p>`,
     ),
   };
 }
@@ -132,7 +133,7 @@ export function tradeInReceivedEmail(t: {
         t.freeShip
           ? "Your batch qualifies for a free prepaid label — it's attached to a follow-up email within one business day."
           : "Batches under 5 devices are shipped at your cost (any tracked service works). Inspection is always free."
-      }<br/>Your price is locked for <b>7 days</b>. If our inspection finds a different condition we'll email a revised offer with photos — accept it, or we return the device (return postage at your cost).</p>`,
+      }<br/>Your price is locked for <b>7 days</b>. If our inspection finds a different condition we'll email a revised offer with photos — accept it, or we return the device (return postage at your cost).<br/><br/>Track this trade-in anytime with reference <b style="font-family:ui-monospace,monospace">${esc(t.id)}</b> and this email address on our <b>Track</b> page — no account needed.</p>`,
     ),
   };
 }

@@ -11,8 +11,9 @@ import { sendEmail, notifyOwner, tradeInReceivedEmail } from "./email";
 import { formatPrice } from "./utils";
 import { rateLimit, callerIp } from "./rate-limit";
 import { TRADE_IN_SHIP_TO } from "./trade-in-shipping";
-
-const EMAIL_RE = /.+@.+\..+/;
+import {
+  emailError, phoneError, nameError, routingError, accountNumberError,
+} from "./validate";
 
 /** Grades a seller can self-report. "swap"/"new" are wholesale-book tiers and
  * can't be claimed from the wizard — rejecting them here blocks quote inflation. */
@@ -66,20 +67,21 @@ const PAYOUT_LABEL: Record<TradeInSubmitInput["payout"], string> = {
  * gets a confirmation email and the owner an alert.
  */
 export async function submitTradeInAction(input: TradeInSubmitInput): Promise<TradeInSubmitResult> {
-  // -------- validate contact + payout --------
-  const firstName = input.firstName?.trim();
-  const lastName = input.lastName?.trim();
-  const phone = input.phone?.trim();
-  const email = input.email?.trim().toLowerCase();
-  if (!firstName || !lastName || !phone || !email || !EMAIL_RE.test(email)) {
-    return { ok: false, error: "Please fill in your name, phone and a valid email." };
-  }
-  if (input.payout === "paypal" && !EMAIL_RE.test(input.paypalEmail ?? "")) {
-    return { ok: false, error: "Please add a valid PayPal email." };
-  }
-  if (input.payout === "bank" && !(input.routing?.trim() && input.account?.trim())) {
-    return { ok: false, error: "Please add your bank routing and account number." };
-  }
+  // -------- validate contact + payout (same helpers as the form) --------
+  const firstName = input.firstName?.trim() ?? "";
+  const lastName = input.lastName?.trim() ?? "";
+  const phone = input.phone?.trim() ?? "";
+  const email = input.email?.trim().toLowerCase() ?? "";
+  const problem =
+    nameError(firstName, "First name") ??
+    nameError(lastName, "Last name") ??
+    phoneError(phone) ??
+    emailError(email) ??
+    (input.payout === "paypal" ? emailError(input.paypalEmail ?? "") : undefined) ??
+    (input.payout === "bank"
+      ? routingError(input.routing ?? "") ?? accountNumberError(input.account ?? "")
+      : undefined);
+  if (problem) return { ok: false, error: problem };
   if (!Array.isArray(input.lines) || input.lines.length === 0 || input.lines.length > 100) {
     return { ok: false, error: "Your trade-in basket is empty." };
   }
@@ -188,13 +190,16 @@ export interface BulkQuoteInput {
 export async function submitBulkQuoteAction(
   input: BulkQuoteInput,
 ): Promise<{ ok: boolean; demo?: boolean; error?: string }> {
-  const firstName = input.firstName?.trim();
-  const lastName = input.lastName?.trim();
-  const email = input.email?.trim().toLowerCase();
-  const phone = input.phone?.trim();
-  if (!firstName || !lastName || !phone || !email || !EMAIL_RE.test(email)) {
-    return { ok: false, error: "Please fill in your name, phone and a valid email." };
-  }
+  const firstName = input.firstName?.trim() ?? "";
+  const lastName = input.lastName?.trim() ?? "";
+  const email = input.email?.trim().toLowerCase() ?? "";
+  const phone = input.phone?.trim() ?? "";
+  const problem =
+    nameError(firstName, "First name") ??
+    nameError(lastName, "Last name") ??
+    phoneError(phone) ??
+    emailError(email);
+  if (problem) return { ok: false, error: problem };
   if (!rateLimit(`bulkquote:${await callerIp()}`, 5, 10 * 60 * 1000)) {
     return { ok: false, error: "Too many requests — please wait a few minutes and try again." };
   }

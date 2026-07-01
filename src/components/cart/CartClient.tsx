@@ -30,6 +30,7 @@ export interface AddressPrefill {
 }
 import { GRADES } from "@/lib/grades";
 import { formatPrice, formatPriceDecimal } from "@/lib/utils";
+import { emailError, nameError, requiredError, zipError, allValid } from "@/lib/validate";
 import { PhImg } from "@/components/home/PhImg";
 
 const US_STATES = [
@@ -79,6 +80,22 @@ export function CartClient({
   const [pay, setPay] = useState<PayId>("card");
   const [processing, setProcessing] = useState(false);
   const [payError, setPayError] = useState("");
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const touch = (k: string) => setTouched((t) => ({ ...t, [k]: true }));
+
+  // Shipping details are validated for real — a mistyped email loses the
+  // receipt, a bad ZIP loses the parcel. Same helpers run server-side.
+  const fieldErrors: Record<string, string | undefined> = {
+    first: nameError(first, "First name"),
+    last: nameError(last, "Last name"),
+    email: emailError(email),
+    street: requiredError(street, "Street address", 5),
+    city: requiredError(city, "City"),
+    state: stateCode ? undefined : "Select a state.",
+    zip: zipError(zip),
+  };
+  const detailsValid = allValid(fieldErrors);
+  const showErr = (k: string) => (touched[k] || touched.__all) && fieldErrors[k];
 
   // Prefill shipping from the signed-in account (only into empty fields).
   useEffect(() => {
@@ -135,6 +152,14 @@ export function CartClient({
   const savePct = retailSum > 0 ? Math.round((savings / retailSum) * 100) : 0;
 
   async function placeOrder() {
+    // Hard gate: no order leaves with a guessed address or unreachable email.
+    if (!detailsValid) {
+      setTouched((t) => ({ ...t, __all: true }));
+      setPayError("Check the highlighted shipping fields — we need them to deliver your order.");
+      document.getElementById("co-details")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    setPayError("");
     const id = "RM-" + Math.floor(100000 + Math.random() * 899999);
     const now = new Date();
     const deliveryLabel = delivery === "next" ? "2-day express" : "Standard shipping";
@@ -142,13 +167,13 @@ export function CartClient({
       ? "Card / Apple Pay (Stripe)"
       : pay === "apple" ? "Apple Pay" : pay === "paypal" ? "PayPal" : "Visa ···· 4242";
     const shipTo = [
-      `${first || "Alex"} ${last || "Rivera"}`.trim(),
-      street || "1 Market Street",
-      `${city || "San Francisco"}, ${stateCode || "CA"} ${zip || "94105"}`,
+      `${first.trim()} ${last.trim()}`.trim(),
+      street.trim(),
+      `${city.trim()}, ${stateCode} ${zip.trim()}`,
       "United States",
     ].join("\n");
     const dateLabel = now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-    const emailVal = email || "alex@email.com";
+    const emailVal = email.trim().toLowerCase();
     const lines = items.map((i) => ({
       name: i.name,
       qty: i.qty,
@@ -300,7 +325,7 @@ export function CartClient({
           </section>
 
           {/* 2 · Shipping details */}
-          <section style={card}>
+          <section style={card} id="co-details">
             <div style={cardh}>
               <span style={blkn}>2</span>
               Shipping details
@@ -308,28 +333,28 @@ export function CartClient({
             <p style={cardsub}>Where should we send your order?</p>
 
             <div style={frow}>
-              <Field label="First name">
-                <input className="inpt" aria-label="First name" placeholder="Alex" value={first} onChange={(e) => setFirst(e.target.value)} />
+              <Field label="First name" error={showErr("first")}>
+                <input className="inpt" aria-label="First name" aria-invalid={!!showErr("first")} style={showErr("first") ? errBorder : undefined} placeholder="Alex" value={first} onChange={(e) => setFirst(e.target.value)} onBlur={() => touch("first")} />
               </Field>
-              <Field label="Last name">
-                <input className="inpt" aria-label="Last name" placeholder="Rivera" value={last} onChange={(e) => setLast(e.target.value)} />
+              <Field label="Last name" error={showErr("last")}>
+                <input className="inpt" aria-label="Last name" aria-invalid={!!showErr("last")} style={showErr("last") ? errBorder : undefined} placeholder="Rivera" value={last} onChange={(e) => setLast(e.target.value)} onBlur={() => touch("last")} />
               </Field>
             </div>
-            <Field label="Email">
-              <input className="inpt" type="email" aria-label="Email" placeholder="alex@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Field label="Email" error={showErr("email")} hint="Your receipt and tracking number go here — double-check it.">
+              <input className="inpt" type="email" aria-label="Email" aria-invalid={!!showErr("email")} style={showErr("email") ? errBorder : undefined} placeholder="alex@email.com" value={email} onChange={(e) => setEmail(e.target.value)} onBlur={() => touch("email")} />
             </Field>
-            <Field label="Street address">
-              <input className="inpt" aria-label="Street address" placeholder="1 Market Street" value={street} onChange={(e) => setStreet(e.target.value)} />
+            <Field label="Street address" error={showErr("street")}>
+              <input className="inpt" aria-label="Street address" aria-invalid={!!showErr("street")} style={showErr("street") ? errBorder : undefined} placeholder="1 Market Street" value={street} onChange={(e) => setStreet(e.target.value)} onBlur={() => touch("street")} />
             </Field>
             <div className="co-frow3">
-              <Field label="City">
-                <input className="inpt" aria-label="City" placeholder="San Francisco" value={city} onChange={(e) => setCity(e.target.value)} />
+              <Field label="City" error={showErr("city")}>
+                <input className="inpt" aria-label="City" aria-invalid={!!showErr("city")} style={showErr("city") ? errBorder : undefined} placeholder="San Francisco" value={city} onChange={(e) => setCity(e.target.value)} onBlur={() => touch("city")} />
               </Field>
-              <Field label="State">
-                <StateSelect value={stateCode} onChange={setStateCode} />
+              <Field label="State" error={showErr("state")}>
+                <StateSelect value={stateCode} onChange={(v) => { setStateCode(v); touch("state"); }} />
               </Field>
-              <Field label="ZIP">
-                <input className="inpt" aria-label="ZIP" placeholder="94105" value={zip} onChange={(e) => setZip(e.target.value)} />
+              <Field label="ZIP" error={showErr("zip")}>
+                <input className="inpt" aria-label="ZIP" aria-invalid={!!showErr("zip")} style={showErr("zip") ? errBorder : undefined} placeholder="94105" inputMode="numeric" value={zip} onChange={(e) => setZip(e.target.value)} onBlur={() => touch("zip")} />
               </Field>
             </div>
 
@@ -736,16 +761,33 @@ function OptionCard({
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  error,
+  hint,
+  children,
+}: {
+  label: string;
+  error?: string | false;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="field" style={{ marginBottom: 13 }}>
       <label className="flabel" style={{ fontWeight: 500, color: "var(--text2)", fontSize: 12.5 }}>
         {label}
       </label>
       {children}
+      {error ? (
+        <p role="alert" style={{ marginTop: 4, fontSize: 11.5, lineHeight: 1.35, color: "#b23b3b" }}>{error}</p>
+      ) : hint ? (
+        <p style={{ marginTop: 4, fontSize: 11.5, lineHeight: 1.35, color: "var(--text3)" }}>{hint}</p>
+      ) : null}
     </div>
   );
 }
+
+const errBorder: React.CSSProperties = { borderColor: "#d99", boxShadow: "0 0 0 1px #d99" };
 
 function Spec({ children }: { children: React.ReactNode }) {
   return (

@@ -5,7 +5,7 @@ import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { eq, and, isNull } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { getDb } from "./db";
-import { users, accounts, sessions, verificationTokens, orders } from "./db/schema";
+import { users, accounts, sessions, verificationTokens, orders, tradeIns } from "./db/schema";
 
 /** Auth is "configured" once a session secret and a database are present. */
 export function isAuthConfigured(): boolean {
@@ -101,15 +101,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
   events: {
-    // Attach any orders placed as a guest (same email) to the account on sign-in.
+    // Attach any orders AND trade-ins made as a guest (same email) to the
+    // account on sign-in — nothing a customer did before registering is lost.
     async signIn({ user }) {
       if (!user?.id || !user.email) return;
+      const email = user.email.toLowerCase();
       try {
         const db = getDb();
         await db
           .update(orders)
           .set({ userId: user.id })
-          .where(and(eq(orders.email, user.email.toLowerCase()), isNull(orders.userId)));
+          .where(and(eq(orders.email, email), isNull(orders.userId)));
+        await db
+          .update(tradeIns)
+          .set({ userId: user.id })
+          .where(and(eq(tradeIns.email, email), isNull(tradeIns.userId)));
       } catch {
         /* non-fatal */
       }

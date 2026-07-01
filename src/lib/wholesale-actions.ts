@@ -6,6 +6,7 @@ import { getDb } from "./db";
 import { wholesaleApplications } from "./db/schema";
 import { notifyOwner } from "./email";
 import { rateLimit, callerIp } from "./rate-limit";
+import { emailError, nameError, requiredError } from "./validate";
 
 export interface WholesaleApplyInput {
   company: string;
@@ -30,12 +31,12 @@ export async function applyWholesaleAction(
   const userId = session?.user?.id;
   if (!userId) return { ok: false, error: "signin" };
 
-  const company = input.company?.trim();
-  const name = input.name?.trim();
-  const email = input.email?.trim().toLowerCase();
-  if (!company || !name || !email || !/.+@.+\..+/.test(email)) {
-    return { ok: false, error: "Please fill in your company, name and a valid work email." };
-  }
+  const company = input.company?.trim() ?? "";
+  const name = input.name?.trim() ?? "";
+  const email = input.email?.trim().toLowerCase() ?? "";
+  const problem =
+    requiredError(company, "Company") ?? nameError(name, "Your name") ?? emailError(email);
+  if (problem) return { ok: false, error: problem };
   if (!rateLimit(`wholesale-apply:${await callerIp()}`, 3, 10 * 60 * 1000)) {
     return { ok: false, error: "Too many applications — please wait a few minutes." };
   }

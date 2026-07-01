@@ -8,6 +8,7 @@ import { isStripeConfigured, getStripe } from "./stripe";
 import { priceOrder, stockShortfalls } from "./order-pricing";
 import { markOrderConfirmed } from "./order-confirm";
 import { rateLimit, callerIp } from "./rate-limit";
+import { emailError } from "./validate";
 import type { OrderSnapshot } from "./orders";
 
 async function origin(): Promise<string> {
@@ -40,6 +41,11 @@ export async function createCheckoutSession(
     return { error: "Too many checkout attempts — please wait a few minutes." };
   }
   if (!/^RM-\d{6}$/.test(input.id)) return { error: "Invalid order reference." };
+  const emailProblem = emailError(input.email ?? "");
+  if (emailProblem) return { error: emailProblem };
+  if ((input.snapshot.shipTo ?? "").trim().length < 12) {
+    return { error: "Your shipping address looks incomplete — please fill it in." };
+  }
 
   const priced = priceOrder(input.snapshot.lines ?? [], Boolean(input.snapshot.express));
   if (!priced) return { error: "Your bag contains an item we no longer sell — please refresh it." };

@@ -34,6 +34,7 @@ const COLS = [
   {
     title: "Company",
     links: [
+      { label: "Track your order", href: "/track" },
       { label: "About reMint", href: "/sustainability" },
       { label: "Sustainability", href: "/sustainability" },
       { label: "Live inventory", href: "/inventory" },

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, Boxes, Truck, Zap, BadgeDollarSign } from "lucide-react";
 import { submitBulkQuoteAction } from "@/lib/trade-in-actions";
+import { emailError, phoneError, nameError, allValid } from "@/lib/validate";
 import { cn } from "@/lib/utils";
 
 const PERKS = [
@@ -25,11 +26,24 @@ export function BulkQuote() {
   const [demo, setDemo] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const touch = (k: string) => setTouched((t) => ({ ...t, [k]: true }));
 
-  const canSend = firstName.trim() && lastName.trim() && /.+@.+\..+/.test(email) && phone.trim();
+  const errs: Record<string, string | undefined> = {
+    first: nameError(firstName, "First name"),
+    last: nameError(lastName, "Last name"),
+    email: emailError(email),
+    phone: phoneError(phone),
+  };
+  const canSend = allValid(errs);
+  const showErr = (k: string) => (touched[k] || touched.__all) && errs[k];
 
   async function send() {
-    if (!canSend || sending) return;
+    if (sending) return;
+    if (!canSend) {
+      setTouched((t) => ({ ...t, __all: true }));
+      return;
+    }
     setSending(true);
     setError("");
     try {
@@ -98,19 +112,23 @@ export function BulkQuote() {
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label className="flabel" htmlFor="bq-first">First name</label>
-                <input id="bq-first" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="inpt" placeholder="Jane" />
+                <input id="bq-first" value={firstName} onChange={(e) => setFirstName(e.target.value)} onBlur={() => touch("first")} aria-invalid={!!showErr("first")} className={cn("inpt", showErr("first") && "!border-[#d99]")} placeholder="Jane" />
+                {showErr("first") && <p role="alert" className="mt-1 text-[11.5px] text-[#b23b3b]">{errs.first}</p>}
               </div>
               <div>
                 <label className="flabel" htmlFor="bq-last">Last name</label>
-                <input id="bq-last" value={lastName} onChange={(e) => setLastName(e.target.value)} className="inpt" placeholder="Doe" />
+                <input id="bq-last" value={lastName} onChange={(e) => setLastName(e.target.value)} onBlur={() => touch("last")} aria-invalid={!!showErr("last")} className={cn("inpt", showErr("last") && "!border-[#d99]")} placeholder="Doe" />
+                {showErr("last") && <p role="alert" className="mt-1 text-[11.5px] text-[#b23b3b]">{errs.last}</p>}
               </div>
               <div>
                 <label className="flabel" htmlFor="bq-email">Email</label>
-                <input id="bq-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="inpt" placeholder="you@company.com" />
+                <input id="bq-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} onBlur={() => touch("email")} aria-invalid={!!showErr("email")} className={cn("inpt", showErr("email") && "!border-[#d99]")} placeholder="you@company.com" />
+                {showErr("email") && <p role="alert" className="mt-1 text-[11.5px] text-[#b23b3b]">{errs.email}</p>}
               </div>
               <div>
                 <label className="flabel" htmlFor="bq-phone">Phone</label>
-                <input id="bq-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="inpt" placeholder="(555) 123-4567" />
+                <input id="bq-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} onBlur={() => touch("phone")} aria-invalid={!!showErr("phone")} className={cn("inpt", showErr("phone") && "!border-[#d99]")} placeholder="(555) 123-4567" />
+                {showErr("phone") && <p role="alert" className="mt-1 text-[11.5px] text-[#b23b3b]">{errs.phone}</p>}
               </div>
               <div className="sm:col-span-2">
                 <label className="flabel" htmlFor="bq-company">Company (optional)</label>
@@ -122,7 +140,7 @@ export function BulkQuote() {
               </div>
             </div>
 
-            <button onClick={send} disabled={!canSend || sending} className={cn("btn mt-5 w-full", (!canSend || sending) && "opacity-50")}>
+            <button onClick={send} disabled={sending} className={cn("btn mt-5 w-full", (!canSend || sending) && "opacity-50")}>
               {sending ? "Sending…" : "Get my bulk quote"}
             </button>
             {error && <p role="alert" className="mt-2 text-center text-[12px] text-[#b23b3b]">{error}</p>}

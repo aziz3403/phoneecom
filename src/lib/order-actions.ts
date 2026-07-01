@@ -7,6 +7,7 @@ import { priceOrder } from "./order-pricing";
 import { sendEmail, orderConfirmationEmail, notifyOwner } from "./email";
 import { formatPrice } from "./utils";
 import { rateLimit, callerIp } from "./rate-limit";
+import { emailError } from "./validate";
 import type { OrderSnapshot } from "./orders";
 
 /**
@@ -22,6 +23,7 @@ export async function placeOrderAction(input: {
 }): Promise<{ ok: boolean }> {
   if (!isAuthConfigured()) return { ok: false };
   if (!/^RM-\d{6}$/.test(input.id)) return { ok: false };
+  if (emailError(input.email ?? "") || (input.data.shipTo ?? "").trim().length < 12) return { ok: false };
   if (!rateLimit(`order:${await callerIp()}`, 10, 10 * 60 * 1000)) return { ok: false };
 
   const priced = priceOrder(input.data.lines ?? [], Boolean(input.data.express));

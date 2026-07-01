@@ -96,8 +96,8 @@ export function botReply(input: string): Reply {
   // topical
   if (word("track", "tracking") || phrase("order status", "where is my", "where's my", "my order"))
     return {
-      text: "Happy to help you track an order! Live status and tracking links live in your account. Pop in your order number there and you'll see exactly where it is.",
-      actions: [{ label: "View my orders", href: "/account" }],
+      text: "Happy to help you track it! Use the Track page with your reference (RM-… for orders, TI-… for trade-ins) and the email you used — no account needed. Signed-in customers also see everything in their dashboard.",
+      actions: [{ label: "Track order or trade-in", href: "/track" }, { label: "Your account", href: "/account" }],
     };
 
   if (word("ship", "shipping", "shipped", "delivery", "deliver", "arrive", "arrives", "postage") || phrase("how long", "when will"))

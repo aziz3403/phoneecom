@@ -15,6 +15,9 @@ import { submitTradeInAction } from "@/lib/trade-in-actions";
 import { TRADE_IN_SHIP_TO as SHIP_TO } from "@/lib/trade-in-shipping";
 import { PhImg } from "@/components/home/PhImg";
 import { formatPrice, cn } from "@/lib/utils";
+import {
+  emailError, phoneError, nameError, routingError, accountNumberError, allValid,
+} from "@/lib/validate";
 
 const GROUP_ORDER: TradeInModel["group"][] = ["iPhone", "Galaxy", "iPad"];
 
@@ -129,6 +132,8 @@ export function TradeInWizard({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [receipt, setReceipt] = useState<{ id?: string; demo?: boolean }>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const touch = (k: string) => setTouched((t) => ({ ...t, [k]: true }));
 
   const carrierChoice = !!model && model.locks.some((l) => l !== "unlocked");
   const lock: Lock = carrier === "unlocked" ? "unlocked" : carrier === "att" && model?.locks.includes("att") ? "att" : "locked";
@@ -191,11 +196,27 @@ export function TradeInWizard({
   const isCredit = payout === "credit";
   const total = isCredit ? Math.round(subtotal * 1.1) : subtotal;
   const freeShip = count >= FREE_SHIP_MIN;
-  const payoutOk = isCredit || (payout === "paypal" ? /.+@.+\..+/.test(paypalEmail) : !!(routing.trim() && account.trim()));
-  const canLock = !!(count > 0 && firstName.trim() && lastName.trim() && phone.trim() && /.+@.+\..+/.test(sellerEmail) && payoutOk);
+  // Field-level validation — same helpers the server re-runs, so nothing that
+  // passes here bounces there. Errors show after a field is left (or on Lock).
+  const fieldErrors: Record<string, string | undefined> = {
+    first: nameError(firstName, "First name"),
+    last: nameError(lastName, "Last name"),
+    phone: phoneError(phone),
+    email: emailError(sellerEmail),
+    paypal: payout === "paypal" ? emailError(paypalEmail) : undefined,
+    routing: payout === "bank" ? routingError(routing) : undefined,
+    account: payout === "bank" ? accountNumberError(account) : undefined,
+  };
+  const detailsValid = allValid(fieldErrors);
+  const canLock = count > 0 && detailsValid;
+  const showErr = (k: string) => (touched[k] || touched.__all) && fieldErrors[k];
 
   async function lockOffer() {
-    if (!canLock || submitting) return;
+    if (submitting) return;
+    if (!canLock) {
+      setTouched((t) => ({ ...t, __all: true }));
+      return;
+    }
     setSubmitting(true);
     setSubmitError("");
     try {
@@ -301,8 +322,15 @@ export function TradeInWizard({
           <Link href="/shop" className={cn(isCredit ? "btn btn-lt" : "btn")}>Keep shopping</Link>
           <button onClick={() => { setBasket([]); setReceipt({}); setPhase("build"); }} className="link">Trade in more devices</button>
         </div>
+        <p className="mt-6 text-center text-[13px] leading-relaxed text-[#86868b]">
+          Keep your reference{receipt.id ? <> <b className="font-mono text-[#1d1d1f]">{receipt.id}</b></> : ""} — track this
+          trade-in anytime at <Link href="/track" className="text-[#0a8f6e] underline-offset-2 hover:underline">remint.com/track</Link> with
+          your email{sellerEmail ? <> (<b className="text-[#494950]">{sellerEmail}</b>)</> : ""}, no account needed.
+          Or <Link href={`/login?callbackUrl=/account`} className="text-[#0a8f6e] underline-offset-2 hover:underline">create a free account</Link> with
+          that email and it appears in your dashboard automatically.
+        </p>
         {receipt.demo && (
-          <p className="mt-5 text-center text-[12px] text-[#b0b0b6]">Demo — the backend isn&apos;t configured yet, so nothing was actually sent.</p>
+          <p className="mt-3 text-center text-[12px] text-[#b0b0b6]">Demo — the backend isn&apos;t configured yet, so nothing was actually sent.</p>
         )}
       </div>
     );
@@ -489,38 +517,33 @@ export function TradeInWizard({
                   ))}
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <label className="flabel" htmlFor="ti-first">First name</label>
-                    <input id="ti-first" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="inpt" placeholder="Jane" />
-                  </div>
-                  <div>
-                    <label className="flabel" htmlFor="ti-last">Last name</label>
-                    <input id="ti-last" value={lastName} onChange={(e) => setLastName(e.target.value)} className="inpt" placeholder="Doe" />
-                  </div>
-                  <div>
-                    <label className="flabel" htmlFor="ti-phone">Phone number</label>
-                    <input id="ti-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="inpt" placeholder="(555) 123-4567" />
-                  </div>
-                  <div>
-                    <label className="flabel" htmlFor="ti-email">Email</label>
-                    <input id="ti-email" type="email" value={sellerEmail} onChange={(e) => setSellerEmail(e.target.value)} className="inpt" placeholder="you@email.com" />
-                  </div>
+                  <WizField id="ti-first" label="First name" error={showErr("first")}>
+                    <input id="ti-first" value={firstName} onChange={(e) => setFirstName(e.target.value)} onBlur={() => touch("first")} aria-invalid={!!showErr("first")} className={cn("inpt", showErr("first") && "!border-[#d99]")} placeholder="Jane" />
+                  </WizField>
+                  <WizField id="ti-last" label="Last name" error={showErr("last")}>
+                    <input id="ti-last" value={lastName} onChange={(e) => setLastName(e.target.value)} onBlur={() => touch("last")} aria-invalid={!!showErr("last")} className={cn("inpt", showErr("last") && "!border-[#d99]")} placeholder="Doe" />
+                  </WizField>
+                  <WizField id="ti-phone" label="Phone number" error={showErr("phone")}>
+                    <input id="ti-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} onBlur={() => touch("phone")} aria-invalid={!!showErr("phone")} className={cn("inpt", showErr("phone") && "!border-[#d99]")} placeholder="(555) 123-4567" />
+                  </WizField>
+                  <WizField id="ti-email" label="Email" error={showErr("email")} hint="Your offer confirmation and payout updates go here.">
+                    <input id="ti-email" type="email" value={sellerEmail} onChange={(e) => setSellerEmail(e.target.value)} onBlur={() => touch("email")} aria-invalid={!!showErr("email")} className={cn("inpt", showErr("email") && "!border-[#d99]")} placeholder="you@email.com" />
+                  </WizField>
                   {payout === "paypal" && (
                     <div className="sm:col-span-2">
-                      <label className="flabel" htmlFor="ti-paypal">PayPal email</label>
-                      <input id="ti-paypal" type="email" value={paypalEmail} onChange={(e) => setPaypalEmail(e.target.value)} className="inpt" placeholder="paypal@email.com" />
+                      <WizField id="ti-paypal" label="PayPal email" error={showErr("paypal")}>
+                        <input id="ti-paypal" type="email" value={paypalEmail} onChange={(e) => setPaypalEmail(e.target.value)} onBlur={() => touch("paypal")} aria-invalid={!!showErr("paypal")} className={cn("inpt", showErr("paypal") && "!border-[#d99]")} placeholder="paypal@email.com" />
+                      </WizField>
                     </div>
                   )}
                   {payout === "bank" && (
                     <>
-                      <div>
-                        <label className="flabel" htmlFor="ti-routing">Routing number</label>
-                        <input id="ti-routing" inputMode="numeric" value={routing} onChange={(e) => setRouting(e.target.value)} className="inpt" placeholder="9 digits" />
-                      </div>
-                      <div>
-                        <label className="flabel" htmlFor="ti-account">Account number</label>
-                        <input id="ti-account" inputMode="numeric" value={account} onChange={(e) => setAccount(e.target.value)} className="inpt" placeholder="Account number" />
-                      </div>
+                      <WizField id="ti-routing" label="Routing number" error={showErr("routing")} hint="9 digits — we verify the bank check-digit so your payout can't bounce.">
+                        <input id="ti-routing" inputMode="numeric" value={routing} onChange={(e) => setRouting(e.target.value)} onBlur={() => touch("routing")} aria-invalid={!!showErr("routing")} className={cn("inpt", showErr("routing") && "!border-[#d99]")} placeholder="e.g. 021000021" />
+                      </WizField>
+                      <WizField id="ti-account" label="Account number" error={showErr("account")}>
+                        <input id="ti-account" inputMode="numeric" value={account} onChange={(e) => setAccount(e.target.value)} onBlur={() => touch("account")} aria-invalid={!!showErr("account")} className={cn("inpt", showErr("account") && "!border-[#d99]")} placeholder="4–17 digits" />
+                      </WizField>
                     </>
                   )}
                 </div>
@@ -644,10 +667,16 @@ export function TradeInWizard({
                 </button>
               ) : (
                 <>
-                  <button onClick={lockOffer} disabled={!canLock || submitting} className={cn("btn mt-5 w-full", (!canLock || submitting) && "opacity-50")}>
+                  <button onClick={lockOffer} disabled={submitting} className={cn("btn mt-5 w-full", (!canLock || submitting) && "opacity-50")}>
                     {submitting ? "Locking your offer…" : <>Lock this offer <ArrowRight className="h-[18px] w-[18px]" /></>}
                   </button>
-                  {!canLock && <p className="mt-2 text-center text-[12px] text-[#86868b]">Add your name, email and payout details to lock it.</p>}
+                  {!canLock && (
+                    <p className="mt-2 text-center text-[12px] text-[#86868b]">
+                      {touched.__all && !detailsValid
+                        ? "Fix the highlighted fields above to lock your offer."
+                        : "Add your name, email and payout details to lock it."}
+                    </p>
+                  )}
                   {submitError && <p role="alert" className="mt-2 text-center text-[12px] text-[#b23b3b]">{submitError}</p>}
                 </>
               )}
@@ -655,6 +684,24 @@ export function TradeInWizard({
             </div>
           </div>
         </aside>
+    </div>
+  );
+}
+
+function WizField({
+  id, label, error, hint, children,
+}: {
+  id: string; label: string; error?: string | false; hint?: string; children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="flabel" htmlFor={id}>{label}</label>
+      {children}
+      {error ? (
+        <p role="alert" className="mt-1 text-[11.5px] leading-snug text-[#b23b3b]">{error}</p>
+      ) : hint ? (
+        <p className="mt-1 text-[11.5px] leading-snug text-[#a9a9af]">{hint}</p>
+      ) : null}
     </div>
   );
 }

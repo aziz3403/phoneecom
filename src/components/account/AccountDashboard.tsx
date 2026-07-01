@@ -12,9 +12,12 @@ import {
   CreditCard,
   ChevronRight,
   ShieldCheck,
+  RefreshCcw,
+  Banknote,
 } from "lucide-react";
 import { logoutAction } from "@/lib/auth-actions";
 import type { FullOrder } from "@/lib/orders";
+import type { MyTradeIn } from "@/lib/trade-ins";
 import type { Profile } from "@/lib/profile-actions";
 import { imageFor } from "@/lib/products";
 import { formatPrice, cn } from "@/lib/utils";
@@ -34,13 +37,15 @@ interface DashUser {
 export function AccountDashboard({
   user,
   orders,
+  tradeIns = [],
   profile,
 }: {
   user: DashUser;
   orders: DashOrder[];
+  tradeIns?: MyTradeIn[];
   profile: Profile | null;
 }) {
-  const [tab, setTab] = useState<"orders" | "details">("orders");
+  const [tab, setTab] = useState<"orders" | "tradeins" | "details">("orders");
   const [pending, start] = useTransition();
   const initials = user.name.split(" ").map((w) => w[0]).slice(0, 2).join("");
 
@@ -86,10 +91,29 @@ export function AccountDashboard({
       {/* tabs */}
       <div style={{ display: "flex", gap: 9 }}>
         <button className={cn("chip", tab === "orders" && "on accent")} onClick={() => setTab("orders")}>Orders</button>
+        <button className={cn("chip", tab === "tradeins" && "on accent")} onClick={() => setTab("tradeins")}>
+          Trade-ins{tradeIns.length > 0 ? ` (${tradeIns.length})` : ""}
+        </button>
         <button className={cn("chip", tab === "details" && "on accent")} onClick={() => setTab("details")}>Details</button>
       </div>
 
-      {tab === "orders" ? (
+      {tab === "tradeins" ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <RefreshCcw className="h-5 w-5" style={{ color: "var(--accent)" }} />
+            <h3 style={{ fontSize: 18, fontWeight: 700 }}>Your trade-ins</h3>
+            <span style={{ fontSize: 14, color: "var(--text3)" }}>({tradeIns.length})</span>
+          </div>
+          {tradeIns.length === 0 ? (
+            <div className="scard-bord" style={{ border: "1px dashed var(--line)", padding: "48px 0", textAlign: "center" }}>
+              <p style={{ color: "var(--text2)" }}>No trade-ins yet — your old phone is worth real money.</p>
+              <div style={{ marginTop: 16 }}><Link className="btn" href="/trade-in">Get an instant quote</Link></div>
+            </div>
+          ) : (
+            tradeIns.map((t) => <TradeInCard key={t.id} t={t} />)
+          )}
+        </div>
+      ) : tab === "orders" ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <Package className="h-5 w-5" style={{ color: "var(--accent)" }} />
@@ -183,6 +207,73 @@ function OrderCard({ order }: { order: DashOrder }) {
         </span>
       </div>
     </Link>
+  );
+}
+
+const TRADE_IN_STEPS = ["Submitted", "Received", "Inspected", "Paid"];
+
+function TradeInCard({ t }: { t: MyTradeIn }) {
+  const stepIdx = TRADE_IN_STEPS.indexOf(t.status);
+  const terminal = ["Paid", "Returned", "Cancelled"].includes(t.status);
+  return (
+    <div className="scard-bord">
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontWeight: 600 }}>{t.id}</span>
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold"
+            style={{
+              background: t.status === "Paid" ? "rgba(10,143,110,.12)" : t.status === "Requoted" ? "#fff3e6" : "#eef3ff",
+              color: t.status === "Paid" ? "var(--accent)" : t.status === "Requoted" ? "#9a5b00" : "#3257d6",
+            }}
+          >
+            {t.status === "Paid" ? <CheckCircle2 className="h-3.5 w-3.5" /> : <RefreshCcw className="h-3.5 w-3.5" />} {t.status}
+          </span>
+        </div>
+        <span style={{ fontSize: 12.5, color: "var(--text3)" }}>
+          {new Date(t.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+        </span>
+      </div>
+
+      <p style={{ fontSize: 14.5, fontWeight: 600, marginTop: 12, lineHeight: 1.35 }}>{t.summary}</p>
+
+      {/* progress: Submitted → Received → Inspected → Paid */}
+      {stepIdx >= 0 && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 12 }}>
+          {TRADE_IN_STEPS.map((s, i) => (
+            <div key={s} style={{ display: "flex", alignItems: "center", gap: 6, flex: i < TRADE_IN_STEPS.length - 1 ? 1 : "none" }}>
+              <span
+                title={s}
+                style={{
+                  width: 9, height: 9, borderRadius: "50%", flex: "none",
+                  background: i <= stepIdx ? "var(--accent)" : "var(--line)",
+                }}
+              />
+              {i < TRADE_IN_STEPS.length - 1 && (
+                <span style={{ height: 2, flex: 1, background: i < stepIdx ? "var(--accent)" : "var(--line)" }} />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      {stepIdx >= 0 && (
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5, fontSize: 11, color: "var(--text3)" }}>
+          {TRADE_IN_STEPS.map((s) => (<span key={s}>{s}</span>))}
+        </div>
+      )}
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--line)" }}>
+        <span style={{ fontSize: 13, color: "var(--text2)", display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <Banknote className="h-4 w-4" style={{ color: "var(--accent)" }} />
+          {t.deviceCount} device{t.deviceCount === 1 ? "" : "s"} ·{" "}
+          <b style={{ color: terminal && t.status !== "Paid" ? "var(--text)" : "var(--accent)" }}>{formatPrice(t.total)}</b>
+          {" "}via {t.payoutMethod === "credit" ? "store credit" : t.payoutMethod === "bank" ? "bank transfer" : "PayPal"}
+        </span>
+        {t.status === "Submitted" && (
+          <span style={{ fontSize: 12.5, color: "var(--text3)" }}>Ship within 7 days to hold your price</span>
+        )}
+      </div>
+    </div>
   );
 }
 

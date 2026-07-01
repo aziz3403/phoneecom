@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, Send, Loader2, Clock } from "lucide-react";
+import { emailError, nameError, requiredError, allValid } from "@/lib/validate";
+import { cn } from "@/lib/utils";
 
 const VOLUMES = ["5–25 / month", "25–100 / month", "100–250 / month", "250–500 / month", "500+ / month"];
 const TYPES = ["Repair shop", "Reseller / retailer", "Carrier / MVNO", "Enterprise / IT", "Refurbisher", "Other"];
@@ -43,6 +45,8 @@ export function ApplyForm({
 }) {
   const [phase, setPhase] = useState<"form" | "review" | "done">("form");
   const [error, setError] = useState("");
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const touch = (k: string) => setTouched((t) => ({ ...t, [k]: true }));
   const [form, setForm] = useState<ApplyFormData>({
     company: "",
     name: "",
@@ -53,7 +57,13 @@ export function ApplyForm({
     message: "",
   });
 
-  const valid = form.company.trim() && form.name.trim() && /\S+@\S+\.\S+/.test(form.email);
+  const errs: Record<string, string | undefined> = {
+    company: requiredError(form.company, "Company"),
+    name: nameError(form.name, "Your name"),
+    email: emailError(form.email),
+  };
+  const valid = allValid(errs);
+  const showErr = (k: string) => (touched[k] || touched.__all) && errs[k];
 
   function set<K extends keyof ApplyFormData>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -61,7 +71,11 @@ export function ApplyForm({
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!valid || phase === "review") return;
+    if (phase === "review") return;
+    if (!valid) {
+      setTouched((t) => ({ ...t, __all: true }));
+      return;
+    }
     setError("");
     if (!onSubmit) {
       setPhase("done");
@@ -163,34 +177,43 @@ export function ApplyForm({
                 <div className="field">
                   <label className="flabel">Company *</label>
                   <input
-                    className="inpt"
+                    className={cn("inpt", showErr("company") && "!border-[#d99]")}
                     aria-label="Company"
+                    aria-invalid={!!showErr("company")}
                     placeholder="Acme Mobile"
                     value={form.company}
                     onChange={(e) => set("company", e.target.value)}
+                    onBlur={() => touch("company")}
                   />
+                  {showErr("company") && <p role="alert" className="mt-1 text-[11.5px] text-[#b23b3b]">{errs.company}</p>}
                 </div>
                 <div className="field">
                   <label className="flabel">Your name *</label>
                   <input
-                    className="inpt"
+                    className={cn("inpt", showErr("name") && "!border-[#d99]")}
                     aria-label="Your name"
+                    aria-invalid={!!showErr("name")}
                     placeholder="Jordan Lee"
                     value={form.name}
                     onChange={(e) => set("name", e.target.value)}
+                    onBlur={() => touch("name")}
                   />
+                  {showErr("name") && <p role="alert" className="mt-1 text-[11.5px] text-[#b23b3b]">{errs.name}</p>}
                 </div>
               </div>
               <div className="field">
                 <label className="flabel">Work email *</label>
                 <input
                   type="email"
-                  className="inpt"
+                  className={cn("inpt", showErr("email") && "!border-[#d99]")}
                   aria-label="Work email"
+                  aria-invalid={!!showErr("email")}
                   placeholder="jordan@acme.com"
                   value={form.email}
                   onChange={(e) => set("email", e.target.value)}
+                  onBlur={() => touch("email")}
                 />
+                {showErr("email") && <p role="alert" className="mt-1 text-[11.5px] text-[#b23b3b]">{errs.email}</p>}
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="field">
@@ -231,8 +254,10 @@ export function ApplyForm({
               </div>
               <button
                 type="submit"
-                disabled={!valid}
-                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#0a8f6e] text-[17px] text-white transition-all duration-200 hover:bg-[#0a7d61] active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-40"
+                className={cn(
+                  "inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#0a8f6e] text-[17px] text-white transition-all duration-200 hover:bg-[#0a7d61] active:scale-[.98]",
+                  !valid && "opacity-40",
+                )}
               >
                 <Send className="h-[18px] w-[18px]" /> Submit application
               </button>

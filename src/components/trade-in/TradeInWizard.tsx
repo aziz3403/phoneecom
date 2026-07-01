@@ -41,16 +41,28 @@ const BODY_OPTS = [
 type BodyId = (typeof BODY_OPTS)[number]["id"];
 
 const PAYOUTS = [
-  { id: "cash", label: "Cash", detail: "Zelle / Venmo / mailing address for a check" },
-  { id: "paypal", label: "PayPal", detail: "Your PayPal email" },
-  { id: "credit", label: "Store credit", detail: "" },
+  { id: "paypal", label: "PayPal", detail: "Your PayPal email", timing: "Paid within 2 business days" },
+  { id: "bank", label: "Bank transfer", detail: "Account & routing number (or IBAN)", timing: "Up to 5 business days" },
+  { id: "credit", label: "Store credit", detail: "", timing: "+10% bonus · instant" },
 ] as const;
 type PayoutId = (typeof PAYOUTS)[number]["id"];
 
+// Carrier state. AT&T-locked devices sell for less than other carriers, so they
+// carry their own (lower) tier in the price book; everything else uses the
+// generic carrier-locked tier.
+const CARRIERS = [
+  { id: "unlocked", label: "Unlocked" },
+  { id: "verizon", label: "Verizon" },
+  { id: "tmobile", label: "T-Mobile" },
+  { id: "att", label: "AT&T" },
+  { id: "other", label: "Other" },
+] as const;
+type CarrierId = (typeof CARRIERS)[number]["id"];
+
 const TRUST = [
-  { icon: ShieldCheck, title: "Price-lock for 14 days", body: "Your quote is held for two weeks — we honor it as long as the device matches." },
+  { icon: ShieldCheck, title: "Price-lock for 7 days", body: "Your quote is held for a week — we honor it as long as the device matches." },
   { icon: Truck, title: "Free prepaid shipping", body: "We email a label and a recycled box kit. Drop it off, fully tracked and insured." },
-  { icon: Recycle, title: "Paid in 48 hours", body: "Pick cash, PayPal, or take +10% as store credit after a quick inspection." },
+  { icon: Recycle, title: "PayPal, bank or credit", body: "PayPal in ~2 days, bank transfer up to 5, or take +10% as instant store credit." },
 ];
 
 function deriveGrade(works: boolean, screen: ScreenId, body: BodyId): Grade {
@@ -84,7 +96,7 @@ export function TradeInWizard({
   );
 
   const [gb, setGb] = useState(first?.storages[0] ?? 0);
-  const [lock, setLock] = useState<Lock>("unlocked");
+  const [carrier, setCarrier] = useState<CarrierId>("unlocked");
 
   const [works, setWorks] = useState(true);
   const [screen, setScreen] = useState<ScreenId>("light");
@@ -95,21 +107,27 @@ export function TradeInWizard({
   const [battery80, setBattery80] = useState(true);
   const [repairMsg, setRepairMsg] = useState(false);
 
-  const [payout, setPayout] = useState<PayoutId>("cash");
+  const [payout, setPayout] = useState<PayoutId>("paypal");
   const [sellerName, setSellerName] = useState("");
   const [sellerEmail, setSellerEmail] = useState("");
   const [payoutDetail, setPayoutDetail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  // keep gb / lock valid for the selected model
+  // keep gb / carrier valid for the selected model
   useEffect(() => {
     setGb(model?.storages[0] ?? 0);
-    setLock(model?.locks.includes("unlocked") ? "unlocked" : (model?.locks[0] ?? "unlocked"));
+    setCarrier("unlocked");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
-  const carrierChoice =
-    !!model && model.locks.includes("unlocked") && model.locks.some((l) => l !== "unlocked");
+  const carrierChoice = !!model && model.locks.some((l) => l !== "unlocked");
+  // Map the chosen carrier to a price-book lock tier.
+  const lock: Lock =
+    carrier === "unlocked"
+      ? "unlocked"
+      : carrier === "att" && model?.locks.includes("att")
+        ? "att"
+        : "locked";
   const grade = deriveGrade(works, screen, body);
 
   const q = useMemo(() => {
@@ -217,18 +235,17 @@ export function TradeInWizard({
 
               {carrierChoice && (
                 <>
-                  <span className="flabel mt-5 block">Carrier status</span>
+                  <span className="flabel mt-5 block">Carrier</span>
                   <div className="flex flex-wrap gap-2">
-                    <button onClick={() => setLock("unlocked")} className={cn("chip", lock === "unlocked" && "on accent")}>
-                      Unlocked
-                    </button>
-                    <button onClick={() => setLock("locked")} className={cn("chip", lock !== "unlocked" && "on accent")}>
-                      Carrier-locked
-                    </button>
+                    {CARRIERS.map((c) => (
+                      <button key={c.id} onClick={() => setCarrier(c.id)} className={cn("chip", carrier === c.id && "on accent")}>
+                        {c.label}
+                      </button>
+                    ))}
                   </div>
                   <p className="mt-2 text-[12px] text-[#86868b]">
-                    Fully unlocked devices are worth more. Not sure? Pick carrier-locked — we re-quote
-                    up if it&apos;s unlocked.
+                    Fully unlocked devices are worth the most. Not sure if it&apos;s locked? Pick your
+                    carrier — we re-quote up if it turns out unlocked.
                   </p>
                 </>
               )}
@@ -317,7 +334,7 @@ export function TradeInWizard({
             <motion.div key="s2" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} className="flex flex-col gap-[18px]">
               <div className="scard-bord">
                 <h2 className="text-[20px] font-bold tracking-[-.01em]">How would you like to be paid?</h2>
-                <p className="mb-4 mt-1 text-[13.5px] text-[#86868b]">Store credit adds a 10% bonus you can spend right away.</p>
+                <p className="mb-4 mt-1 text-[13.5px] text-[#86868b]">We pay by PayPal or bank transfer — or take store credit for a 10% bonus. (We don&apos;t send cash.)</p>
                 <div className="grid grid-cols-3 gap-2.5">
                   {PAYOUTS.map((p) => {
                     const amount = p.id === "credit" ? credit : cash;
@@ -334,6 +351,7 @@ export function TradeInWizard({
                         <span className="mt-0.5 block text-[12px] font-semibold text-[#0a8f6e]">
                           {p.id === "credit" ? `${formatPrice(amount)} · +10%` : formatPrice(amount)}
                         </span>
+                        <span className="mt-0.5 block text-[10.5px] leading-tight text-[#86868b]">{p.timing}</span>
                       </button>
                     );
                   })}
@@ -352,7 +370,7 @@ export function TradeInWizard({
                     </div>
                   ))}
                   <div className="mt-3 flex items-center justify-between border-t border-[#e2e2e6] pt-3">
-                    <span className="text-[14px] font-semibold text-[#1d1d1f]">Your {isCredit ? "credit" : "cash"} offer</span>
+                    <span className="text-[14px] font-semibold text-[#1d1d1f]">Your {isCredit ? "store-credit" : payout === "bank" ? "bank-transfer" : "PayPal"} offer</span>
                     <span className="text-[16px] font-bold text-[#0a8f6e]">{formatPrice(payoutVal)}</span>
                   </div>
                   {q.notes.map((n) => (
@@ -379,7 +397,7 @@ export function TradeInWizard({
                   {!isCredit && (
                     <div className="sm:col-span-2">
                       <label className="flabel" htmlFor="ti-payout">
-                        {payout === "paypal" ? "PayPal email" : "How to pay you"}
+                        {payout === "paypal" ? "PayPal email" : "Bank details"}
                       </label>
                       <input
                         id="ti-payout"
@@ -446,10 +464,10 @@ export function TradeInWizard({
                 <div className="grid h-16 w-16 place-items-center rounded-full bg-[#edf6f0]">
                   <Check className="h-9 w-9 text-[#0a8f6e]" />
                 </div>
-                <h3 className="mt-5 text-2xl font-bold tracking-[-.02em] text-[#1d1d1f]">Offer locked for 14 days</h3>
+                <h3 className="mt-5 text-2xl font-bold tracking-[-.02em] text-[#1d1d1f]">Offer locked for 7 days</h3>
                 <p className="mt-2 max-w-xs text-sm leading-relaxed text-[#6e6e73]">
                   We&apos;ll email {sellerEmail || "you"} a prepaid label for your {model.name}. Ship it to{" "}
-                  {SHIP_TO.name}; once inspected you&apos;re paid within 2 business days. (Demo — nothing was sent.)
+                  {SHIP_TO.name}; once inspected you&apos;re paid by {isCredit ? "store credit" : payout === "bank" ? "bank transfer (up to 5 business days)" : "PayPal (within 2 business days)"}. (Demo — nothing was sent.)
                 </p>
                 {isCredit && (
                   <Link href="/shop" className="btn mt-6">Shop with my {formatPrice(credit)} credit</Link>
@@ -464,7 +482,7 @@ export function TradeInWizard({
                     {formatPrice(payoutVal)}
                     <span className="text-[15px] font-medium opacity-80">USD</span>
                   </p>
-                  <p className="mt-2 text-[12.5px] opacity-90">{isCredit ? `Includes a +10% store-credit bonus (+${formatPrice(credit - cash)}).` : "Cash or PayPal, paid within 48 hours."}</p>
+                  <p className="mt-2 text-[12.5px] opacity-90">{isCredit ? `Includes a +10% store-credit bonus (+${formatPrice(credit - cash)}).` : payout === "bank" ? "Bank transfer, up to 5 business days." : "Paid to PayPal within 2 business days."}</p>
                 </div>
                 <div className="px-6 py-5">
                   <div className="flex items-center gap-4">
@@ -476,7 +494,7 @@ export function TradeInWizard({
                     </div>
                   </div>
                   <div className="mt-5 flex flex-col gap-2.5 border-t border-[#d2d2d7] pt-4 text-[13.5px]">
-                    {([["Device", model.name], ["Storage", storageLabel || "—"], ["Grade", GRADE_TAG[q.grade]], ["Carrier", carrierChoice ? (lock === "unlocked" ? "Unlocked" : "Carrier-locked") : "—"]] as const).map(([k, v]) => (
+                    {([["Device", model.name], ["Storage", storageLabel || "—"], ["Grade", GRADE_TAG[q.grade]], ["Carrier", carrierChoice ? (CARRIERS.find((c) => c.id === carrier)?.label ?? "Unlocked") : "—"]] as const).map(([k, v]) => (
                       <div key={k} className="flex justify-between gap-3">
                         <span className="text-[#86868b]">{k}</span>
                         <span className="font-semibold text-[#1d1d1f]">{v}</span>

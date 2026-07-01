@@ -252,15 +252,34 @@ async function fetchTab(sheet: string): Promise<string[][] | null> {
   }
 }
 
+// A live parse is only trusted if it looks structurally right — enough rows,
+// most iPhones carrying a numeric Grade-A price, and known anchor models pricing
+// sanely. A different sheet layout produces nulls/garbage, which this rejects so
+// we keep the verified snapshot instead of ever quoting $0.
+function validLive(rows: PriceRow[]): boolean {
+  if (rows.length < 300) return false;
+  const iph = rows.filter((r) => r.cat === "iphone");
+  const withA = iph.filter((r) => typeof r.a === "number" && (r.a as number) > 0).length;
+  if (iph.length < 100 || withA / iph.length < 0.7) return false;
+  const anchor = (model: string, gb: number) => {
+    const r = rows.find((x) => x.cat === "iphone" && x.model === model && x.gb === gb && x.lock === "unlocked");
+    const v = r?.a;
+    return typeof v === "number" && v > 30 && v < 3000;
+  };
+  return anchor("iPhone 13", 128) && anchor("iPhone 15", 128);
+}
+
 async function liveRows(): Promise<PriceRow[] | null> {
+  // Opt-in: the committed snapshot (built from the owner's price book) is the
+  // trusted source. Set TRADEIN_LIVE=1 only once the live sheet is confirmed to
+  // match the book's tab layout, so a mismatched sheet can never mis-price.
+  if (process.env.TRADEIN_LIVE !== "1") return null;
   const [ip, sm, ip2] = await Promise.all([
     fetchTab("iPhone Used"), fetchTab("Samsung"), fetchTab("iPad Used"),
   ]);
   if (!ip || !sm || !ip2) return null;
   const rows = [...parseIphone(ip), ...parseSamsung(sm), ...parseIpad(ip2)];
-  // strict sanity gate — a healthy book has hundreds of rows; anything less
-  // means a layout change we didn't expect, so keep the trusted snapshot.
-  return rows.length >= 300 ? rows : null;
+  return validLive(rows) ? rows : null;
 }
 
 /** All tradeable models, live when possible and current within a day. */
@@ -278,7 +297,14 @@ export function tradeInModelsFromSnapshot(): TradeInModel[] {
 // ---- lookup + quote --------------------------------------------------------
 export function findRow(model: TradeInModel, gb: number, lock: Lock): PriceRow | undefined {
   const rows = model.rows;
-  const pref: Lock[] = lock === "unlocked" ? ["unlocked"] : ["locked", "att", "unlocked"];
+  // Prefer the exact tier asked for, then fall back sensibly. AT&T-locked has its
+  // own (lower) price, so an AT&T request must try "att" before generic "locked".
+  const pref: Lock[] =
+    lock === "unlocked"
+      ? ["unlocked"]
+      : lock === "att"
+        ? ["att", "locked", "unlocked"]
+        : ["locked", "att", "unlocked"];
   if (model.storages.length) {
     for (const l of pref) { const hit = rows.find((r) => r.gb === gb && r.lock === l); if (hit) return hit; }
     for (const l of pref) {

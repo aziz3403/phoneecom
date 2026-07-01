@@ -14,7 +14,7 @@ const STEPS = [
   { icon: Search, title: "Tell us about it", body: "Pick your device and answer a few condition questions for an instant offer." },
   { icon: Truck, title: "Ship it free", body: "We email a prepaid label and a recycled box kit. Drop it off — on us." },
   { icon: Tag, title: "We inspect it", body: "Our lab verifies the condition against your quote within a day." },
-  { icon: Banknote, title: "Get paid fast", body: "Cash or PayPal in 2 business days — or take 10% more as instant store credit." },
+  { icon: Banknote, title: "Get paid", body: "PayPal in ~2 business days or bank transfer in up to 5 — or take 10% more as instant store credit." },
 ];
 
 // What our inspectors check — straight from our grading standard, so there are
@@ -30,7 +30,7 @@ const CHECKS = [
 
 const TERMS = [
   "We only buy devices you legally own — nothing reported lost or stolen. Every device is checked against CheckMEND (carrier, law-enforcement and insurance data) and data-wiped on arrival.",
-  "Your quote is locked for 14 days and honored as long as the device matches what you told us. If we find it in better shape, you keep the difference.",
+  "Your quote is locked for 7 days and honored as long as the device matches what you told us. If we find it in better shape, you keep the difference. We pay by PayPal (about 2 business days) or bank transfer (up to 5) — or store credit for 10% more.",
   "Final grade, deductions and returns are confirmed after our free inspection. If a device relocks or shows a carrier/KG lock after sale, the seller remains responsible.",
 ];
 
@@ -51,11 +51,11 @@ export default async function TradeInPage({
         <h1 className="ptitle">Trade in. Trade up. Waste nothing.</h1>
         <p className="psub">
           A few quick questions for an instant offer on your old phone or tablet — we buy the full
-          range, at real market prices. Ship it free, get paid in two days, or take 10% more as store
-          credit toward your next one.
+          range, at real market prices. Ship it free and get paid by PayPal or bank transfer, or take
+          10% more as store credit toward your next one.
         </p>
         <div className="mt-6 flex flex-wrap gap-x-7 gap-y-2 text-sm text-[#6e6e73]">
-          {["Instant offer", "Free prepaid shipping", "Paid in 48 hours", "Price-lock 14 days"].map((t) => (
+          {["Instant offer", "Free prepaid shipping", "PayPal or bank transfer", "Price-lock 7 days"].map((t) => (
             <span key={t} className="inline-flex items-center gap-2">
               <span className="inline-block h-[5px] w-[5px] rounded-full bg-[#0a8f6e]" />
               {t}

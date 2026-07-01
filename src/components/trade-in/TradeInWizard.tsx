@@ -3,21 +3,28 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ArrowRight, ArrowLeft, Truck, ShieldCheck, Recycle, Info } from "lucide-react";
-import { DEVICES, baseStorage, storageFor, BRANDS, type Brand } from "@/lib/products";
+import { Check, ArrowRight, ArrowLeft, Truck, ShieldCheck, Recycle, Info, MapPin } from "lucide-react";
 import {
-  tradeInForDevice,
   findRow,
   quote,
+  GRADE_TAG,
+  type TradeInModel,
   type Grade,
   type Lock,
 } from "@/lib/trade-in-pricing";
 import { PhImg } from "@/components/home/PhImg";
 import { formatPrice, cn } from "@/lib/utils";
 
-const STEPS = ["Your device", "Its condition", "Your offer"] as const;
+// Where sellers ship their trade-ins. TODO: replace with reMint's real intake
+// address (owner to provide) — a prepaid label is emailed on lock either way.
+const SHIP_TO = {
+  name: "reMint Trade-ins",
+  lines: ["[Street address — to be provided]", "[Unit / suite]", "[City, State ZIP]"],
+};
 
-// Customer screen answer → the grade it drives (before cosmetics decide A vs B).
+const STEPS = ["Your device", "Its condition", "Your offer"] as const;
+const GROUP_ORDER: TradeInModel["group"][] = ["iPhone", "Galaxy", "iPad"];
+
 const SCREEN_OPTS = [
   { id: "flawless", label: "Flawless", desc: "No scratches, no cracks" },
   { id: "light", label: "Light scratches", desc: "Minor marks, glass intact" },
@@ -34,9 +41,9 @@ const BODY_OPTS = [
 type BodyId = (typeof BODY_OPTS)[number]["id"];
 
 const PAYOUTS = [
-  { id: "cash", label: "Cash" },
-  { id: "paypal", label: "PayPal" },
-  { id: "credit", label: "Store credit" },
+  { id: "cash", label: "Cash", detail: "Zelle / Venmo / mailing address for a check" },
+  { id: "paypal", label: "PayPal", detail: "Your PayPal email" },
+  { id: "credit", label: "Store credit", detail: "" },
 ] as const;
 type PayoutId = (typeof PAYOUTS)[number]["id"];
 
@@ -46,34 +53,42 @@ const TRUST = [
   { icon: Recycle, title: "Paid in 48 hours", body: "Pick cash, PayPal, or take +10% as store credit after a quick inspection." },
 ];
 
-/** Customer answers → Atlas grade. */
 function deriveGrade(works: boolean, screen: ScreenId, body: BodyId): Grade {
   if (!works) return "doa";
   if (screen === "display") return "d";
   if (screen === "cracked") return "c";
-  // functional, glass intact → A only when truly like-new, otherwise B
   return screen === "flawless" && body === "mint" ? "a" : "b";
 }
 
-// Fallback share-of-wholesale when a device isn't in the buyback book.
-const FALLBACK_FACTOR: Record<Grade, number> = {
-  swap: 0.85, new: 0.9, a: 0.8, b: 0.62, c: 0.4, d: 0.22, doa: 0.08,
-};
+export function TradeInWizard({
+  models,
+  initialSlug,
+}: {
+  models: TradeInModel[];
+  initialSlug?: string;
+}) {
+  const groups = useMemo(
+    () => GROUP_ORDER.filter((g) => models.some((m) => m.group === g)),
+    [models],
+  );
+  const initial = initialSlug ? models.find((m) => m.catalogSlug === initialSlug) : undefined;
+  const first = initial ?? models[0];
 
-export function TradeInWizard({ initialSlug }: { initialSlug?: string }) {
-  const initial = initialSlug ? DEVICES.find((d) => d.slug === initialSlug) : undefined;
   const [step, setStep] = useState(0);
-  const [brand, setBrand] = useState<Brand>(initial?.brand ?? "Apple");
-  const brandDevices = useMemo(() => DEVICES.filter((d) => d.brand === brand), [brand]);
-  const [slug, setSlug] = useState(initial?.slug ?? brandDevices[0].slug);
-  const device = useMemo(() => DEVICES.find((d) => d.slug === slug) ?? brandDevices[0], [slug, brandDevices]);
-  const [gb, setGb] = useState(baseStorage(initial ?? brandDevices[0]).gb);
+  const [group, setGroup] = useState<TradeInModel["group"]>(first?.group ?? "iPhone");
+  const modelsInGroup = useMemo(() => models.filter((m) => m.group === group), [models, group]);
+  const [key, setKey] = useState(first?.key ?? models[0]?.key);
+  const model = useMemo(
+    () => models.find((m) => m.key === key) ?? modelsInGroup[0] ?? models[0],
+    [models, key, modelsInGroup],
+  );
+
+  const [gb, setGb] = useState(first?.storages[0] ?? 0);
   const [lock, setLock] = useState<Lock>("unlocked");
 
   const [works, setWorks] = useState(true);
   const [screen, setScreen] = useState<ScreenId>("light");
   const [body, setBody] = useState<BodyId>("light");
-  // deductions
   const [backCracked, setBackCracked] = useState(false);
   const [lensCracked, setLensCracked] = useState(false);
   const [faceIdOk, setFaceIdOk] = useState(true);
@@ -81,83 +96,55 @@ export function TradeInWizard({ initialSlug }: { initialSlug?: string }) {
   const [repairMsg, setRepairMsg] = useState(false);
 
   const [payout, setPayout] = useState<PayoutId>("cash");
+  const [sellerName, setSellerName] = useState("");
+  const [sellerEmail, setSellerEmail] = useState("");
+  const [payoutDetail, setPayoutDetail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const dev = useMemo(() => tradeInForDevice(device.slug), [device.slug]);
-  const carrierChoice = dev.locks.includes("unlocked") && (dev.locks.includes("locked") || dev.locks.includes("att"));
-
-  // keep the carrier selection valid for the device
+  // keep gb / lock valid for the selected model
   useEffect(() => {
-    if (dev.hasData && !dev.locks.includes(lock)) {
-      setLock(dev.locks.includes("unlocked") ? "unlocked" : dev.locks[0] ?? "unlocked");
-    }
+    setGb(model?.storages[0] ?? 0);
+    setLock(model?.locks.includes("unlocked") ? "unlocked" : (model?.locks[0] ?? "unlocked"));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [device.slug]);
+  }, [key]);
 
+  const carrierChoice =
+    !!model && model.locks.includes("unlocked") && model.locks.some((l) => l !== "unlocked");
   const grade = deriveGrade(works, screen, body);
-  const sOpt = storageFor(device, gb);
 
-  // ---- the quote ----
   const q = useMemo(() => {
-    const input = {
+    const row = model ? findRow(model, gb, lock) : undefined;
+    if (!row) return { grade, base: 0, deductions: [], notes: [], total: 0, hasPrice: false };
+    return quote(row, {
       grade,
       crackedBack: backCracked,
       crackedLens: lensCracked,
       badFaceId: !faceIdOk,
       batteryLow: !battery80,
       repairMessage: repairMsg,
-    };
-    if (dev.hasData) {
-      const row = findRow(dev, gb, lock);
-      if (row) {
-        const res = quote(row, input);
-        if (res.hasPrice) return { live: true, ...res };
-      }
-    }
-    // fallback estimate from catalog wholesale
-    const base = Math.round(sOpt.wholesale * FALLBACK_FACTOR[grade]);
-    const deductions = [] as { label: string; amount: number }[];
-    const notes: string[] = [];
-    if (!battery80) notes.push("Battery health under 80% — subject to deduction, confirmed on inspection.");
-    if (repairMsg) notes.push("Prior repair / non-genuine part message — subject to deduction.");
-    if (backCracked) { const a = Math.round(base * 0.18); deductions.push({ label: "Cracked back glass", amount: a }); }
-    if (lensCracked) { const a = Math.round(base * 0.1); deductions.push({ label: "Cracked camera lens", amount: a }); }
-    const total = Math.max(0, base - deductions.reduce((s, d) => s + d.amount, 0));
-    return { live: false, hasPrice: true, grade, base, deductions, notes, total };
-  }, [dev, gb, lock, grade, backCracked, lensCracked, faceIdOk, battery80, repairMsg, sOpt.wholesale]);
+    });
+  }, [model, gb, lock, grade, backCracked, lensCracked, faceIdOk, battery80, repairMsg]);
 
   const cash = Math.max(5, q.total);
   const credit = Math.round(cash * 1.1);
   const isCredit = payout === "credit";
   const payoutVal = isCredit ? credit : cash;
-  const storageLabel = gb >= 1024 ? `${gb / 1024}TB` : `${gb}GB`;
+  const storageLabel = gb >= 1024 ? `${gb / 1024}TB` : gb > 0 ? `${gb}GB` : "";
 
-  // headline "we pay up to" = best grade (A) for this storage/lock, no deductions
   const topOffer = useMemo(() => {
-    if (dev.hasData) {
-      const row = findRow(dev, gb, lock);
-      const best = row?.a ?? row?.new ?? row?.swap;
-      if (best) return best;
-    }
-    return Math.round(sOpt.wholesale * FALLBACK_FACTOR.a);
-  }, [dev, gb, lock, sOpt.wholesale]);
+    const row = model ? findRow(model, gb, lock) : undefined;
+    return row?.a ?? row?.new ?? row?.swap ?? 0;
+  }, [model, gb, lock]);
 
-  const GRADE_TAG: Record<Grade, string> = {
-    swap: "Like new", new: "Brand new", a: "Grade A · Flawless", b: "Grade B · Good",
-    c: "Grade C · Cracked glass", d: "Grade D · Screen fault", doa: "Not working",
-  };
+  function changeGroup(g: TradeInModel["group"]) {
+    setGroup(g);
+    const m = models.find((x) => x.group === g);
+    if (m) setKey(m.key);
+  }
 
-  function changeBrand(b: Brand) {
-    setBrand(b);
-    const first = DEVICES.find((d) => d.brand === b)!;
-    setSlug(first.slug);
-    setGb(baseStorage(first).gb);
-  }
-  function changeDevice(newSlug: string) {
-    setSlug(newSlug);
-    const d = DEVICES.find((x) => x.slug === newSlug)!;
-    setGb(baseStorage(d).gb);
-  }
+  const canLock = sellerName.trim() && /.+@.+\..+/.test(sellerEmail) && (isCredit || payoutDetail.trim());
+
+  if (!model) return null;
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1.25fr_0.75fr]">
@@ -195,32 +182,38 @@ export function TradeInWizard({ initialSlug }: { initialSlug?: string }) {
           {step === 0 && (
             <motion.div key="s0" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} className="scard-bord">
               <h2 className="text-[20px] font-bold tracking-[-.01em]">Which device are you trading in?</h2>
-              <p className="mb-5 mt-1 text-[13.5px] text-[#86868b]">Pick the brand, model and storage.</p>
+              <p className="mb-5 mt-1 text-[13.5px] text-[#86868b]">
+                We buy the full range — {models.length}+ models. Pick yours.
+              </p>
 
-              <span className="flabel">Brand</span>
+              <span className="flabel">Type</span>
               <div className="mb-5 flex flex-wrap gap-2">
-                {BRANDS.map((b) => (
-                  <button key={b} onClick={() => changeBrand(b)} className={cn("chip", brand === b && "on accent")}>
-                    {b}
+                {groups.map((g) => (
+                  <button key={g} onClick={() => changeGroup(g)} className={cn("chip", group === g && "on accent")}>
+                    {g}
                   </button>
                 ))}
               </div>
 
               <label className="flabel" htmlFor="ti-model">Model</label>
-              <select id="ti-model" value={slug} onChange={(e) => changeDevice(e.target.value)} className="sel mb-5">
-                {brandDevices.map((d) => (
-                  <option key={d.slug} value={d.slug}>{d.name}</option>
+              <select id="ti-model" value={key} onChange={(e) => setKey(e.target.value)} className="sel mb-5">
+                {modelsInGroup.map((m) => (
+                  <option key={m.key} value={m.key}>{m.name}</option>
                 ))}
               </select>
 
-              <span className="flabel">Storage</span>
-              <div className="flex flex-wrap gap-2">
-                {device.storage.map((s) => (
-                  <button key={s.gb} onClick={() => setGb(s.gb)} className={cn("chip", gb === s.gb && "on accent")}>
-                    {s.gb >= 1024 ? `${s.gb / 1024}TB` : `${s.gb}GB`}
-                  </button>
-                ))}
-              </div>
+              {model.storages.length > 0 && (
+                <>
+                  <span className="flabel">Storage</span>
+                  <div className="flex flex-wrap gap-2">
+                    {model.storages.map((s) => (
+                      <button key={s} onClick={() => setGb(s)} className={cn("chip", gb === s && "on accent")}>
+                        {s >= 1024 ? `${s / 1024}TB` : `${s}GB`}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
 
               {carrierChoice && (
                 <>
@@ -234,24 +227,22 @@ export function TradeInWizard({ initialSlug }: { initialSlug?: string }) {
                     </button>
                   </div>
                   <p className="mt-2 text-[12px] text-[#86868b]">
-                    Fully unlocked devices are worth more. Not sure? Pick carrier-locked and we&apos;ll
-                    re-quote up if it&apos;s unlocked.
+                    Fully unlocked devices are worth more. Not sure? Pick carrier-locked — we re-quote
+                    up if it&apos;s unlocked.
                   </p>
                 </>
               )}
 
               <div className="mt-6 flex items-center justify-between gap-4 rounded-[14px] bg-[#edf6f0] px-5 py-4">
                 <div>
-                  <p className="text-[13px] font-medium text-[#0a7d61]">
-                    We pay up to{q.live ? "" : " an estimated"}
-                  </p>
+                  <p className="text-[13px] font-medium text-[#0a7d61]">We pay up to</p>
                   <p className="text-[26px] font-bold leading-none tracking-[-.02em] text-[#0a7d61]">
                     {formatPrice(topOffer)}
                   </p>
                 </div>
                 <p className="max-w-[190px] text-right text-[12px] leading-snug text-[#5c8a78]">
-                  for a flawless {device.name} {storageLabel}. Answer a few questions for your exact
-                  offer.
+                  for a flawless {model.name}{storageLabel ? ` ${storageLabel}` : ""}. Answer a few
+                  questions for your exact offer.
                 </p>
               </div>
 
@@ -321,56 +312,109 @@ export function TradeInWizard({ initialSlug }: { initialSlug?: string }) {
             </motion.div>
           )}
 
-          {/* STEP 3 — offer */}
+          {/* STEP 3 — offer + details */}
           {step === 2 && (
-            <motion.div key="s2" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} className="scard-bord">
-              <h2 className="text-[20px] font-bold tracking-[-.01em]">How would you like to be paid?</h2>
-              <p className="mb-4 mt-1 text-[13.5px] text-[#86868b]">Store credit adds a 10% bonus you can spend right away.</p>
-              <div className="grid grid-cols-3 gap-2.5">
-                {PAYOUTS.map((p) => {
-                  const amount = p.id === "credit" ? credit : cash;
-                  return (
-                    <button
-                      key={p.id}
-                      onClick={() => setPayout(p.id)}
-                      className={cn(
-                        "rounded-[13px] border px-3 py-3 text-center transition-colors",
-                        payout === p.id ? "border-[#0a8f6e] shadow-[0_0_0_1px_#0a8f6e]" : "border-[#d2d2d7] hover:border-[#bfbfc7]",
-                      )}
-                    >
-                      <span className="block text-[14px] font-semibold text-[#1d1d1f]">{p.label}</span>
-                      <span className="mt-0.5 block text-[12px] font-semibold text-[#0a8f6e]">
-                        {p.id === "credit" ? `${formatPrice(amount)} · +10%` : formatPrice(amount)}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* price breakdown */}
-              <div className="mt-6 rounded-[14px] border border-[#e2e2e6] p-4">
-                <div className="flex items-center justify-between text-[13.5px]">
-                  <span className="text-[#6e6e73]">{GRADE_TAG[q.grade]} — base offer</span>
-                  <span className="font-semibold text-[#1d1d1f]">{formatPrice(q.base)}</span>
+            <motion.div key="s2" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} className="flex flex-col gap-[18px]">
+              <div className="scard-bord">
+                <h2 className="text-[20px] font-bold tracking-[-.01em]">How would you like to be paid?</h2>
+                <p className="mb-4 mt-1 text-[13.5px] text-[#86868b]">Store credit adds a 10% bonus you can spend right away.</p>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {PAYOUTS.map((p) => {
+                    const amount = p.id === "credit" ? credit : cash;
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => setPayout(p.id)}
+                        className={cn(
+                          "rounded-[13px] border px-3 py-3 text-center transition-colors",
+                          payout === p.id ? "border-[#0a8f6e] shadow-[0_0_0_1px_#0a8f6e]" : "border-[#d2d2d7] hover:border-[#bfbfc7]",
+                        )}
+                      >
+                        <span className="block text-[14px] font-semibold text-[#1d1d1f]">{p.label}</span>
+                        <span className="mt-0.5 block text-[12px] font-semibold text-[#0a8f6e]">
+                          {p.id === "credit" ? `${formatPrice(amount)} · +10%` : formatPrice(amount)}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
-                {q.deductions.map((d) => (
-                  <div key={d.label} className="mt-1.5 flex items-center justify-between text-[13.5px]">
-                    <span className="text-[#b23b3b]">− {d.label}</span>
-                    <span className="font-semibold text-[#b23b3b]">−{formatPrice(d.amount)}</span>
+
+                {/* price breakdown */}
+                <div className="mt-5 rounded-[14px] border border-[#e2e2e6] p-4">
+                  <div className="flex items-center justify-between text-[13.5px]">
+                    <span className="text-[#6e6e73]">{GRADE_TAG[q.grade]} — base offer</span>
+                    <span className="font-semibold text-[#1d1d1f]">{formatPrice(q.base)}</span>
                   </div>
-                ))}
-                <div className="mt-3 flex items-center justify-between border-t border-[#e2e2e6] pt-3">
-                  <span className="text-[14px] font-semibold text-[#1d1d1f]">Your {isCredit ? "credit" : "cash"} offer</span>
-                  <span className="text-[16px] font-bold text-[#0a8f6e]">{formatPrice(payoutVal)}</span>
+                  {q.deductions.map((d) => (
+                    <div key={d.label} className="mt-1.5 flex items-center justify-between text-[13.5px]">
+                      <span className="text-[#b23b3b]">− {d.label}</span>
+                      <span className="font-semibold text-[#b23b3b]">−{formatPrice(d.amount)}</span>
+                    </div>
+                  ))}
+                  <div className="mt-3 flex items-center justify-between border-t border-[#e2e2e6] pt-3">
+                    <span className="text-[14px] font-semibold text-[#1d1d1f]">Your {isCredit ? "credit" : "cash"} offer</span>
+                    <span className="text-[16px] font-bold text-[#0a8f6e]">{formatPrice(payoutVal)}</span>
+                  </div>
+                  {q.notes.map((n) => (
+                    <p key={n} className="mt-2 flex items-start gap-1.5 text-[12px] leading-snug text-[#9a6a00]">
+                      <Info className="mt-[1px] h-3.5 w-3.5 flex-none" /> {n}
+                    </p>
+                  ))}
                 </div>
-                {q.notes.map((n) => (
-                  <p key={n} className="mt-2 flex items-start gap-1.5 text-[12px] leading-snug text-[#9a6a00]">
-                    <Info className="mt-[1px] h-3.5 w-3.5 flex-none" /> {n}
-                  </p>
-                ))}
               </div>
 
-              <div className="mt-6 flex items-center justify-between">
+              {/* seller details */}
+              <div className="scard-bord">
+                <h2 className="text-[20px] font-bold tracking-[-.01em]">Your details</h2>
+                <p className="mb-4 mt-1 text-[13.5px] text-[#86868b]">So we can send your prepaid label and your payment.</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="flabel" htmlFor="ti-name">Full name</label>
+                    <input id="ti-name" value={sellerName} onChange={(e) => setSellerName(e.target.value)} className="inpt" placeholder="Jane Doe" />
+                  </div>
+                  <div>
+                    <label className="flabel" htmlFor="ti-email">Email</label>
+                    <input id="ti-email" type="email" value={sellerEmail} onChange={(e) => setSellerEmail(e.target.value)} className="inpt" placeholder="you@email.com" />
+                  </div>
+                  {!isCredit && (
+                    <div className="sm:col-span-2">
+                      <label className="flabel" htmlFor="ti-payout">
+                        {payout === "paypal" ? "PayPal email" : "How to pay you"}
+                      </label>
+                      <input
+                        id="ti-payout"
+                        value={payoutDetail}
+                        onChange={(e) => setPayoutDetail(e.target.value)}
+                        className="inpt"
+                        placeholder={PAYOUTS.find((p) => p.id === payout)?.detail}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* ship-to */}
+              <div className="scard-bord">
+                <div className="flex items-start gap-3">
+                  <span className="grid h-9 w-9 flex-none place-items-center rounded-[10px] bg-[#edf6f0] text-[#0a8f6e]">
+                    <MapPin className="h-[18px] w-[18px]" />
+                  </span>
+                  <div>
+                    <h3 className="text-[15px] font-semibold text-[#1d1d1f]">Where to ship it</h3>
+                    <p className="mt-0.5 text-[13.5px] leading-relaxed text-[#6e6e73]">
+                      {SHIP_TO.name}
+                      <br />
+                      {SHIP_TO.lines.join(" · ")}
+                    </p>
+                    <p className="mt-1.5 text-[12px] text-[#86868b]">
+                      Lock your offer and we&apos;ll email a <b>free prepaid shipping label</b> — no need
+                      to write this down.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
                 <button onClick={() => setStep(1)} className="link inline-flex items-center gap-1.5">
                   <ArrowLeft className="h-4 w-4" /> Back
                 </button>
@@ -404,7 +448,8 @@ export function TradeInWizard({ initialSlug }: { initialSlug?: string }) {
                 </div>
                 <h3 className="mt-5 text-2xl font-bold tracking-[-.02em] text-[#1d1d1f]">Offer locked for 14 days</h3>
                 <p className="mt-2 max-w-xs text-sm leading-relaxed text-[#6e6e73]">
-                  We&apos;ll email a prepaid label for your {device.name}. Once it&apos;s inspected, you&apos;re paid within 2 business days. (Demo — nothing was sent.)
+                  We&apos;ll email {sellerEmail || "you"} a prepaid label for your {model.name}. Ship it to{" "}
+                  {SHIP_TO.name}; once inspected you&apos;re paid within 2 business days. (Demo — nothing was sent.)
                 </p>
                 {isCredit && (
                   <Link href="/shop" className="btn mt-6">Shop with my {formatPrice(credit)} credit</Link>
@@ -423,15 +468,15 @@ export function TradeInWizard({ initialSlug }: { initialSlug?: string }) {
                 </div>
                 <div className="px-6 py-5">
                   <div className="flex items-center gap-4">
-                    <PhImg slug={device.slug} src={device.image} label={device.name} className="h-24 w-16 shrink-0 rounded-[12px]" style={{ ["--ph-a" as string]: "#fcfdff", ["--ph-b" as string]: "#e7e9ee" }} />
+                    <PhImg slug={model.catalogSlug ?? model.key} src={model.image} label={model.name} className="h-24 w-16 shrink-0 rounded-[12px]" style={{ ["--ph-a" as string]: "#fcfdff", ["--ph-b" as string]: "#e7e9ee" }} />
                     <div>
                       <p className="text-sm text-[#86868b]">Trading in</p>
-                      <p className="text-lg font-bold text-[#1d1d1f]">{device.name}</p>
-                      <p className="text-xs text-[#86868b]">{storageLabel} · {GRADE_TAG[q.grade]}</p>
+                      <p className="text-lg font-bold text-[#1d1d1f]">{model.name}</p>
+                      <p className="text-xs text-[#86868b]">{[storageLabel, GRADE_TAG[q.grade]].filter(Boolean).join(" · ")}</p>
                     </div>
                   </div>
                   <div className="mt-5 flex flex-col gap-2.5 border-t border-[#d2d2d7] pt-4 text-[13.5px]">
-                    {([["Device", device.name], ["Storage", storageLabel], ["Grade", GRADE_TAG[q.grade]], ["Carrier", carrierChoice ? (lock === "unlocked" ? "Unlocked" : "Carrier-locked") : "—"]] as const).map(([k, v]) => (
+                    {([["Device", model.name], ["Storage", storageLabel || "—"], ["Grade", GRADE_TAG[q.grade]], ["Carrier", carrierChoice ? (lock === "unlocked" ? "Unlocked" : "Carrier-locked") : "—"]] as const).map(([k, v]) => (
                       <div key={k} className="flex justify-between gap-3">
                         <span className="text-[#86868b]">{k}</span>
                         <span className="font-semibold text-[#1d1d1f]">{v}</span>
@@ -439,13 +484,16 @@ export function TradeInWizard({ initialSlug }: { initialSlug?: string }) {
                     ))}
                   </div>
                   {step === 2 ? (
-                    <button onClick={() => setSubmitted(true)} className="btn mt-6 w-full">
+                    <button onClick={() => canLock && setSubmitted(true)} disabled={!canLock} className={cn("btn mt-6 w-full", !canLock && "opacity-50")}>
                       Lock this offer <ArrowRight className="h-[18px] w-[18px]" />
                     </button>
                   ) : (
                     <button onClick={() => setStep(step + 1)} className="btn mt-6 w-full">
                       {step === 0 ? "Continue" : "See my offer"} <ArrowRight className="h-[18px] w-[18px]" />
                     </button>
+                  )}
+                  {step === 2 && !canLock && (
+                    <p className="mt-2 text-center text-[12px] text-[#86868b]">Add your name, email and payout details to lock it.</p>
                   )}
                   <p className="note2 mt-4">No obligation. Final value confirmed after our free inspection — if it&apos;s higher, you keep the difference.</p>
                 </div>
@@ -473,7 +521,6 @@ function OptCard({ active, onClick, label, desc }: { active: boolean; onClick: (
   );
 }
 
-/** Yes/No row. `invert` = "Yes" is the good answer (green) rather than the flagged one. */
 function Toggle({
   label, yes, onYes, onNo, invert,
 }: {

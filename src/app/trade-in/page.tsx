@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Search, Tag, Truck, Banknote } from "lucide-react";
 import { TradeInWizard } from "@/components/trade-in/TradeInWizard";
-import { getTradeInPricing } from "@/lib/trade-in-pricing";
 
 export const metadata: Metadata = {
   title: "Trade in your phone for instant credit",
@@ -23,7 +22,6 @@ export default async function TradeInPage({
   searchParams: Promise<{ device?: string }>;
 }) {
   const { device } = await searchParams;
-  const pricing = await getTradeInPricing();
 
   return (
     <div className="pt-12">
@@ -47,7 +45,7 @@ export default async function TradeInPage({
       </header>
 
       <div className="shell pt-10">
-        <TradeInWizard initialSlug={device} pricing={pricing} />
+        <TradeInWizard initialSlug={device} />
       </div>
 
       <section className="graysec mt-24">

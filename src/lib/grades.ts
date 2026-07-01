@@ -12,6 +12,8 @@ export interface Grade {
   screen: string;
   body: string;
   battery: string;
+  /** reassurance that the device is fully working, whatever the cosmetic grade */
+  functional: string;
   /** primary hex used for badges, rings and the 3D wear overlay */
   hex: string;
   /** softer companion hex */
@@ -36,10 +38,11 @@ export const GRADES: Record<GradeId, Grade> = {
     label: "New",
     sheet: "New",
     tagline: "Brand new, factory sealed",
-    cosmetic: "Brand-new condition — no marks anywhere, sealed and unused.",
+    cosmetic: "Brand-new condition — no marks anywhere, sealed and unused. Fully functional and works exactly like new.",
     screen: "Flawless — no scratches or marks.",
     body: "No cosmetic wear at all; indistinguishable from new.",
     battery: "100% — a brand-new battery.",
+    functional: "100% functional — works exactly like new (because it is).",
     hex: "#34e6a8",
     hexSoft: "#6ff7c8",
     score: 4,
@@ -48,12 +51,13 @@ export const GRADES: Record<GradeId, Grade> = {
   excellent: {
     id: "excellent",
     label: "Excellent",
-    sheet: "A+ · A · AB",
-    tagline: "Looks new from a foot away",
-    cosmetic: "No screen scratches and no cosmetic damage visible from 12 inches.",
+    sheet: "A+ · A",
+    tagline: "Looks like new — works like new",
+    cosmetic: "Practically flawless — no screen scratches and no cosmetic marks you'd notice from a foot away. Fully tested and works exactly like new.",
     screen: "No scratches.",
-    body: "No signs of cosmetic damage visible when held 12 inches away.",
+    body: "No signs of wear visible when held at arm's length.",
     battery: "Above 80% of original capacity.",
+    functional: "Passes our 50-point test — 100% functional, works exactly like new.",
     hex: "#38d1ff",
     hexSoft: "#7fe7ff",
     score: 3,
@@ -62,12 +66,13 @@ export const GRADES: Record<GradeId, Grade> = {
   good: {
     id: "good",
     label: "Good",
-    sheet: "B",
-    tagline: "Light, barely-visible wear",
-    cosmetic: "No screen scratches; light body scratches barely visible at 12 inches.",
-    screen: "No scratches.",
-    body: "Light scratches, barely visible at 12 inches and imperceptible to touch.",
+    sheet: "AB",
+    tagline: "Gently used — works like new",
+    cosmetic: "Light signs of everyday use — a few small marks, maybe a faint scratch — with a clear, fully-working screen. Fully tested and works exactly like new.",
+    screen: "Clear and fully working; any marks are faint and easy to miss.",
+    body: "A few light marks from normal use — nothing that affects how it works.",
     battery: "Above 80% of original capacity.",
+    functional: "Passes our 50-point test — 100% functional, works exactly like new.",
     hex: "#f5c451",
     hexSoft: "#ffe0a3",
     score: 2,
@@ -76,12 +81,13 @@ export const GRADES: Record<GradeId, Grade> = {
   fair: {
     id: "fair",
     label: "Fair",
-    sheet: "C",
-    tagline: "Honest wear, biggest savings",
-    cosmetic: "A few shallow screen scratches (invisible when on); body scratches visible at 12 inches.",
-    screen: "May have a few shallow scratches, invisible when the screen is on.",
-    body: "Light scratches, clearly visible at 12 inches and perceptible to touch.",
+    sheet: "B · C",
+    tagline: "Honest wear — works like new, biggest savings",
+    cosmetic: "More visible marks and scratches up close from real-world use — but always crack-free, and it works exactly like new. The smart pick for maximum savings.",
+    screen: "May have light scratches; always clear and fully working when the screen is on.",
+    body: "Visible scratches and marks from everyday use — never any cracks or chips.",
     battery: "Above 80% of original capacity.",
+    functional: "Passes our 50-point test — 100% functional, works exactly like new.",
     hex: "#fb923c",
     hexSoft: "#fdba74",
     score: 1,

@@ -122,6 +122,10 @@ export default function GradesPage() {
                         <span className="stdk">Battery</span>
                         <span className="stdv">{g.battery}</span>
                       </div>
+                      <div className="stdrow">
+                        <span className="stdk">Function</span>
+                        <span className="stdv">{g.functional}</span>
+                      </div>
                     </div>
                   </div>
                 </div>

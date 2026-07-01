@@ -2200,11 +2200,12 @@ export const DEVICES: Device[] = [
     chip: "A14 Bionic",
     screen: 10.9,
     ram: 4,
+    image: "/photos/ipad-10th-gen.jpg",
     colors: [
-      { name: "Blue", hex: "#7da3b8", accent: "#5c8298", family: "Blue" },
-      { name: "Pink", hex: "#eccdc8", accent: "#d3a8a2", family: "Pink" },
-      { name: "Yellow", hex: "#ecd98c", accent: "#cfbb67", family: "Yellow" },
-      { name: "Silver", hex: "#e3e4e0", accent: "#c2c3bf", family: "Silver" },
+      { name: "Blue", hex: "#7da3b8", accent: "#5c8298", family: "Blue", image: "/photos/ipad-10th-gen-blue.jpg" },
+      { name: "Pink", hex: "#eccdc8", accent: "#d3a8a2", family: "Pink", image: "/photos/ipad-10th-gen-pink.jpg" },
+      { name: "Yellow", hex: "#ecd98c", accent: "#cfbb67", family: "Yellow", image: "/photos/ipad-10th-gen-yellow.jpg" },
+      { name: "Silver", hex: "#e3e4e0", accent: "#c2c3bf", family: "Silver", image: "/photos/ipad-10th-gen-silver.jpg" },
     ],
     storage: [
       { gb: 64, price: 269, original: 449, wholesale: 245 },

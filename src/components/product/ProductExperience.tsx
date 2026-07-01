@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Star, RotateCcw, ScanLine, Check, Boxes, Heart, Recycle, Zap } from "lucide-react";
@@ -10,6 +10,7 @@ import { useCart } from "@/lib/cart-store";
 import { useWishlist } from "@/lib/wishlist-store";
 import { useRecent } from "@/lib/recent-store";
 import { useStockFor } from "@/lib/stock-context";
+import { comboKey, type VariantAvailability } from "@/lib/availability";
 import { GRADES, GRADE_ORDER, GRADE_PHOTOS, type GradeId } from "@/lib/grades";
 import { unitPrice, MOQ } from "@/lib/wholesale";
 import { formatPrice, pct, cn } from "@/lib/utils";
@@ -63,7 +64,13 @@ const SHOWCASE: Record<
   },
 };
 
-export function ProductExperience({ device }: { device: Device }) {
+export function ProductExperience({
+  device,
+  availability,
+}: {
+  device: Device;
+  availability?: VariantAvailability;
+}) {
   const router = useRouter();
   const add = useCart((s) => s.add);
   const setOpen = useCart((s) => s.setOpen);
@@ -83,14 +90,60 @@ export function ProductExperience({ device }: { device: Device }) {
 
   const color = device.colors[colorIdx];
   const sOpt = storageFor(device, gb);
+
+  // ---- live per-variant availability: only offer/allow real warehouse stock ----
+  const gated = !!availability && !availability.degraded;
+  const comboSet = useMemo(() => new Set(availability?.combos ?? []), [availability]);
+  const storageOk = (g: number) => !gated || [...comboSet].some((k) => k.startsWith(`${g}|`));
+  const familyOk = (f: string) => !gated || [...comboSet].some((k) => k.startsWith(`${gb}|${f}|`));
+  const gradeOk = (id: GradeId) => !gated || comboSet.has(comboKey(gb, color.family, id));
+  const comboAvailable = !gated || comboSet.has(comboKey(gb, color.family, gradeId));
+
+  // Keep the selection on a combination we actually have. Runs on load and any
+  // time capacity/colour changes: if the current (capacity × colour × grade) is
+  // out of stock, snap to the closest thing we do have — preferring to keep the
+  // capacity the buyer just chose, then their colour, before falling back to any
+  // available combo. You can never land on something you can't buy.
+  useEffect(() => {
+    if (!gated || comboSet.size === 0) return;
+    const fam = device.colors[colorIdx].family;
+    if (comboSet.has(comboKey(gb, fam, gradeId))) return; // already valid
+    // same capacity + colour, different grade
+    const sameColour = [...comboSet].find((k) => k.startsWith(`${gb}|${fam}|`));
+    if (sameColour) {
+      setGradeId(sameColour.split("|")[2] as GradeId);
+      return;
+    }
+    // same capacity, different colour + grade
+    const sameGb = [...comboSet].find((k) => k.startsWith(`${gb}|`));
+    if (sameGb) {
+      const [, f, gr] = sameGb.split("|");
+      const ci = device.colors.findIndex((c) => c.family === f);
+      if (ci >= 0) setColorIdx(ci);
+      setGradeId(gr as GradeId);
+      return;
+    }
+    // nothing in this capacity — jump to any available combo the catalog can show
+    for (const key of comboSet) {
+      const [g, f, gr] = key.split("|");
+      const ci = device.colors.findIndex((c) => c.family === f);
+      if (ci >= 0 && device.storage.some((s) => s.gb === Number(g))) {
+        setGb(Number(g));
+        setColorIdx(ci);
+        setGradeId(gr as GradeId);
+        return;
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [device.slug, gb, colorIdx]);
   const mult = 1 + (scoreOf(gradeId) - scoreOf(device.grade)) * 0.06;
   const priceFor = (base: number) => Math.round(base * mult);
   const price = priceFor(sOpt.price);
   const off = pct(price, sOpt.original);
   const bulkUnit = unitPrice(sOpt.wholesale, MOQ);
   const stock = useStockFor(device.slug, device.stock);
-  const outOfStock = stock <= 0;
-  const lowStock = !outOfStock && stock <= 10;
+  const outOfStock = gated ? !comboAvailable : stock <= 0;
+  const lowStock = !gated && !outOfStock && stock <= 10;
 
   function buildItem() {
     return {
@@ -194,16 +247,20 @@ export function ProductExperience({ device }: { device: Device }) {
             <span className="font-normal text-[#6e6e73]">{color.name}</span>
           </div>
           <div className="flex flex-wrap gap-3.5">
-            {device.colors.map((c, i) => (
-              <button
-                key={c.name}
-                onClick={() => setColorIdx(i)}
-                title={c.name}
-                aria-label={c.name}
-                className={cn("swatch", i === colorIdx && "on")}
-                style={{ background: c.hex }}
-              />
-            ))}
+            {device.colors.map((c, i) => {
+              const ok = familyOk(c.family);
+              return (
+                <button
+                  key={c.name}
+                  onClick={() => ok && setColorIdx(i)}
+                  disabled={!ok}
+                  title={ok ? c.name : `${c.name} — out of stock`}
+                  aria-label={c.name}
+                  className={cn("swatch", i === colorIdx && "on")}
+                  style={{ background: c.hex, opacity: ok ? 1 : 0.28, cursor: ok ? "pointer" : "not-allowed" }}
+                />
+              );
+            })}
           </div>
         </div>
 
@@ -214,18 +271,24 @@ export function ProductExperience({ device }: { device: Device }) {
             <span className="font-normal text-[#6e6e73]">{gb}GB</span>
           </div>
           <div className="flex flex-wrap gap-2.5">
-            {device.storage.map((s) => (
-              <button
-                key={s.gb}
-                onClick={() => setGb(s.gb)}
-                className={cn("chip", gb === s.gb && "on accent")}
-              >
-                <span className="font-semibold">{s.gb}GB</span>
-                <span className={cn("text-xs", gb === s.gb ? "text-white/80" : "text-[#86868b]")}>
-                  {formatPrice(priceFor(s.price))}
-                </span>
-              </button>
-            ))}
+            {device.storage.map((s) => {
+              const ok = storageOk(s.gb);
+              return (
+                <button
+                  key={s.gb}
+                  onClick={() => ok && setGb(s.gb)}
+                  disabled={!ok}
+                  title={ok ? undefined : "Out of stock"}
+                  className={cn("chip", gb === s.gb && "on accent")}
+                  style={ok ? undefined : { opacity: 0.4, cursor: "not-allowed", textDecoration: "line-through" }}
+                >
+                  <span className="font-semibold">{s.gb}GB</span>
+                  <span className={cn("text-xs", gb === s.gb ? "text-white/80" : "text-[#86868b]")}>
+                    {ok ? formatPrice(priceFor(s.price)) : "—"}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -243,13 +306,18 @@ export function ProductExperience({ device }: { device: Device }) {
                 Math.round(sOpt.price * (scoreOf(id) - scoreOf(gradeId)) * 0.06);
               const save = sOpt.original > 0 ? Math.round((1 - p / sOpt.original) * 100) : 0;
               const active = id === gradeId;
+              const avail = gradeOk(id);
               return (
                 <button
                   key={id}
-                  onClick={() => setGradeId(id)}
+                  onClick={() => avail && setGradeId(id)}
+                  disabled={!avail}
+                  aria-disabled={!avail}
+                  title={avail ? undefined : `${g.label} — out of stock for this colour & capacity`}
                   className={cn(
                     "flex items-center gap-3.5 rounded-[14px] border bg-white px-4 py-3.5 text-left transition-colors",
                     active ? "border-[#0a8f6e]" : "border-[#d2d2d7] hover:border-[#bfbfc7]",
+                    !avail && "cursor-not-allowed opacity-45 hover:border-[#d2d2d7]",
                   )}
                 >
                   <span
@@ -267,12 +335,20 @@ export function ProductExperience({ device }: { device: Device }) {
                     <span className="mt-0.5 block text-[12.5px] text-[#86868b]">{g.cosmetic}</span>
                   </span>
                   <span className="text-right">
-                    <span className="block text-[15px] font-semibold text-[#1d1d1f]">
-                      {formatPrice(p)}
-                    </span>
-                    {save > 0 && (
-                      <span className="block text-[11px] font-semibold text-[#0a8f6e]">
-                        Save {save}%
+                    {avail ? (
+                      <>
+                        <span className="block text-[15px] font-semibold text-[#1d1d1f]">
+                          {formatPrice(p)}
+                        </span>
+                        {save > 0 && (
+                          <span className="block text-[11px] font-semibold text-[#0a8f6e]">
+                            Save {save}%
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="block text-[12px] font-semibold text-[#86868b]">
+                        Out of stock
                       </span>
                     )}
                   </span>

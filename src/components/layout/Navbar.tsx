@@ -139,6 +139,7 @@ export function Navbar() {
                 )}
               </div>
             ))}
+            <Link href="/trade-in">Trade-in</Link>
             <Link href="/wholesale">Wholesale</Link>
             <Link href="/grades">Grades</Link>
             <Link href="/help">Support</Link>

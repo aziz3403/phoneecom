@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Search, Tag, Truck, Banknote, ShieldCheck, BatteryWarning, ScanFace, Wrench, Camera, Lock, Trophy } from "lucide-react";
+import { Search, Tag, Truck, Banknote, ShieldCheck, BatteryWarning, ScanFace, Wrench, Camera, Lock, Trophy, Boxes, ArrowRight } from "lucide-react";
 import { TradeInWizard } from "@/components/trade-in/TradeInWizard";
 import { getTradeInModels } from "@/lib/trade-in-pricing";
 
@@ -70,6 +70,32 @@ export default async function TradeInPage({
 
       <div className="shell pt-10">
         <TradeInWizard initialSlug={device} models={models} />
+      </div>
+
+      {/* price list + bulk */}
+      <div className="shell mt-14">
+        <Link
+          href="/trade-in/prices"
+          className="group flex flex-col gap-4 rounded-[20px] border border-[#d2d2d7] bg-gradient-to-br from-[#f1f7f3] to-white p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7"
+        >
+          <div className="flex items-start gap-4">
+            <span className="grid h-11 w-11 flex-none place-items-center rounded-[12px] bg-[#0a8f6e] text-white">
+              <Boxes className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="text-[17px] font-bold tracking-[-.01em] text-[#1d1d1f]">
+                See the full price list &amp; sell in bulk
+              </p>
+              <p className="mt-1 max-w-[560px] text-[14px] leading-relaxed text-[#6e6e73]">
+                Browse what we pay for {models.length}+ models by grade, or send a whole batch —
+                resellers &amp; repair shops get bonus pricing, free labels at 5+, and one fast payment.
+              </p>
+            </div>
+          </div>
+          <span className="inline-flex flex-none items-center gap-1.5 self-start rounded-full bg-[#0a8f6e] px-4 py-2.5 text-[14px] font-semibold text-white transition-transform group-hover:translate-x-0.5 sm:self-auto">
+            View price list <ArrowRight className="h-[18px] w-[18px]" />
+          </span>
+        </Link>
       </div>
 
       <section className="graysec mt-24">

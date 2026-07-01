@@ -1,33 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ArrowRight, ArrowLeft, Truck, ShieldCheck, Recycle } from "lucide-react";
+import { Check, ArrowRight, ArrowLeft, Truck, ShieldCheck, Recycle, Info } from "lucide-react";
 import { DEVICES, baseStorage, storageFor, BRANDS, type Brand } from "@/lib/products";
-import type { TradeInPricing } from "@/lib/trade-in-pricing";
+import {
+  tradeInForDevice,
+  findRow,
+  quote,
+  type Grade,
+  type Lock,
+} from "@/lib/trade-in-pricing";
 import { PhImg } from "@/components/home/PhImg";
 import { formatPrice, cn } from "@/lib/utils";
 
 const STEPS = ["Your device", "Its condition", "Your offer"] as const;
 
-/** Best-case condition factor (flawless + unlocked) — the sheet's payout is the
- *  price we pay in exactly that state, so it anchors the top of the scale. */
-const MAX_FACTOR = 0.85;
-
+// Customer screen answer → the grade it drives (before cosmetics decide A vs B).
 const SCREEN_OPTS = [
-  { id: "flawless", label: "Flawless", desc: "No scratches at all", rank: 0 },
-  { id: "minor", label: "Light scratches", desc: "Faint marks, no cracks", rank: 1 },
-  { id: "worn", label: "Heavily scratched", desc: "Deep scratches, still works", rank: 2 },
-  { id: "cracked", label: "Cracked", desc: "Glass is cracked or chipped", rank: 3 },
+  { id: "flawless", label: "Flawless", desc: "No scratches, no cracks" },
+  { id: "light", label: "Light scratches", desc: "Minor marks, glass intact" },
+  { id: "cracked", label: "Cracked glass", desc: "Chipped/cracked, display still works" },
+  { id: "display", label: "Display fault", desc: "Lines, spots, dead pixels or won't display" },
 ] as const;
-const BODY_OPTS = [
-  { id: "flawless", label: "Flawless", desc: "Like new", rank: 0 },
-  { id: "light", label: "Light wear", desc: "A few small marks", rank: 1 },
-  { id: "heavy", label: "Heavy wear", desc: "Dents or deep scuffs", rank: 2 },
-] as const;
-
 type ScreenId = (typeof SCREEN_OPTS)[number]["id"];
+
+const BODY_OPTS = [
+  { id: "mint", label: "Like new", desc: "No visible wear" },
+  { id: "light", label: "Light wear", desc: "A few small marks" },
+  { id: "heavy", label: "Heavy wear", desc: "Dents or deep scuffs" },
+] as const;
 type BodyId = (typeof BODY_OPTS)[number]["id"];
 
 const PAYOUTS = [
@@ -43,28 +46,21 @@ const TRUST = [
   { icon: Recycle, title: "Paid in 48 hours", body: "Pick cash, PayPal, or take +10% as store credit after a quick inspection." },
 ];
 
-/** Combined condition factor from the wizard answers (share of trade-in value). */
-function conditionFactor(works: boolean, screen: ScreenId, body: BodyId, unlocked: boolean) {
-  let factor: number;
-  if (!works || screen === "cracked") {
-    factor = 0.18;
-  } else {
-    const wear = Math.max(
-      SCREEN_OPTS.find((s) => s.id === screen)!.rank,
-      BODY_OPTS.find((b) => b.id === body)!.rank,
-    );
-    factor = wear <= 0 ? 0.85 : wear === 1 ? 0.62 : 0.42;
-  }
-  return factor * (unlocked ? 1 : 0.9);
+/** Customer answers → Atlas grade. */
+function deriveGrade(works: boolean, screen: ScreenId, body: BodyId): Grade {
+  if (!works) return "doa";
+  if (screen === "display") return "d";
+  if (screen === "cracked") return "c";
+  // functional, glass intact → A only when truly like-new, otherwise B
+  return screen === "flawless" && body === "mint" ? "a" : "b";
 }
 
-export function TradeInWizard({
-  initialSlug,
-  pricing,
-}: {
-  initialSlug?: string;
-  pricing?: TradeInPricing;
-}) {
+// Fallback share-of-wholesale when a device isn't in the buyback book.
+const FALLBACK_FACTOR: Record<Grade, number> = {
+  swap: 0.85, new: 0.9, a: 0.8, b: 0.62, c: 0.4, d: 0.22, doa: 0.08,
+};
+
+export function TradeInWizard({ initialSlug }: { initialSlug?: string }) {
   const initial = initialSlug ? DEVICES.find((d) => d.slug === initialSlug) : undefined;
   const [step, setStep] = useState(0);
   const [brand, setBrand] = useState<Brand>(initial?.brand ?? "Apple");
@@ -72,32 +68,84 @@ export function TradeInWizard({
   const [slug, setSlug] = useState(initial?.slug ?? brandDevices[0].slug);
   const device = useMemo(() => DEVICES.find((d) => d.slug === slug) ?? brandDevices[0], [slug, brandDevices]);
   const [gb, setGb] = useState(baseStorage(initial ?? brandDevices[0]).gb);
+  const [lock, setLock] = useState<Lock>("unlocked");
 
   const [works, setWorks] = useState(true);
-  const [screen, setScreen] = useState<ScreenId>("minor");
+  const [screen, setScreen] = useState<ScreenId>("light");
   const [body, setBody] = useState<BodyId>("light");
-  const [unlocked, setUnlocked] = useState(true);
+  // deductions
+  const [backCracked, setBackCracked] = useState(false);
+  const [lensCracked, setLensCracked] = useState(false);
+  const [faceIdOk, setFaceIdOk] = useState(true);
+  const [battery80, setBattery80] = useState(true);
+  const [repairMsg, setRepairMsg] = useState(false);
+
   const [payout, setPayout] = useState<PayoutId>("cash");
   const [submitted, setSubmitted] = useState(false);
 
+  const dev = useMemo(() => tradeInForDevice(device.slug), [device.slug]);
+  const carrierChoice = dev.locks.includes("unlocked") && (dev.locks.includes("locked") || dev.locks.includes("att"));
+
+  // keep the carrier selection valid for the device
+  useEffect(() => {
+    if (dev.hasData && !dev.locks.includes(lock)) {
+      setLock(dev.locks.includes("unlocked") ? "unlocked" : dev.locks[0] ?? "unlocked");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [device.slug]);
+
+  const grade = deriveGrade(works, screen, body);
   const sOpt = storageFor(device, gb);
-  const factor = conditionFactor(works, screen, body, unlocked);
-  // Real payout we pay for this exact model/capacity, from the owner's sheet
-  // (top = flawless & unlocked). Fall back to the catalog estimate if the sheet
-  // has no price for it. `top / MAX_FACTOR` re-bases so a flawless unit pays the
-  // sheet price exactly, and lesser conditions scale down from there.
-  const devicePricing = pricing?.[device.slug];
-  const sheetTop = devicePricing?.byGb?.[gb] ?? devicePricing?.top;
-  const base = sheetTop ? sheetTop / MAX_FACTOR : sOpt.wholesale;
-  const cash = Math.max(15, Math.round(base * factor));
+
+  // ---- the quote ----
+  const q = useMemo(() => {
+    const input = {
+      grade,
+      crackedBack: backCracked,
+      crackedLens: lensCracked,
+      badFaceId: !faceIdOk,
+      batteryLow: !battery80,
+      repairMessage: repairMsg,
+    };
+    if (dev.hasData) {
+      const row = findRow(dev, gb, lock);
+      if (row) {
+        const res = quote(row, input);
+        if (res.hasPrice) return { live: true, ...res };
+      }
+    }
+    // fallback estimate from catalog wholesale
+    const base = Math.round(sOpt.wholesale * FALLBACK_FACTOR[grade]);
+    const deductions = [] as { label: string; amount: number }[];
+    const notes: string[] = [];
+    if (!battery80) notes.push("Battery health under 80% — subject to deduction, confirmed on inspection.");
+    if (repairMsg) notes.push("Prior repair / non-genuine part message — subject to deduction.");
+    if (backCracked) { const a = Math.round(base * 0.18); deductions.push({ label: "Cracked back glass", amount: a }); }
+    if (lensCracked) { const a = Math.round(base * 0.1); deductions.push({ label: "Cracked camera lens", amount: a }); }
+    const total = Math.max(0, base - deductions.reduce((s, d) => s + d.amount, 0));
+    return { live: false, hasPrice: true, grade, base, deductions, notes, total };
+  }, [dev, gb, lock, grade, backCracked, lensCracked, faceIdOk, battery80, repairMsg, sOpt.wholesale]);
+
+  const cash = Math.max(5, q.total);
   const credit = Math.round(cash * 1.1);
-  // Headline "we pay up to" for the selected model/capacity (flawless + unlocked).
-  const topOffer = Math.round(base * MAX_FACTOR);
-  const livePrice = sheetTop != null;
   const isCredit = payout === "credit";
   const payoutVal = isCredit ? credit : cash;
   const storageLabel = gb >= 1024 ? `${gb / 1024}TB` : `${gb}GB`;
-  const condLabel = !works || screen === "cracked" ? "Cracked / faulty" : factor >= 0.8 ? "Flawless" : factor >= 0.58 ? "Good" : "Fair";
+
+  // headline "we pay up to" = best grade (A) for this storage/lock, no deductions
+  const topOffer = useMemo(() => {
+    if (dev.hasData) {
+      const row = findRow(dev, gb, lock);
+      const best = row?.a ?? row?.new ?? row?.swap;
+      if (best) return best;
+    }
+    return Math.round(sOpt.wholesale * FALLBACK_FACTOR.a);
+  }, [dev, gb, lock, sOpt.wholesale]);
+
+  const GRADE_TAG: Record<Grade, string> = {
+    swap: "Like new", new: "Brand new", a: "Grade A · Flawless", b: "Grade B · Good",
+    c: "Grade C · Cracked glass", d: "Grade D · Screen fault", doa: "Not working",
+  };
 
   function changeBrand(b: Brand) {
     setBrand(b);
@@ -174,18 +222,36 @@ export function TradeInWizard({
                 ))}
               </div>
 
+              {carrierChoice && (
+                <>
+                  <span className="flabel mt-5 block">Carrier status</span>
+                  <div className="flex flex-wrap gap-2">
+                    <button onClick={() => setLock("unlocked")} className={cn("chip", lock === "unlocked" && "on accent")}>
+                      Unlocked
+                    </button>
+                    <button onClick={() => setLock("locked")} className={cn("chip", lock !== "unlocked" && "on accent")}>
+                      Carrier-locked
+                    </button>
+                  </div>
+                  <p className="mt-2 text-[12px] text-[#86868b]">
+                    Fully unlocked devices are worth more. Not sure? Pick carrier-locked and we&apos;ll
+                    re-quote up if it&apos;s unlocked.
+                  </p>
+                </>
+              )}
+
               <div className="mt-6 flex items-center justify-between gap-4 rounded-[14px] bg-[#edf6f0] px-5 py-4">
                 <div>
                   <p className="text-[13px] font-medium text-[#0a7d61]">
-                    We pay up to{livePrice ? "" : " an estimated"}
+                    We pay up to{q.live ? "" : " an estimated"}
                   </p>
                   <p className="text-[26px] font-bold leading-none tracking-[-.02em] text-[#0a7d61]">
                     {formatPrice(topOffer)}
                   </p>
                 </div>
                 <p className="max-w-[190px] text-right text-[12px] leading-snug text-[#5c8a78]">
-                  for a flawless, unlocked {device.name} {storageLabel}. Answer a few questions for
-                  your exact offer.
+                  for a flawless {device.name} {storageLabel}. Answer a few questions for your exact
+                  offer.
                 </p>
               </div>
 
@@ -201,41 +267,48 @@ export function TradeInWizard({
           {step === 1 && (
             <motion.div key="s1" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} className="flex flex-col gap-[18px]">
               <div className="scard-bord">
-                <h2 className="text-[20px] font-bold tracking-[-.01em]">Does it power on and work normally?</h2>
-                <p className="mb-4 mt-1 text-[13.5px] text-[#86868b]">Screen, buttons, cameras and Face/Touch ID all functioning.</p>
+                <h2 className="text-[20px] font-bold tracking-[-.01em]">Does it power on and work?</h2>
+                <p className="mb-4 mt-1 text-[13.5px] text-[#86868b]">Turns on, boots, and the touchscreen responds.</p>
                 <div className="flex flex-wrap gap-2">
-                  <button onClick={() => setWorks(true)} className={cn("chip", works && "on accent")}>Yes, works fully</button>
-                  <button onClick={() => setWorks(false)} className={cn("chip", !works && "on accent")}>No / has a fault</button>
+                  <button onClick={() => setWorks(true)} className={cn("chip", works && "on accent")}>Yes, it powers on</button>
+                  <button onClick={() => setWorks(false)} className={cn("chip", !works && "on accent")}>No / no signs of life</button>
                 </div>
               </div>
 
-              <div className="scard-bord">
-                <h2 className="text-[20px] font-bold tracking-[-.01em]">Screen condition</h2>
-                <p className="mb-4 mt-1 text-[13.5px] text-[#86868b]">Be honest — we re-grade on arrival and price-match to what we find.</p>
-                <div className="grid grid-cols-2 gap-2.5">
-                  {SCREEN_OPTS.map((o) => (
-                    <OptCard key={o.id} active={screen === o.id} onClick={() => setScreen(o.id)} label={o.label} desc={o.desc} />
-                  ))}
-                </div>
-              </div>
+              {works && (
+                <>
+                  <div className="scard-bord">
+                    <h2 className="text-[20px] font-bold tracking-[-.01em]">Screen &amp; display</h2>
+                    <p className="mb-4 mt-1 text-[13.5px] text-[#86868b]">Be honest — we re-grade on arrival and price-match to what we find.</p>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {SCREEN_OPTS.map((o) => (
+                        <OptCard key={o.id} active={screen === o.id} onClick={() => setScreen(o.id)} label={o.label} desc={o.desc} />
+                      ))}
+                    </div>
+                  </div>
 
-              <div className="scard-bord">
-                <h2 className="text-[20px] font-bold tracking-[-.01em]">Body &amp; frame condition</h2>
-                <div className="mt-4 grid grid-cols-3 gap-2.5">
-                  {BODY_OPTS.map((o) => (
-                    <OptCard key={o.id} active={body === o.id} onClick={() => setBody(o.id)} label={o.label} desc={o.desc} />
-                  ))}
-                </div>
-              </div>
+                  <div className="scard-bord">
+                    <h2 className="text-[20px] font-bold tracking-[-.01em]">Body &amp; frame</h2>
+                    <div className="mt-4 grid grid-cols-3 gap-2.5">
+                      {BODY_OPTS.map((o) => (
+                        <OptCard key={o.id} active={body === o.id} onClick={() => setBody(o.id)} label={o.label} desc={o.desc} />
+                      ))}
+                    </div>
+                  </div>
 
-              <div className="scard-bord">
-                <h2 className="text-[20px] font-bold tracking-[-.01em]">Is it unlocked &amp; fully paid off?</h2>
-                <p className="mb-4 mt-1 text-[13.5px] text-[#86868b]">Carrier-unlocked, no iCloud/Google lock, no outstanding balance.</p>
-                <div className="flex flex-wrap gap-2">
-                  <button onClick={() => setUnlocked(true)} className={cn("chip", unlocked && "on accent")}>Yes</button>
-                  <button onClick={() => setUnlocked(false)} className={cn("chip", !unlocked && "on accent")}>No / not sure</button>
-                </div>
-              </div>
+                  <div className="scard-bord">
+                    <h2 className="text-[20px] font-bold tracking-[-.01em]">A few things we check</h2>
+                    <p className="mb-4 mt-1 text-[13.5px] text-[#86868b]">These can affect the final price — tell us up front and there are no surprises.</p>
+                    <div className="flex flex-col gap-2.5">
+                      <Toggle label="Back glass cracked?" yes={backCracked} onYes={() => setBackCracked(true)} onNo={() => setBackCracked(false)} />
+                      <Toggle label="Camera lens cracked?" yes={lensCracked} onYes={() => setLensCracked(true)} onNo={() => setLensCracked(false)} />
+                      <Toggle label="Face ID / fingerprint working?" invert yes={faceIdOk} onYes={() => setFaceIdOk(true)} onNo={() => setFaceIdOk(false)} />
+                      <Toggle label="Battery health 80% or above?" invert yes={battery80} onYes={() => setBattery80(true)} onNo={() => setBattery80(false)} />
+                      <Toggle label="Any repair / non-genuine part messages?" yes={repairMsg} onYes={() => setRepairMsg(true)} onNo={() => setRepairMsg(false)} />
+                    </div>
+                  </div>
+                </>
+              )}
 
               <div className="flex items-center justify-between">
                 <button onClick={() => setStep(0)} className="link inline-flex items-center gap-1.5">
@@ -273,7 +346,31 @@ export function TradeInWizard({
                   );
                 })}
               </div>
-              <div className="mt-7 flex items-center justify-between">
+
+              {/* price breakdown */}
+              <div className="mt-6 rounded-[14px] border border-[#e2e2e6] p-4">
+                <div className="flex items-center justify-between text-[13.5px]">
+                  <span className="text-[#6e6e73]">{GRADE_TAG[q.grade]} — base offer</span>
+                  <span className="font-semibold text-[#1d1d1f]">{formatPrice(q.base)}</span>
+                </div>
+                {q.deductions.map((d) => (
+                  <div key={d.label} className="mt-1.5 flex items-center justify-between text-[13.5px]">
+                    <span className="text-[#b23b3b]">− {d.label}</span>
+                    <span className="font-semibold text-[#b23b3b]">−{formatPrice(d.amount)}</span>
+                  </div>
+                ))}
+                <div className="mt-3 flex items-center justify-between border-t border-[#e2e2e6] pt-3">
+                  <span className="text-[14px] font-semibold text-[#1d1d1f]">Your {isCredit ? "credit" : "cash"} offer</span>
+                  <span className="text-[16px] font-bold text-[#0a8f6e]">{formatPrice(payoutVal)}</span>
+                </div>
+                {q.notes.map((n) => (
+                  <p key={n} className="mt-2 flex items-start gap-1.5 text-[12px] leading-snug text-[#9a6a00]">
+                    <Info className="mt-[1px] h-3.5 w-3.5 flex-none" /> {n}
+                  </p>
+                ))}
+              </div>
+
+              <div className="mt-6 flex items-center justify-between">
                 <button onClick={() => setStep(1)} className="link inline-flex items-center gap-1.5">
                   <ArrowLeft className="h-4 w-4" /> Back
                 </button>
@@ -330,11 +427,11 @@ export function TradeInWizard({
                     <div>
                       <p className="text-sm text-[#86868b]">Trading in</p>
                       <p className="text-lg font-bold text-[#1d1d1f]">{device.name}</p>
-                      <p className="text-xs text-[#86868b]">{storageLabel} · {condLabel}</p>
+                      <p className="text-xs text-[#86868b]">{storageLabel} · {GRADE_TAG[q.grade]}</p>
                     </div>
                   </div>
                   <div className="mt-5 flex flex-col gap-2.5 border-t border-[#d2d2d7] pt-4 text-[13.5px]">
-                    {([["Device", device.name], ["Storage", storageLabel], ["Condition", condLabel], ["Unlocked", unlocked ? "Yes" : "No / unsure"]] as const).map(([k, v]) => (
+                    {([["Device", device.name], ["Storage", storageLabel], ["Grade", GRADE_TAG[q.grade]], ["Carrier", carrierChoice ? (lock === "unlocked" ? "Unlocked" : "Carrier-locked") : "—"]] as const).map(([k, v]) => (
                       <div key={k} className="flex justify-between gap-3">
                         <span className="text-[#86868b]">{k}</span>
                         <span className="font-semibold text-[#1d1d1f]">{v}</span>
@@ -373,5 +470,34 @@ function OptCard({ active, onClick, label, desc }: { active: boolean; onClick: (
       <span className="block text-sm font-semibold text-[#1d1d1f]">{label}</span>
       <span className="block text-xs text-[#86868b]">{desc}</span>
     </button>
+  );
+}
+
+/** Yes/No row. `invert` = "Yes" is the good answer (green) rather than the flagged one. */
+function Toggle({
+  label, yes, onYes, onNo, invert,
+}: {
+  label: string; yes: boolean; onYes: () => void; onNo: () => void; invert?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-[14px] text-[#1d1d1f]">{label}</span>
+      <div className="flex gap-1.5">
+        <button
+          onClick={onYes}
+          className={cn("rounded-full border px-3.5 py-1 text-[13px] font-medium transition-colors",
+            yes ? (invert ? "border-[#0a8f6e] bg-[#edf6f0] text-[#0a7d61]" : "border-[#d99] bg-[#fbeaea] text-[#b23b3b]") : "border-[#d2d2d7] text-[#6e6e73] hover:border-[#bfbfc7]")}
+        >
+          Yes
+        </button>
+        <button
+          onClick={onNo}
+          className={cn("rounded-full border px-3.5 py-1 text-[13px] font-medium transition-colors",
+            !yes ? (invert ? "border-[#d99] bg-[#fbeaea] text-[#b23b3b]" : "border-[#0a8f6e] bg-[#edf6f0] text-[#0a7d61]") : "border-[#d2d2d7] text-[#6e6e73] hover:border-[#bfbfc7]")}
+        >
+          No
+        </button>
+      </div>
+    </div>
   );
 }

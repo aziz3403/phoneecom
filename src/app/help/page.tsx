@@ -1,17 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  Truck,
-  RefreshCw,
-  ShieldCheck,
-  CreditCard,
-  CircleDashed,
-  ArrowLeftRight,
-  MessageCircle,
-  Mail,
-  Phone,
-  Search,
-} from "lucide-react";
+import { Truck, RefreshCw, ShieldCheck, CreditCard, CircleDashed, ArrowLeftRight, MessageCircle, Mail, Search, PackageSearch } from "lucide-react";
 import { FaqAccordion } from "@/components/help/FaqAccordion";
 import { ChatLauncherButton } from "@/components/support/ChatLauncherButton";
 
@@ -25,75 +14,84 @@ const TOPICS = [
   {
     icon: Truck,
     title: "Orders & shipping",
-    body: "Track a delivery, change an address, shipping times and costs, and order changes.",
-    href: "/help",
+    body: "Track a delivery with just your reference + email, shipping times, and order changes.",
+    href: "/track",
   },
   {
     icon: RefreshCw,
     title: "Returns & refunds",
-    body: "Our 30-day return window, how to start a return, and when refunds land.",
-    href: "/help",
+    body: "The 30-day window, how to start a return, deductions, and when refunds land.",
+    href: "/returns",
   },
   {
     icon: ShieldCheck,
-    title: "What's in the box",
-    body: "Every phone ships with a free charging cable & adapter, plus 30-day returns.",
-    href: "/help",
+    title: "12-month warranty",
+    body: "What the functional warranty covers, what it doesn't, and how to make a claim.",
+    href: "/warranty",
   },
   {
     icon: CircleDashed,
     title: "Grading & condition",
-    body: "What New, Excellent, Good and Fair mean, and our battery-health promise.",
+    body: "What New, Excellent, Good and Fair mean, and our 80%+ battery promise.",
     href: "/grades",
   },
   {
     icon: CreditCard,
     title: "Payments & financing",
-    body: "Accepted payment methods, monthly financing, and billing questions.",
-    href: "/help",
+    body: "Cards, Apple Pay, Google Pay, and Klarna / Affirm monthly payments — all via Stripe.",
+    href: "/help#faq",
   },
   {
     icon: ArrowLeftRight,
     title: "Selling & trade-in",
-    body: "How quotes work, shipping your device, and getting paid in 48 hours.",
-    href: "/sell",
+    body: "How quotes work, the 7-day price lock, shipping your device, and getting paid.",
+    href: "/trade-in",
   },
 ];
 
+const POLICIES = [
+  { label: "12-month warranty", href: "/warranty" },
+  { label: "Returns & refunds", href: "/returns" },
+  { label: "Terms of service", href: "/terms" },
+  { label: "Privacy policy", href: "/privacy" },
+  { label: "Accessibility", href: "/accessibility" },
+  { label: "Free IMEI check", href: "/imei-check" },
+];
+
 const QUICKLINKS = [
-  { label: "Track an order", href: "/account" },
-  { label: "Start a return", href: "/help" },
-  { label: "Returns & refunds", href: "/help" },
+  { label: "Track an order or trade-in", href: "/track" },
+  { label: "Start a return", href: "/returns" },
+  { label: "Make a warranty claim", href: "/warranty" },
   { label: "What the grades mean", href: "/grades" },
-  { label: "Trade-in status", href: "/sell" },
+  { label: "Trade-in price list", href: "/trade-in/prices" },
 ];
 
 const CONTACT = [
   {
     icon: MessageCircle,
     title: "Live chat",
-    body: "Fastest way to reach us. Real people, no bots for the hard stuff.",
+    body: "Remi answers instantly, 24/7 — tracking, returns, warranty, quotes and more.",
     action: "Start a chat",
     href: "#",
-    meta: "Avg. reply: under 3 min",
+    meta: "Instant answers · 24/7",
     primary: true,
   },
   {
     icon: Mail,
     title: "Email us",
-    body: "Send details and screenshots — great for order-specific questions.",
-    action: "help@remint.com",
-    href: "mailto:help@remint.com",
-    meta: "Replies within 24 hours",
+    body: "Send details and screenshots — best for order-specific questions and claims.",
+    action: "support@remint.example",
+    href: "mailto:support@remint.example",
+    meta: "Replies within 1 business day",
     primary: false,
   },
   {
-    icon: Phone,
-    title: "Call us",
-    body: "Prefer to talk? Our support line is open 8am–8pm ET, every day.",
-    action: "1-800-REMINT",
-    href: "tel:+18007364680",
-    meta: "Mon–Sun · 8am–8pm ET",
+    icon: PackageSearch,
+    title: "Track it yourself",
+    body: "Any order or trade-in, no account needed — just your reference and email.",
+    action: "Open tracking",
+    href: "/track",
+    meta: "RM-… orders · TI-… trade-ins",
     primary: false,
   },
 ];
@@ -107,8 +105,8 @@ export default function HelpPage() {
         </p>
         <h1 className="ptitle">How can we help?</h1>
         <p className="psub">
-          Answers on orders, grading, returns and trade-ins — or reach a real human in
-          minutes.
+          Answers on orders, grading, returns, warranty and trade-ins — instant in chat,
+          or by email within a business day.
         </p>
 
         {/* hero search bar — demo, visual anchor */}
@@ -190,7 +188,29 @@ export default function HelpPage() {
             ))}
           </div>
         </div>
-      </section>
+      
+          {/* policies — the fine print, one tap away */}
+          <div
+            style={{
+              marginTop: 26,
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: 10,
+              borderTop: "1px solid var(--line)",
+              paddingTop: 22,
+            }}
+          >
+            <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text2)", marginRight: 4 }}>
+              Policies &amp; guarantees:
+            </span>
+            {POLICIES.map((p) => (
+              <Link key={p.href} className="chip" href={p.href}>
+                {p.label}
+              </Link>
+            ))}
+          </div>
+        </section>
 
       {/* faq */}
       <section className="graysec">

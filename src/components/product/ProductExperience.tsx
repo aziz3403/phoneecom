@@ -459,17 +459,28 @@ export function ProductExperience({
         {/* reassurance */}
         <div className="mt-[22px] flex flex-col gap-[11px]">
           {[
-            { icon: ShieldCheck, label: "12-month warranty on functional defects (accidental & liquid damage not covered)" },
-            { icon: RotateCcw, label: "30-day returns — a deduction may apply if not returned in the condition it was sold" },
-            { icon: BadgeCheck, label: "IMEI verified clean against the industry lost/stolen registry before listing" },
-            { icon: ScanLine, label: "50-point inspection · tested & working · data wiped to factory standard" },
+            { icon: ShieldCheck, label: "12-month warranty on functional defects (accidental & liquid damage not covered)", href: "/warranty" },
+            { icon: RotateCcw, label: "30-day returns — a deduction may apply if not returned in the condition it was sold", href: "/returns" },
+            { icon: BadgeCheck, label: "IMEI verified clean against the industry lost/stolen registry before listing", href: "/imei-check" },
+            { icon: ScanLine, label: "50-point inspection · tested & working · data wiped to factory standard", href: "/grades" },
             { icon: Zap, label: "Free charging cable & adapter included with every device" },
-          ].map((r) => (
-            <div key={r.label} className="flex items-start gap-[11px] text-[13.5px] leading-[1.4] text-[#6e6e73]">
-              <r.icon className="h-[18px] w-[18px] flex-none text-[#0a8f6e]" />
-              {r.label}
-            </div>
-          ))}
+          ].map((r) =>
+            r.href ? (
+              <Link
+                key={r.label}
+                href={r.href}
+                className="group flex items-start gap-[11px] text-[13.5px] leading-[1.4] text-[#6e6e73] transition-colors hover:text-[#1d1d1f]"
+              >
+                <r.icon className="h-[18px] w-[18px] flex-none text-[#0a8f6e]" />
+                <span className="underline-offset-2 group-hover:underline">{r.label}</span>
+              </Link>
+            ) : (
+              <div key={r.label} className="flex items-start gap-[11px] text-[13.5px] leading-[1.4] text-[#6e6e73]">
+                <r.icon className="h-[18px] w-[18px] flex-none text-[#0a8f6e]" />
+                {r.label}
+              </div>
+            ),
+          )}
         </div>
 
         {/* battery guarantee */}

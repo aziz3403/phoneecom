@@ -32,6 +32,7 @@ import { GRADES } from "@/lib/grades";
 import { formatPrice, formatPriceDecimal } from "@/lib/utils";
 import { emailError, nameError, requiredError, zipError, allValid } from "@/lib/validate";
 import { PhImg } from "@/components/home/PhImg";
+import { PaymentMarks } from "@/components/ui/PaymentMarks";
 
 const US_STATES = [
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL",
@@ -540,7 +541,12 @@ export function CartClient({
               )}
             </div>
             <div style={sumeta}>
-              <Lock className="h-[11px] w-[11px]" /> Encrypted &amp; secure · 30-day returns
+              <Lock className="h-[11px] w-[11px]" /> Encrypted &amp; secure ·{" "}
+              <Link href="/returns" style={{ textDecoration: "underline", textUnderlineOffset: 2 }}>30-day returns</Link> ·{" "}
+              <Link href="/warranty" style={{ textDecoration: "underline", textUnderlineOffset: 2 }}>12-month warranty</Link>
+            </div>
+            <div style={{ display: "flex", justifyContent: "center", padding: "10px 24px 0" }}>
+              <PaymentMarks compact />
             </div>
 
             <div style={{ padding: "18px 24px 22px" }}>

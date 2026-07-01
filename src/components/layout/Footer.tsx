@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PaymentMarks } from "@/components/ui/PaymentMarks";
 
 const COLS = [
   {
@@ -65,6 +66,7 @@ export function Footer() {
             </div>
           ))}
         </div>
+        <PaymentMarks className="mt-7" />
         <div className="footbar">
           <span>© 2026 reMint Commerce. Certified pre-owned.</span>
           <div className="lk">

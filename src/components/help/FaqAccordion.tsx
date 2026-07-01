@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export type FaqCategory = "orders" | "grading" | "returns" | "selling";
+export type FaqCategory = "orders" | "grading" | "returns" | "selling" | "payments";
 
 interface FaqItem {
   cat: FaqCategory;
@@ -14,7 +14,7 @@ const FAQ: FaqItem[] = [
   {
     cat: "orders",
     q: "How fast is shipping, and is it really free?",
-    a: "Every order ships free with carbon-neutral delivery in the contiguous US, arriving in 5–7 business days. Need it faster? 2-day express is available at checkout for $15. You'll get a tracking link by email as soon as your device leaves our lab.",
+    a: "Every order ships free with carbon-neutral delivery in the contiguous US, arriving in 5–7 business days. Need it faster? 2-day express is available at checkout for $20. You'll get a tracking link by email as soon as your device leaves our lab.",
   },
   {
     cat: "orders",
@@ -54,7 +54,27 @@ const FAQ: FaqItem[] = [
   {
     cat: "selling",
     q: "What if my device is worth less than quoted?",
-    a: "We re-grade every device on arrival. If it matches your answers, you get the locked quote. If it differs, we'll send a revised offer — and you can always decline and have it returned free.",
+    a: "We re-grade every device on arrival. If it matches your answers, you get the locked quote. If we find something different, we email a revised offer with photos of what we found and you get a full 7 days to decide — no auto-accept. Decline and we ship it straight back (you cover return postage).",
+  },
+  {
+    cat: "orders",
+    q: "How do I track an order or trade-in without an account?",
+    a: "Use the Track page with your reference — RM-123456 for orders, TI-123456 for trade-ins — plus the email you used. It shows live status, carrier tracking and payout progress. Create an account with the same email later and everything appears in your dashboard automatically.",
+  },
+  {
+    cat: "orders",
+    q: "How do I make a warranty claim?",
+    a: "Within 30 days of delivery, just start a return. After that, your 12-month functional warranty applies: contact support with your order reference and a photo or short video of the issue. We confirm it looks covered, you ship it in (tracked, activation locks removed), and approved claims are repaired, replaced or refunded — with the return shipping on us.",
+  },
+  {
+    cat: "payments",
+    q: "Can I pay monthly?",
+    a: "Yes — checkout runs through Stripe and offers Klarna and Affirm monthly payments alongside cards, Apple Pay and Google Pay. Financing is a separate agreement with the provider; approval and rates are shown before you commit, and your card details never touch our servers.",
+  },
+  {
+    cat: "orders",
+    q: "Are your devices' IMEIs clean?",
+    a: "Yes — every device is checked against the GSMA lost/stolen registry (via the CTIA's Stolen Phone Checker) before it's listed and again before it ships. Buying secondhand anywhere else? Our free IMEI checker validates any number and points you to the same official registry.",
   },
 ];
 
@@ -64,6 +84,7 @@ const CATEGORIES: { v: "all" | FaqCategory; label: string }[] = [
   { v: "grading", label: "Grading" },
   { v: "returns", label: "Returns & refunds" },
   { v: "selling", label: "Selling" },
+  { v: "payments", label: "Payments" },
 ];
 
 export function FaqAccordion() {

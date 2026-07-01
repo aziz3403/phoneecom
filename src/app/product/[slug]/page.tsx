@@ -15,6 +15,7 @@ import {
 } from "@/lib/products";
 import { GRADES } from "@/lib/grades";
 import { ProductExperience } from "@/components/product/ProductExperience";
+import { getAvailability } from "@/lib/availability";
 import { Reviews } from "@/components/product/Reviews";
 import { RecentlyViewed } from "@/components/product/RecentlyViewed";
 import { ProductCard } from "@/components/ui/ProductCard";
@@ -55,6 +56,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (!device) notFound();
 
   const related = relatedDevices(device, 3);
+  const availability = await getAvailability(device.slug);
   const specs: [string, string][] = [
     ["Display", displaySpec(device)],
     ["Chip", device.chip],
@@ -142,7 +144,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
       {/* hero (gallery + buy box) */}
       <div className="shell mt-6">
-        <ProductExperience device={device} />
+        <ProductExperience device={device} availability={availability} />
       </div>
 
       {/* specs + what's in the box */}

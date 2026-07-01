@@ -55,11 +55,11 @@ export default async function TradeInPage({
         <h1 className="ptitle">Turn your old phone into cash. Get paid the most.</h1>
         <p className="psub">
           A few quick questions for an instant offer on your old phone or tablet — we buy the full
-          range, at real market prices. Ship it free and get paid by PayPal or bank transfer, or take
-          10% more as store credit toward your next one.
+          range, at real market prices. Get paid by PayPal or bank transfer, or take 10% more as
+          store credit toward your next one. Five or more devices? Shipping&apos;s on us.
         </p>
         <div className="mt-6 flex flex-wrap gap-x-7 gap-y-2 text-sm text-[#6e6e73]">
-          {["Instant offer", "Free prepaid shipping", "PayPal or bank transfer", "Price-lock 7 days"].map((t) => (
+          {["Instant offer", "Price locked 7 days", "PayPal, bank or +10% credit", "Free shipping at 5+ devices"].map((t) => (
             <span key={t} className="inline-flex items-center gap-2">
               <span className="inline-block h-[5px] w-[5px] rounded-full bg-[#0a8f6e]" />
               {t}

@@ -230,8 +230,11 @@ export function ProductExperience({
           )}
         </div>
         <p className="mt-[9px] text-[13px] text-[#86868b]">
-          or from ~{formatPrice(Math.ceil(price / 12))}/mo. with <b className="font-semibold text-[#6e6e73]">Klarna</b> or{" "}
-          <b className="font-semibold text-[#6e6e73]">Affirm</b> at checkout · Apple Pay &amp; Google Pay accepted
+          {`or from ~${formatPrice(Math.ceil(price / 12))}/mo. with `}
+          <b className="font-semibold text-[#6e6e73]">Klarna</b>
+          {" or "}
+          <b className="font-semibold text-[#6e6e73]">Affirm</b>
+          {" at checkout · Apple Pay & Google Pay accepted"}
         </p>
         <div className="mt-3 flex flex-col gap-2 text-[13.5px] text-[#6e6e73]">
           <DeliveryEstimate />

@@ -67,8 +67,9 @@ export default async function HomePage() {
         </div>
         <div className="reassure">
           <span><span className="gd" />Free US shipping</span>
-          <span><span className="gd" />Free charger included</span>
+          <span><span className="gd" />12-month warranty</span>
           <span><span className="gd" />30-day returns</span>
+          <span><span className="gd" />Free charger included</span>
           <span><span className="gd" />Fully unlocked</span>
         </div>
       </section>

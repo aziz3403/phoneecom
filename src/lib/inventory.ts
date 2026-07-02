@@ -23,6 +23,11 @@ const CATALOG_NORM = DEVICES.map((d) => ({ slug: d.slug, n: NORM(d.name) })).sor
  * as the catalog grows.
  */
 const MODEL_ALIASES: [RegExp, string][] = [
+  // iPhone SE generations (sheet says "SE 2"/"SE 3"; catalog names them by
+  // year). "SE 3" first so it can't fall through; bare "IPHONE SE" (1st gen,
+  // 2016) is NOT mapped — the catalog doesn't carry it.
+  [/^IPHONE\s*SE\s*3\b/i, "iphone-se-2022"],
+  [/^IPHONE\s*SE\s*2\b(?!\d)/i, "iphone-se-2020"],
   // iPad mini
   [/^IPAD\s*MINI\s*6\b/i, "ipad-mini-6"],
   [/^IPAD\s*MINI\s*5\b/i, "ipad-mini-5"],
@@ -37,7 +42,9 @@ const MODEL_ALIASES: [RegExp, string][] = [
   // iPad Pro (older home-button sizes the catalog now carries; "PRO 13" is the 2024 M4)
   [/^IPAD\s*PRO\s*9\.?7/i, "ipad-pro-9-7"],
   [/^IPAD\s*PRO\s*10\.?5/i, "ipad-pro-10-5"],
-  [/^IPAD\s*PRO\s*12\.?9/i, "ipad-pro-12-9"],
+  // Only the 2020 generation — the catalog listing is the 2020 A12Z model;
+  // 2015–2018/2021+ 12.9" stock stays wholesale-only until listed separately.
+  [/^IPAD\s*PRO\s*12\.?9.*\(2020\)/i, "ipad-pro-12-9"],
   [/^IPAD\s*PRO\s*13\b/i, "ipad-pro-13-m4"],
   // base iPad, newest first
   [/^IPAD\s*10\b/i, "ipad-10th-gen"],
@@ -185,7 +192,9 @@ const GRADE_TO_ID: Record<string, GradeId> = {
 
 function toItem(r: InvRecord, i: number): InventoryItem {
   const isApple = /APPLE/i.test(r.manufacturer);
-  const gb = parseInt(r.storage, 10) || 0;
+  const rawGb = parseInt(r.storage, 10) || 0;
+  // The sheet writes terabyte units as "1TB"/"2TB" — normalize to GB.
+  const gb = /TB/i.test(r.storage) ? rawGb * 1024 : rawGb;
   const { hex, accent } = resolveColor(r.color);
   const chipDefs: [string, number, GradeId][] = [
     ["NEW", r.grades.new, "pristine"],

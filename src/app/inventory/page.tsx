@@ -117,7 +117,7 @@ function InventoryLocked({ signedIn }: { signedIn: boolean }) {
           </h2>
           <p style={{ fontSize: 15, color: "var(--text2)", marginTop: 10, lineHeight: 1.55 }}>
             Apply for a wholesale trade account to unlock the full live stock list with real-time
-            quantities and volume pricing — most applications are approved in under a minute.
+            quantities and volume pricing — applications are typically reviewed within one business day.
           </p>
           <div style={{ marginTop: 22, display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
             <Link className="btn" href="/wholesale">

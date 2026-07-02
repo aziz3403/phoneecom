@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export type FaqCategory = "orders" | "grading" | "returns" | "selling";
+export type FaqCategory = "orders" | "grading" | "returns" | "selling" | "payments";
 
 interface FaqItem {
   cat: FaqCategory;
@@ -14,7 +14,7 @@ const FAQ: FaqItem[] = [
   {
     cat: "orders",
     q: "How fast is shipping, and is it really free?",
-    a: "Every order ships free with carbon-neutral delivery in the contiguous US, arriving in 5–7 business days. Need it faster? 2-day express is available at checkout for $15. You'll get a tracking link by email as soon as your device leaves our lab.",
+    a: "Every order ships free with carbon-neutral delivery in the contiguous US, arriving in 5–7 business days. Need it faster? 2-day express is available at checkout for $20. You'll get a tracking link by email as soon as your device leaves our lab.",
   },
   {
     cat: "orders",
@@ -39,22 +39,42 @@ const FAQ: FaqItem[] = [
   {
     cat: "returns",
     q: "What is your return policy?",
-    a: "If it's not right, return it within 30 days for a refund. Start a return from your order page and we'll email a free prepaid label. Just send it back in the condition it was sold in — a deduction may apply if the device is returned damaged or with missing parts or charger.",
+    a: "If it's not right, return it within 30 days for a refund — any reason. Send it back in the condition it was sold in; you cover return postage unless the device arrived not as described (then the label's on us). A deduction may apply if it comes back damaged or missing parts or the charger.",
   },
   {
     cat: "returns",
     q: "What's in the box — do you offer a warranty?",
-    a: "We don't offer a long-term warranty, but every device is 50-point tested and confirmed fully working before it ships, and comes with a free charging cable & adapter in the box. You're also covered by our 30-day returns, so if anything isn't right when it arrives you can send it back for a refund.",
+    a: "Every device ships with a free charging cable & adapter and is covered by a 12-month limited warranty on functional defects — if the hardware stops working under normal use, we repair, replace or refund it. Accidental damage, liquid damage, cosmetic wear and normal battery ageing aren't covered (full terms on the Warranty page). You're also covered by 30-day returns if anything isn't right when it arrives.",
   },
   {
     cat: "selling",
     q: "How does trade-in payment work?",
-    a: "Get an instant quote, ship your device free with our prepaid label, and once we verify it you're paid within 48 hours by cash, PayPal, or store credit (credit pays 10% more).",
+    a: "Get an instant quote — the price is locked for 7 days. Ship it to us (5+ devices get a free prepaid label; under 5 you cover the postage), and once it's verified you're paid by PayPal or bank transfer — or store credit, which pays 10% more.",
   },
   {
     cat: "selling",
     q: "What if my device is worth less than quoted?",
-    a: "We re-grade every device on arrival. If it matches your answers, you get the locked quote. If it differs, we'll send a revised offer — and you can always decline and have it returned free.",
+    a: "We re-grade every device on arrival. If it matches your answers, you get the locked quote. If we find something different, we email a revised offer with photos of what we found and you get a full 7 days to decide — no auto-accept. Decline and we ship it straight back (you cover return postage).",
+  },
+  {
+    cat: "orders",
+    q: "How do I track an order or trade-in without an account?",
+    a: "Use the Track page with your reference — RM-123456 for orders, TI-123456 for trade-ins — plus the email you used. It shows live status, carrier tracking and payout progress. Create an account with the same email later and everything appears in your dashboard automatically.",
+  },
+  {
+    cat: "orders",
+    q: "How do I make a warranty claim?",
+    a: "Within 30 days of delivery, just start a return. After that, your 12-month functional warranty applies: contact support with your order reference and a photo or short video of the issue. We confirm it looks covered, you ship it in (tracked, activation locks removed), and approved claims are repaired, replaced or refunded — with the return shipping on us.",
+  },
+  {
+    cat: "payments",
+    q: "Can I pay monthly?",
+    a: "Yes — checkout runs through Stripe and offers Klarna and Affirm monthly payments alongside cards, Apple Pay and Google Pay. Financing is a separate agreement with the provider; approval and rates are shown before you commit, and your card details never touch our servers.",
+  },
+  {
+    cat: "orders",
+    q: "Are your devices' IMEIs clean?",
+    a: "Yes — every device is checked against the GSMA lost/stolen registry (via the CTIA's Stolen Phone Checker) before it's listed and again before it ships. Buying secondhand anywhere else? Our free IMEI checker validates any number and points you to the same official registry.",
   },
 ];
 
@@ -64,6 +84,7 @@ const CATEGORIES: { v: "all" | FaqCategory; label: string }[] = [
   { v: "grading", label: "Grading" },
   { v: "returns", label: "Returns & refunds" },
   { v: "selling", label: "Selling" },
+  { v: "payments", label: "Payments" },
 ];
 
 export function FaqAccordion() {

@@ -24,21 +24,25 @@ export function comboKey(gb: number, family: string, grade: string): string {
   return `${gb}|${family}|${grade}`;
 }
 
-// Warehouse colour name → catalog ColorFamily. Order matters (specific first).
+// Warehouse colour name → catalog ColorFamily. Order matters: real colour
+// words win first, and marketing prefixes that usually mean black (Midnight,
+// Phantom, Cosmic…) are a FALLBACK — so "Midnight Green" is Green,
+// "Phantom White" is White, "Cosmic Orange" is Orange, while plain
+// "Midnight" / "Phantom Black" still land on Black.
 const FAMILY_RULES: [RegExp, ColorFamily][] = [
   [/TITANIUM/i, "Titanium"],
   [/ROSE\s*GOLD|\bROSE\b|\bPINK\b|BLOSSOM/i, "Pink"],
   [/\bGOLD\b|CHAMPAGNE|BRONZE|COPPER/i, "Gold"],
   [/GRAPHITE|SPACE\s*GR[AE]Y|\bGR[AE]Y\b|GUN\s*METAL|SLATE/i, "Gray"],
-  [/MIDNIGHT|\bBLACK\b|ONYX|PHANTOM|CARBON|COSMIC|SHADOW|OBSIDIAN/i, "Black"],
   [/STARLIGHT|\bWHITE\b|CREAM|CERAMIC|SNOW|PEARL|MARBLE/i, "White"],
   [/SILVER|PLATINUM/i, "Silver"],
   [/\bBLUE\b|SIERRA|PACIFIC|NAVY|\bIC[EY]\b|SKY|TEAL|CYAN|DENIM|COBALT/i, "Blue"],
   [/GREEN|ALPINE|\bMINT\b|\bLIME\b|SAGE|EMERALD|FOREST/i, "Green"],
   [/PURPLE|VIOLET|LAVENDER|LILAC|ORCHID|PLUM/i, "Purple"],
   [/\bRED\b|CRIMSON|BURGUNDY|SCARLET|MAROON/i, "Red"],
-  [/ORANGE|CORAL|AMBER|PEACH/i, "Orange"],
   [/YELLOW/i, "Yellow"],
+  [/ORANGE|CORAL|AMBER|PEACH/i, "Orange"],
+  [/MIDNIGHT|\bBLACK\b|ONYX|PHANTOM|CARBON|COSMIC|SHADOW|OBSIDIAN|\bJET\b/i, "Black"],
 ];
 
 export function warehouseFamily(color: string): ColorFamily | null {

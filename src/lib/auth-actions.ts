@@ -7,6 +7,7 @@ import { signIn, signOut } from "./auth";
 import { getDb } from "./db";
 import { users, passwordResetTokens } from "./db/schema";
 import { issueVerification } from "./email-verify";
+import { rateLimit, callerIp } from "./rate-limit";
 
 /**
  * On success, Auth.js `signIn` throws a Next.js redirect (digest "NEXT_REDIRECT")
@@ -56,6 +57,9 @@ export async function signUpAction(
   if (!name.trim()) return { ok: false, error: "Please enter your name." };
   if (!EMAIL_RE.test(cleanEmail)) return { ok: false, error: "Enter a valid email address." };
   if (password.length < 6) return { ok: false, error: "Password must be at least 6 characters." };
+  if (!rateLimit(`signup:${await callerIp()}`, 5, 15 * 60 * 1000)) {
+    return { ok: false, error: "Too many sign-up attempts — please wait a few minutes." };
+  }
 
   const db = getDb();
   const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, cleanEmail)).limit(1);
@@ -84,6 +88,15 @@ export async function loginAction(
   password: string,
   callbackUrl?: string,
 ): Promise<ActionResult> {
+  // Throttle per IP and per target account (blunts credential stuffing AND
+  // a distributed brute-force against one mailbox).
+  const ip = await callerIp();
+  if (
+    !rateLimit(`login:${ip}`, 10, 15 * 60 * 1000) ||
+    !rateLimit(`login:${email.trim().toLowerCase()}`, 10, 15 * 60 * 1000)
+  ) {
+    return { ok: false, error: "Too many sign-in attempts — please wait 15 minutes and try again." };
+  }
   try {
     await signIn("credentials", {
       email: email.trim().toLowerCase(),
@@ -110,6 +123,9 @@ export async function logoutAction(): Promise<void> {
 export async function requestPasswordResetAction(email: string): Promise<ActionResult> {
   const cleanEmail = email.trim().toLowerCase();
   if (!EMAIL_RE.test(cleanEmail)) return { ok: false, error: "Enter a valid email address." };
+  if (!rateLimit(`reset:${await callerIp()}`, 5, 15 * 60 * 1000)) {
+    return { ok: false, error: "Too many reset requests — please wait a few minutes." };
+  }
 
   const db = getDb();
   const rows = await db

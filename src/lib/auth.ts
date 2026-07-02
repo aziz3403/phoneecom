@@ -5,7 +5,7 @@ import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { eq, and, isNull } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { getDb } from "./db";
-import { users, accounts, sessions, verificationTokens, orders } from "./db/schema";
+import { users, accounts, sessions, verificationTokens, orders, tradeIns } from "./db/schema";
 
 /** Auth is "configured" once a session secret and a database are present. */
 export function isAuthConfigured(): boolean {
@@ -25,7 +25,6 @@ const googleProvider = isGoogleConfigured()
       Google({
         clientId: process.env.AUTH_GOOGLE_ID ?? process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.AUTH_GOOGLE_SECRET ?? process.env.GOOGLE_CLIENT_SECRET,
-        allowDangerousEmailAccountLinking: true,
       }),
     ]
   : [];
@@ -75,10 +74,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           (user as { wholesaleApproved?: boolean }).wholesaleApproved,
         );
       }
-      // allow client `update()` to refresh wholesale state without re-login
-      const upd = session as { wholesaleApproved?: boolean } | undefined;
-      if (trigger === "update" && upd?.wholesaleApproved !== undefined) {
-        token.wholesaleApproved = Boolean(upd.wholesaleApproved);
+      // Client `update()` refreshes wholesale state without re-login — but the
+      // value comes from the DB, never the client (approval is owner-gated).
+      void session;
+      if (trigger === "update" && token.id) {
+        try {
+          const db = getDb();
+          const rows = await db
+            .select({ wholesaleApproved: users.wholesaleApproved })
+            .from(users)
+            .where(eq(users.id, token.id as string))
+            .limit(1);
+          if (rows[0]) token.wholesaleApproved = rows[0].wholesaleApproved;
+        } catch {
+          /* keep the existing token value */
+        }
       }
       return token;
     },
@@ -91,15 +101,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
   events: {
-    // Attach any orders placed as a guest (same email) to the account on sign-in.
+    // Attach any orders AND trade-ins made as a guest (same email) to the
+    // account on sign-in — nothing a customer did before registering is lost.
     async signIn({ user }) {
       if (!user?.id || !user.email) return;
+      const email = user.email.toLowerCase();
       try {
         const db = getDb();
         await db
           .update(orders)
           .set({ userId: user.id })
-          .where(and(eq(orders.email, user.email.toLowerCase()), isNull(orders.userId)));
+          .where(and(eq(orders.email, email), isNull(orders.userId)));
+        await db
+          .update(tradeIns)
+          .set({ userId: user.id })
+          .where(and(eq(tradeIns.email, email), isNull(tradeIns.userId)));
       } catch {
         /* non-fatal */
       }

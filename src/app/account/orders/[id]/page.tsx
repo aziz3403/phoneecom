@@ -5,11 +5,13 @@ import { Check, Package, Truck, MapPin, CreditCard, Leaf, ArrowLeft, Copy } from
 import { auth, isAuthConfigured } from "@/lib/auth";
 import { getMyOrder } from "@/lib/orders";
 import { computeTracking, fmtDay } from "@/lib/tracking";
+import { EXPRESS_FEE } from "@/lib/delivery";
 import { GRADES } from "@/lib/grades";
 import { imageFor } from "@/lib/products";
 import { formatPrice, formatPriceDecimal } from "@/lib/utils";
 import { PhImg } from "@/components/home/PhImg";
 import { AuthNotConfigured } from "@/components/auth/AuthNotConfigured";
+import { ManifestDownload } from "@/components/account/ManifestDownload";
 
 export const metadata: Metadata = { title: "Order details" };
 
@@ -52,7 +54,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   });
   const itemCount = order.lines.reduce((n, l) => n + l.qty, 0);
   const subtotal = order.subtotal ?? order.lines.reduce((s, l) => s + l.unit * l.qty, 0);
-  const deliveryCost = order.express ? 15 : 0;
+  const deliveryCost = order.express ? EXPRESS_FEE : 0;
 
   return (
     <div className="shell" style={{ maxWidth: 1080, padding: "26px 22px 60px" }}>
@@ -69,6 +71,15 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           <p style={{ color: "var(--text2)", fontSize: 14.5, marginTop: 4 }}>
             Placed {new Date(order.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} · {itemCount} {itemCount === 1 ? "item" : "items"}
           </p>
+          {order.lines.some((l) => l.mode === "wholesale") && (
+            <div style={{ marginTop: 8 }}>
+              <ManifestDownload
+                orderId={order.id}
+                lines={order.lines}
+                shipped={order.status === "Shipped" || Boolean(order.trackingNumber)}
+              />
+            </div>
+          )}
         </div>
         <span
           className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13.5px] font-semibold"

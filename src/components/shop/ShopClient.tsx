@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import {
   DEVICES,
+  stockedDevices,
   BRANDS,
   COLOR_FAMILIES,
   fromPrice,
@@ -15,16 +16,19 @@ import {
 import { ProductCard } from "@/components/ui/ProductCard";
 import { Leaf } from "@/components/ui/Leaf";
 import { formatPrice, cn } from "@/lib/utils";
+import { useStockMap } from "@/lib/stock-context";
 
-const PRICES = DEVICES.map(fromPrice);
-const MIN_PRICE = Math.min(...PRICES);
-const MAX_PRICE = Math.max(...PRICES);
-const ALL_STORAGES = Array.from(new Set(DEVICES.flatMap((d) => d.storage.map((s) => s.gb)))).sort(
-  (a, b) => a - b,
-);
-const PRESENT_FAMILIES = COLOR_FAMILIES.filter((f) =>
-  DEVICES.some((d) => d.colors.some((c) => c.family === f)),
-);
+// Facets derive from the devices actually on sale (stock-filtered at render),
+// so a storage or color chip can never lead to an empty result set.
+function facetsFor(catalog: typeof DEVICES) {
+  const prices = catalog.map(fromPrice);
+  return {
+    minPrice: Math.min(...prices),
+    maxPrice: Math.max(...prices),
+    storages: Array.from(new Set(catalog.flatMap((d) => d.storage.map((s) => s.gb)))).sort((a, b) => a - b),
+    families: COLOR_FAMILIES.filter((f) => catalog.some((d) => d.colors.some((c) => c.family === f))),
+  };
+}
 
 // Representative swatch colour per family (so the Color filter shows real colours).
 const FAMILY_HEX: Record<ColorFamily, string> = {
@@ -116,6 +120,9 @@ export function ShopClient({
   const [brands, setBrands] = useState<Set<Brand>>(
     new Set(initialBrand && BRANDS.includes(initialBrand as Brand) ? [initialBrand as Brand] : []),
   );
+  const stockMap = useStockMap();
+  const { minPrice: MIN_PRICE, maxPrice: MAX_PRICE, storages: ALL_STORAGES, families: PRESENT_FAMILIES } =
+    useMemo(() => facetsFor(stockedDevices(stockMap)), [stockMap]);
   const [storages, setStorages] = useState<Set<number>>(new Set());
   const [colors, setColors] = useState<Set<ColorFamily>>(new Set());
   const [screens, setScreens] = useState<Set<string>>(new Set());
@@ -138,7 +145,7 @@ export function ShopClient({
   const filters: Filters = { query, types, brands, storages, colors, screens, maxPrice };
 
   const filtered = useMemo(() => {
-    const list = DEVICES.filter((d) => passes(d, filters));
+    const list = stockedDevices(stockMap).filter((d) => passes(d, filters));
     return [...list].sort((a, b) => {
       switch (sort) {
         case "price-asc":

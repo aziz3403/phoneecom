@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { BadgeCheck, BarChart3, Boxes, Layers, Lock, LogIn } from "lucide-react";
+import { BadgeCheck, BarChart3, Boxes, Clock, Layers, Lock, LogIn } from "lucide-react";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { useWholesaleAccount } from "@/lib/wholesale-account-store";
-import { approveWholesaleAction } from "@/lib/wholesale-actions";
-import { ApplyForm } from "./ApplyForm";
+import { applyWholesaleAction, myWholesaleApplication } from "@/lib/wholesale-actions";
+import { ApplyForm, type ApplyFormData } from "./ApplyForm";
 
 const SHELL = "mx-auto w-full max-w-[1280px] px-[22px]";
 
@@ -45,12 +45,49 @@ export function WholesaleGate({
 
   const approved = mounted && (authConfigured ? sessionApproved : storeStatus === "approved");
 
-  async function handleApprove(company: string) {
+  // Real mode: surface an already-filed application (so a refresh doesn't
+  // show the form again while the owner is still reviewing).
+  const [pending, setPending] = useState(false);
+  useEffect(() => {
+    if (!authConfigured || !signedIn || sessionApproved) return;
+    let cancelled = false;
+    myWholesaleApplication()
+      .then((app) => {
+        if (!cancelled && app?.status === "Pending") setPending(true);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [authConfigured, signedIn, sessionApproved]);
+
+  async function handleSubmit(form: ApplyFormData): Promise<{ ok: boolean; error?: string }> {
     if (authConfigured && signedIn) {
-      await approveWholesaleAction(company);
-      await update({ wholesaleApproved: true });
-    } else {
-      storeApprove(company);
+      const res = await applyWholesaleAction({
+        company: form.company,
+        name: form.name,
+        email: form.email,
+        volume: form.volume,
+        businessType: form.type,
+        region: form.region,
+        message: form.message,
+      });
+      if (res.ok) setPending(true);
+      return { ok: res.ok, error: res.error };
+    }
+    // Demo fallback (no backend): a short review beat, then instant unlock.
+    await new Promise((r) => setTimeout(r, 1200));
+    storeApprove(form.company);
+    return { ok: true };
+  }
+
+  const [checking, setChecking] = useState(false);
+  async function checkApproval() {
+    setChecking(true);
+    try {
+      // Re-reads wholesaleApproved from the DB into the session token; if the
+      // owner has approved, the gate unlocks on the spot.
+      await update();
+    } finally {
+      setChecking(false);
     }
   }
 
@@ -102,7 +139,7 @@ export function WholesaleGate({
         </div>
         <SectionHeading
           title="Live pricing & ordering tools"
-          subtitle="Volume pricing, the instant savings quote and the bulk order builder are reserved for approved trade accounts. Apply below — most applications are approved in under a minute."
+          subtitle="Volume pricing, the instant savings quote and the bulk order builder are reserved for approved trade accounts. Apply below — applications are reviewed by our team, usually within one business day."
         />
 
         <div className="mt-12 grid gap-5 md:grid-cols-3">
@@ -121,7 +158,21 @@ export function WholesaleGate({
         </div>
 
         <div className="mt-16">
-          {needsSignIn ? (
+          {authConfigured && pending ? (
+            <div className="mx-auto max-w-[520px] rounded-[22px] border border-[#d2d2d7] bg-white p-8 text-center">
+              <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-full bg-[#f1f7f3] text-[#0a8f6e]">
+                <Clock className="h-6 w-6" />
+              </div>
+              <h3 className="text-xl font-semibold tracking-tight text-[#1d1d1f]">Application under review</h3>
+              <p className="mx-auto mt-2 max-w-sm text-[15px] leading-relaxed text-[#6e6e73]">
+                Our team is reviewing your trade-account application — you&apos;ll get an email with the
+                decision, usually within one business day. The portal unlocks automatically on approval.
+              </p>
+              <button onClick={checkApproval} disabled={checking} className="btn btn-lt mt-5">
+                {checking ? "Checking…" : "Check status"}
+              </button>
+            </div>
+          ) : needsSignIn ? (
             <div className="mx-auto max-w-[480px] rounded-[22px] border border-[#d2d2d7] bg-white p-8 text-center">
               <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-full bg-[#f1f7f3] text-[#0a8f6e]">
                 <LogIn className="h-6 w-6" />
@@ -129,7 +180,7 @@ export function WholesaleGate({
               <h3 className="text-xl font-semibold tracking-tight text-[#1d1d1f]">Sign in to apply</h3>
               <p className="mx-auto mt-2 max-w-sm text-[15px] leading-relaxed text-[#6e6e73]">
                 Trade accounts are tied to your reMint account. Sign in or create one, then apply —
-                most applications are approved in under a minute.
+                applications are typically reviewed within one business day.
               </p>
               <Link
                 href="/login?callbackUrl=/wholesale"
@@ -139,7 +190,7 @@ export function WholesaleGate({
               </Link>
             </div>
           ) : (
-            <ApplyForm onApprove={handleApprove} />
+            <ApplyForm onSubmit={handleSubmit} pendingReview={authConfigured && signedIn} />
           )}
         </div>
       </Section>

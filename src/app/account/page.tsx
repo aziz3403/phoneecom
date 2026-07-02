@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, isAuthConfigured } from "@/lib/auth";
 import { getMyOrders } from "@/lib/orders";
+import { getMyTradeIns } from "@/lib/trade-ins";
 import { getProfile } from "@/lib/profile-actions";
 import { isEmailVerified } from "@/lib/verify-actions";
 import { computeTracking } from "@/lib/tracking";
@@ -22,8 +23,9 @@ export default async function AccountPage() {
     const session = await auth();
     if (!session?.user) redirect("/login?callbackUrl=/account");
 
-    const [orders, profile, emailVerified] = await Promise.all([
+    const [orders, tradeIns, profile, emailVerified] = await Promise.all([
       getMyOrders(),
+      getMyTradeIns(),
       getProfile(),
       isEmailVerified(),
     ]);
@@ -42,6 +44,7 @@ export default async function AccountPage() {
           emailVerified,
         }}
         orders={enriched}
+        tradeIns={tradeIns}
         profile={profile}
       />
     );

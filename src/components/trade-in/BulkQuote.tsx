@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Check, Boxes, Truck, Zap, BadgeDollarSign } from "lucide-react";
+import { submitBulkQuoteAction } from "@/lib/trade-in-actions";
+import { emailError, phoneError, nameError, allValid } from "@/lib/validate";
 import { cn } from "@/lib/utils";
 
 const PERKS = [
@@ -21,8 +23,41 @@ export function BulkQuote() {
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [sent, setSent] = useState(false);
+  const [demo, setDemo] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const touch = (k: string) => setTouched((t) => ({ ...t, [k]: true }));
 
-  const canSend = firstName.trim() && lastName.trim() && /.+@.+\..+/.test(email) && phone.trim();
+  const errs: Record<string, string | undefined> = {
+    first: nameError(firstName, "First name"),
+    last: nameError(lastName, "Last name"),
+    email: emailError(email),
+    phone: phoneError(phone),
+  };
+  const canSend = allValid(errs);
+  const showErr = (k: string) => (touched[k] || touched.__all) && errs[k];
+
+  async function send() {
+    if (sending) return;
+    if (!canSend) {
+      setTouched((t) => ({ ...t, __all: true }));
+      return;
+    }
+    setSending(true);
+    setError("");
+    try {
+      const res = await submitBulkQuoteAction({
+        firstName, lastName, company: company || undefined, email, phone, batchSize: size, notes: notes || undefined,
+      });
+      if (res.ok) { setDemo(Boolean(res.demo)); setSent(true); }
+      else setError(res.error ?? "Something went wrong — please try again.");
+    } catch {
+      setError("Something went wrong — please try again.");
+    } finally {
+      setSending(false);
+    }
+  }
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr]">
@@ -58,7 +93,7 @@ export function BulkQuote() {
             <h3 className="mt-5 text-[22px] font-bold tracking-[-.02em] text-[#1d1d1f]">Request received</h3>
             <p className="mx-auto mt-2 max-w-xs text-[14px] leading-relaxed text-[#6e6e73]">
               Thanks{firstName ? `, ${firstName}` : ""} — our buyback team will email {email || "you"} a firm bulk quote,
-              usually within a business day. (Demo — nothing was sent.)
+              usually within a business day.{demo ? " (Demo — the backend isn't configured, so nothing was sent.)" : ""}
             </p>
             <button onClick={() => setSent(false)} className="link mt-5">Send another</button>
           </div>
@@ -77,19 +112,23 @@ export function BulkQuote() {
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label className="flabel" htmlFor="bq-first">First name</label>
-                <input id="bq-first" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="inpt" placeholder="Jane" />
+                <input id="bq-first" value={firstName} onChange={(e) => setFirstName(e.target.value)} onBlur={() => touch("first")} aria-invalid={!!showErr("first")} className={cn("inpt", showErr("first") && "!border-[#d99]")} placeholder="Jane" />
+                {showErr("first") && <p role="alert" className="mt-1 text-[11.5px] text-[#b23b3b]">{errs.first}</p>}
               </div>
               <div>
                 <label className="flabel" htmlFor="bq-last">Last name</label>
-                <input id="bq-last" value={lastName} onChange={(e) => setLastName(e.target.value)} className="inpt" placeholder="Doe" />
+                <input id="bq-last" value={lastName} onChange={(e) => setLastName(e.target.value)} onBlur={() => touch("last")} aria-invalid={!!showErr("last")} className={cn("inpt", showErr("last") && "!border-[#d99]")} placeholder="Doe" />
+                {showErr("last") && <p role="alert" className="mt-1 text-[11.5px] text-[#b23b3b]">{errs.last}</p>}
               </div>
               <div>
                 <label className="flabel" htmlFor="bq-email">Email</label>
-                <input id="bq-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="inpt" placeholder="you@company.com" />
+                <input id="bq-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} onBlur={() => touch("email")} aria-invalid={!!showErr("email")} className={cn("inpt", showErr("email") && "!border-[#d99]")} placeholder="you@company.com" />
+                {showErr("email") && <p role="alert" className="mt-1 text-[11.5px] text-[#b23b3b]">{errs.email}</p>}
               </div>
               <div>
                 <label className="flabel" htmlFor="bq-phone">Phone</label>
-                <input id="bq-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="inpt" placeholder="(555) 123-4567" />
+                <input id="bq-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} onBlur={() => touch("phone")} aria-invalid={!!showErr("phone")} className={cn("inpt", showErr("phone") && "!border-[#d99]")} placeholder="(555) 123-4567" />
+                {showErr("phone") && <p role="alert" className="mt-1 text-[11.5px] text-[#b23b3b]">{errs.phone}</p>}
               </div>
               <div className="sm:col-span-2">
                 <label className="flabel" htmlFor="bq-company">Company (optional)</label>
@@ -101,9 +140,10 @@ export function BulkQuote() {
               </div>
             </div>
 
-            <button onClick={() => canSend && setSent(true)} disabled={!canSend} className={cn("btn mt-5 w-full", !canSend && "opacity-50")}>
-              Get my bulk quote
+            <button onClick={send} disabled={sending} className={cn("btn mt-5 w-full", (!canSend || sending) && "opacity-50")}>
+              {sending ? "Sending…" : "Get my bulk quote"}
             </button>
+            {error && <p role="alert" className="mt-2 text-center text-[12px] text-[#b23b3b]">{error}</p>}
             <p className="mt-2 text-center text-[12px] text-[#86868b]">No obligation. We reply with a firm price, usually within a business day.</p>
           </>
         )}

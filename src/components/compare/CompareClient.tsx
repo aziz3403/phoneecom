@@ -5,6 +5,7 @@ import { useState } from "react";
 import { X, Plus, Star, Check } from "lucide-react";
 import {
   DEVICES,
+  stockedDevices,
   getDevice,
   startingPrice,
   bestDiscount,
@@ -16,6 +17,7 @@ import {
 import { GRADES } from "@/lib/grades";
 import { PhImg } from "@/components/home/PhImg";
 import { formatPrice, cn } from "@/lib/utils";
+import { useStockMap } from "@/lib/stock-context";
 
 type Row = {
   section?: string;
@@ -53,7 +55,9 @@ const MAX = 3;
 export function CompareClient() {
   const [slugs, setSlugs] = useState<string[]>(["iphone-15-pro-max", "galaxy-s24-ultra"]);
   const devices = slugs.map(getDevice).filter((d): d is Device => Boolean(d));
-  const available = DEVICES.filter((d) => !slugs.includes(d.slug));
+  const stockMap = useStockMap();
+  const catalog = stockedDevices(stockMap);
+  const available = catalog.filter((d) => !slugs.includes(d.slug));
   const cols = devices.length + (devices.length < MAX ? 1 : 0);
   const full = devices.length >= MAX;
 
@@ -82,7 +86,7 @@ export function CompareClient() {
       {/* device picker — chips toggle on/off */}
       <div className="mb-2 text-[13px] font-semibold text-[#86868b]">Add a device to compare</div>
       <div className="mb-2 flex flex-wrap items-center gap-2">
-        {DEVICES.slice(0, 10).map((d) => {
+        {catalog.slice(0, 10).map((d) => {
           const on = slugs.includes(d.slug);
           const disabled = !on && full;
           return (

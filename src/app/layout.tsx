@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
+import { TopBar } from "@/components/layout/TopBar";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { SearchCommand } from "@/components/layout/SearchCommand";
@@ -48,11 +49,19 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   // Resolve live warehouse stock once for the whole app (cached/ISR via the
   // underlying sheet fetch) so every product surface reflects real availability.
   const stock = await catalogStock();
+  // Privacy-friendly analytics, on only when a Plausible domain is configured.
+  const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
   return (
     <html lang="en">
+      {plausibleDomain && (
+        <head>
+          <script defer data-domain={plausibleDomain} src="https://plausible.io/js/script.js" />
+        </head>
+      )}
       <body>
         <Providers stock={stock}>
           <div className="home">
+            <TopBar />
             <Navbar />
             <CartDrawer />
             <SearchCommand />

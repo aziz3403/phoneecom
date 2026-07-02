@@ -92,6 +92,44 @@ real card payments — Apple Pay and Google Pay included automatically:
 > With only `STRIPE_SECRET_KEY` set, payments work but order confirmation relies
 > on the success-page check; add the webhook for production-grade fulfilment.
 
+**Apple Pay / Google Pay** appear automatically on Stripe's hosted checkout.
+To offer **Klarna / Affirm / Afterpay** monthly payments (the storefront already
+advertises them), switch them on once in Stripe → **Settings → Payment methods** —
+no code change needed; Stripe shows them to eligible customers automatically.
+
+## 4d. (Optional) Owner notifications & the back office
+
+- Set `OWNER_NOTIFY_EMAIL` to get an email for every paid order, trade-in
+  submission, bulk-quote request and wholesale application (falls back to
+  `AUTH_EMAIL_FROM`).
+- Set `ADMIN_EMAILS` (comma-separated) to grant those accounts the **/admin**
+  back office: mark orders shipped (emails the buyer the real tracking number),
+  advance trade-ins (Received → Inspected → Requoted → Paid, each emailing the
+  seller), approve/reject wholesale applications, and triage bulk quotes.
+  You can also flip `isAdmin` directly on a user row.
+
+## 4f. Trade-in price sheet (live sync)
+
+Buyback quotes track the shared Google Sheet
+(`1pu4Adxq4MGB6Qour0k__4gBdgnggWRoSVYnJUKgxzEw` — tabs "iPhone Used",
+"Samsung", "iPad Used") and refresh **hourly**. Keep the sheet shared as
+"anyone with the link can view" or the fetch gets a login page and the site
+falls back to the committed snapshot. A structural validator rejects renamed
+tabs / moved columns / half-edited books, so a broken sheet can never
+mis-price a payout — it just pins to the last good snapshot. Set
+`TRADEIN_LIVE=0` to force snapshot-only; `TRADEIN_SHEET_ID` overrides the
+sheet. After big price-book changes, refresh the committed snapshot with
+`python3 scripts/extract-trade-in-prices.py <book.xlsx> src/data/trade-in-prices.json`.
+
+## 4e. (Optional) Analytics & monitoring
+
+- **Analytics** — set `NEXT_PUBLIC_PLAUSIBLE_DOMAIN=yourdomain.com` to load
+  Plausible (cookieless, GDPR-friendly). Nothing loads when unset.
+- **Error visibility** — server-side failures (Stripe sessions, webhooks,
+  submission persistence) are logged with `[checkout]` / `[stripe-webhook]` /
+  `[trade-in]` prefixes; surface them via your host's log drain. Wiring a
+  dedicated tracker (e.g. Sentry) is a good next step for production traffic.
+
 ## 5. Deploy
 
 On Vercel, set the env vars (step 2) **before** building, then deploy. Run the
